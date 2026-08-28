@@ -11,10 +11,10 @@ export const districts = {
     "Lucknow",
     "Prayagraj",
     "Sitapur",
-    "Varanasi"
+    "Varanasi",
   ],
 
-  "Maharashtra": [
+  Maharashtra: [
     "Ahmednagar",
     "Akola",
     "Amravati",
@@ -24,10 +24,10 @@ export const districts = {
     "Nagpur",
     "Nashik",
     "Pune",
-    "Thane"
+    "Thane",
   ],
 
-  "Bihar": [
+  Bihar: [
     "Araria",
     "Arwal",
     "Aurangabad",
@@ -37,10 +37,10 @@ export const districts = {
     "Muzaffarpur",
     "Patna",
     "Purnia",
-    "Vaishali"
+    "Vaishali",
   ],
 
-  "Rajasthan": [
+  Rajasthan: [
     "Ajmer",
     "Alwar",
     "Bharatpur",
@@ -49,7 +49,7 @@ export const districts = {
     "Jaisalmer",
     "Jodhpur",
     "Kota",
-    "Udaipur"
+    "Udaipur",
   ],
 
   "Madhya Pradesh": [
@@ -59,10 +59,10 @@ export const districts = {
     "Gwalior",
     "Ujjain",
     "Sagar",
-    "Rewa"
+    "Rewa",
   ],
 
-  "Delhi": [
+  Delhi: [
     "Central Delhi",
     "East Delhi",
     "New Delhi",
@@ -73,6 +73,6 @@ export const districts = {
     "South Delhi",
     "South East Delhi",
     "South West Delhi",
-    "West Delhi"
-  ]
+    "West Delhi",
+  ],
 };

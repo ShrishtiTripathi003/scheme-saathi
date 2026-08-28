@@ -3,8 +3,14 @@ import { useState } from "react";
 import { districts } from "./districts";
 
 const schemes = [
+  // =========================================================
+  // 1. CM-YUVA - UTTAR PRADESH
+  // =========================================================
   {
+    id: "cm-yuva",
+
     name: "Mukhyamantri Yuva Udyami Vikas Abhiyan (CM-YUVA)",
+
     purpose: "business",
 
     minAge: 21,
@@ -13,31 +19,55 @@ const schemes = [
     minEducation: 8,
 
     maxIncome: Infinity,
+
     maxProjectCost: 500000,
 
-    education: "no",
+    state: ["Uttar Pradesh"],
+
+    category: "any",
+    occupation: "any",
+
+    benefits: [
+      "Interest-free loan up to ₹5 lakh in Phase 1",
+      "100% interest subsidy for four years",
+      "10% margin money subsidy",
+      "Entrepreneurship support and training"
+    ],
 
     maxLoan: "₹5,00,000",
-    interest: "0%",
-    emi: "Interest-free",
-
-    subsidy: "10% Margin Money Subsidy",
-
-    state: ["Uttar Pradesh"],
+    interest: "0% with interest subsidy",
+    emi: "As per approved loan",
 
     documents: [
       "Aadhaar Card",
       "Age Proof",
-      "Education / Training Certificate",
+      "Education Certificate",
       "Project Report",
       "Bank Account Details",
+      "UP Residence Proof"
     ],
 
-    officialSource: "UP MSME",
+    partnerTypes: [
+      "Directorate of Industries / UPMSME",
+      "District Industries Centre (DIC)",
+      "Participating Bank"
+    ],
+
+    officialSource: "UP MSME / UP RAMP",
+
+    sourceUrl:
+      "https://msme1connect.up.gov.in/Home/SchemesList/18"
   },
 
+
+  // =========================================================
+  // 2. PMEGP - BUSINESS / SERVICE
+  // =========================================================
   {
+    id: "pmegp",
+
     name: "Prime Minister's Employment Generation Programme (PMEGP)",
+
     purpose: "business",
 
     minAge: 18,
@@ -46,17 +76,24 @@ const schemes = [
     minEducation: 0,
 
     maxIncome: Infinity,
+
     maxProjectCost: 2000000,
 
-    education: "no",
+    state: ["All India"],
 
-    maxLoan: "₹20,00,000",
+    category: "any",
+    occupation: "any",
+
+    benefits: [
+      "Credit-linked margin money subsidy",
+      "Supports new micro enterprises",
+      "15%–35% subsidy depending on category and location",
+      "Supports manufacturing and business/service projects"
+    ],
+
+    maxLoan: "₹20,00,000 project limit",
     interest: "Bank applicable",
     emi: "As per bank loan",
-
-    subsidy: "15%–35% Margin Money Subsidy",
-
-    state: ["All India"],
 
     documents: [
       "Aadhaar Card",
@@ -64,79 +101,596 @@ const schemes = [
       "Bank Account Details",
       "Project Report",
       "Education Certificate if applicable",
-      "Category Certificate if applicable",
+      "Category Certificate if applicable"
     ],
 
-    officialSource: "Ministry of MSME",
+    partnerTypes: [
+      "KVIC",
+      "KVIB",
+      "District Industries Centre (DIC)",
+      "Participating Bank"
+    ],
+
+    officialSource: "Ministry of MSME / KVIC",
+
+    sourceUrl:
+      "https://common-pmegp.msme.gov.in/"
   },
 
+
+  // =========================================================
+  // 3. PM MUDRA YOJANA
+  // =========================================================
   {
-    name: "PMEGP Manufacturing Enterprise",
+    id: "mudra",
+
+    name: "Pradhan Mantri MUDRA Yojana (PMMY)",
+
     purpose: "business",
 
-    minAge: 18,
+    // FIX: was `null` for both, which made `age <= maxAge` evaluate as
+    // `age <= 0` (always false). Use 0 / Infinity to mean "no restriction".
+    minAge: 0,
     maxAge: Infinity,
 
-    minEducation: 8,
+    minEducation: 0,
 
     maxIncome: Infinity,
-    maxProjectCost: 5000000,
 
-    education: "no",
-
-    maxLoan: "₹50,00,000",
-    interest: "Bank applicable",
-    emi: "As per bank loan",
-
-    subsidy: "15%–35% Margin Money Subsidy",
+    maxProjectCost: 2000000,
 
     state: ["All India"],
+
+    category: "any",
+
+    occupation: [
+      "business",
+      "self-employed",
+      "poultry",
+      "dairy",
+      "beekeeping"
+    ],
+
+    benefits: [
+      "Collateral-free institutional credit",
+      "Shishu loans up to ₹50,000",
+      "Kishor loans above ₹50,000 up to ₹5 lakh",
+      "Tarun loans above ₹5 lakh up to ₹10 lakh",
+      "Tarun Plus up to ₹20 lakh for eligible previous Tarun borrowers"
+    ],
+
+    maxLoan: "Up to ₹20,00,000",
+    interest: "Lender applicable",
+    emi: "As per lender",
 
     documents: [
       "Aadhaar Card",
       "PAN Card",
       "Bank Account Details",
-      "Project Report",
-      "Education Certificate",
-      "Category Certificate if applicable",
+      "Business / Activity Details",
+      "KYC Documents"
     ],
 
-    officialSource: "Ministry of MSME",
+    partnerTypes: [
+      "Public Sector Banks",
+      "Private Sector Banks",
+      "Regional Rural Banks",
+      "Small Finance Banks",
+      "NBFCs",
+      "MFIs"
+    ],
+
+    officialSource: "Department of Financial Services",
+
+    sourceUrl:
+      "https://financialservices.gov.in/pradhan-mantri-mudra-yojana-pmmy"
   },
 
-  {
-    name: "Education Support Scheme",
-    purpose: "education",
 
-    minAge: 16,
-    maxAge: 40,
+  // =========================================================
+  // 4. PM SVANIDHI
+  // =========================================================
+  {
+    id: "svanidhi",
+
+    name: "PM Street Vendor's AtmaNirbhar Nidhi (PM SVANidhi)",
+
+    purpose: "street-vending",
+
+    // FIX: null -> 0 / Infinity (see note on mudra above)
+    minAge: 0,
+    maxAge: Infinity,
 
     minEducation: 0,
 
-    maxIncome: 800000,
-    maxProjectCost: 300000,
+    maxIncome: Infinity,
 
-    education: "yes",
-
-    maxLoan: "₹3,00,000",
-    interest: "As applicable",
-    emi: "As per loan terms",
-
-    subsidy: "Education Assistance",
+    maxProjectCost: 50000,
 
     state: ["All India"],
 
-    documents: [
-      "Aadhaar Card",
-      "Income Certificate",
-      "Bank Account Details",
-      "Education / Admission Proof",
-      "Education Certificate",
+    category: "any",
+
+    occupation: ["street-vendor"],
+
+    benefits: [
+      "Working capital loan up to ₹10,000 initially",
+      "Enhanced loan up to ₹20,000 on repayment",
+      "Enhanced loan up to ₹50,000 in third tranche",
+      "7% interest subsidy for regular repayment",
+      "Digital transaction incentives"
     ],
 
-    officialSource: "Scheme Saathi",
+    maxLoan: "Up to ₹50,000",
+    interest: "7% interest subsidy",
+    emi: "As per loan terms",
+
+    documents: [
+      "Aadhaar Card",
+      "Certificate of Vending / ID Card",
+      "Letter of Recommendation if applicable",
+      "Bank Account Details",
+      "KYC Documents"
+    ],
+
+    partnerTypes: [
+      "Urban Local Body (ULB)",
+      "Town Vending Committee",
+      "Participating Bank / Lending Institution"
+    ],
+
+    officialSource: "Ministry of Housing & Urban Affairs",
+
+    sourceUrl:
+      "https://www.pib.gov.in/Pressreleaseshare.aspx?PRID=1945493"
   },
+
+
+  // =========================================================
+  // 5. PM VISHWAKARMA
+  // =========================================================
+  {
+    id: "vishwakarma",
+
+    name: "PM Vishwakarma",
+
+    purpose: "artisan",
+
+    minAge: 18,
+    maxAge: Infinity,
+
+    minEducation: 0,
+
+    maxIncome: Infinity,
+
+    maxProjectCost: 300000,
+
+    state: ["All India"],
+
+    category: "any",
+
+    occupation: [
+      "carpenter",
+      "boat-maker",
+      "armourer",
+      "blacksmith",
+      "tool-maker",
+      "locksmith",
+      "goldsmith",
+      "potter",
+      "sculptor",
+      "stone-worker",
+      "cobbler",
+      "mason",
+      "basket-maker",
+      "toy-maker",
+      "barber",
+      "garland-maker",
+      "washerman",
+      "tailor",
+      "fishing-net-maker"
+    ],
+
+    benefits: [
+      "PM Vishwakarma Certificate and ID Card",
+      "Basic and advanced skill training",
+      "₹500 per day training stipend",
+      "Toolkit incentive up to ₹15,000",
+      "Collateral-free enterprise development loan up to ₹3 lakh",
+      "5% concessional interest rate",
+      "Digital transaction incentive",
+      "Marketing support"
+    ],
+
+    maxLoan: "Up to ₹3,00,000",
+    interest: "5%",
+    emi: "As per loan tranche",
+
+    documents: [
+      "Aadhaar Card",
+      "Mobile Number",
+      "Bank Account Details",
+      "Trade / Artisan Verification",
+      "PM Vishwakarma Registration"
+    ],
+
+    partnerTypes: [
+      "Common Service Centre (CSC)",
+      "Gram Panchayat / ULB",
+      "District Implementation Committee",
+      "Participating Bank"
+    ],
+
+    officialSource: "Ministry of MSME",
+
+    sourceUrl:
+      "https://www.pib.gov.in/PressReleaseIframePage.aspx?PRID=1959098"
+  },
+
+
+  // =========================================================
+  // 6. PM KISAN
+  // =========================================================
+  {
+    id: "pm-kisan",
+
+    name: "Pradhan Mantri Kisan Samman Nidhi (PM-KISAN)",
+
+    purpose: "agriculture",
+
+    // FIX: null -> 0 / Infinity
+    minAge: 0,
+    maxAge: Infinity,
+
+    minEducation: 0,
+
+    maxIncome: Infinity,
+
+    maxProjectCost: Infinity,
+
+    state: ["All India"],
+
+    category: "any",
+
+    occupation: ["farmer"],
+
+    requiresLandholding: true,
+
+    benefits: [
+      "Income support for eligible landholding farmer families",
+      "Benefit transferred through DBT"
+    ],
+
+    maxLoan: "Not a loan scheme",
+    interest: "Not applicable",
+    emi: "Not applicable",
+
+    documents: [
+      "Aadhaar",
+      "Land Records",
+      "Bank Account Details",
+      "State / UT required documents"
+    ],
+
+    partnerTypes: [
+      "State / UT Agriculture Department",
+      "Local Revenue / Land Records Authorities",
+      "Bank"
+    ],
+
+    officialSource: "PM-KISAN",
+
+    sourceUrl:
+      "https://pmkisan.gov.in/"
+  },
+
+
+  // =========================================================
+  // 7. KISAN CREDIT CARD
+  // =========================================================
+  {
+    id: "kcc",
+
+    name: "Kisan Credit Card (KCC)",
+
+    purpose: "agriculture",
+
+    // FIX: null -> 0 / Infinity
+    minAge: 0,
+    maxAge: Infinity,
+
+    minEducation: 0,
+
+    maxIncome: Infinity,
+
+    maxProjectCost: 300000,
+
+    state: ["All India"],
+
+    category: "any",
+
+    occupation: ["farmer"],
+
+    benefits: [
+      "Credit support for cultivation",
+      "Post-harvest expenses",
+      "Working capital for farm assets",
+      "Agriculture allied activities",
+      "Animal husbandry and fisheries working capital"
+    ],
+
+    maxLoan: "Up to ₹3,00,000 under specified KCC limits",
+    interest: "As per applicable government/bank provisions",
+    emi: "As per bank terms",
+
+    documents: [
+      "Aadhaar / KYC",
+      "Land / Cultivation Documents where applicable",
+      "Bank Account Details",
+      "Farmer / Activity Details"
+    ],
+
+    partnerTypes: [
+      "Public Sector Bank",
+      "Regional Rural Bank",
+      "Cooperative Bank",
+      "Other eligible lending institution"
+    ],
+
+    officialSource: "Department of Financial Services",
+
+    sourceUrl:
+      "https://www.financialservices.gov.in/agriculture-credit"
+  },
+
+
+  // =========================================================
+  // 8. POST MATRIC SCHOLARSHIP - SC
+  // =========================================================
+  {
+    id: "pms-sc",
+
+    name: "Post-Matric Scholarship for SC Students",
+
+    purpose: "education",
+
+    // FIX: null -> 0 / Infinity
+    minAge: 0,
+    maxAge: Infinity,
+
+    minEducation: 10,
+
+    maxIncome: 250000,
+
+    maxProjectCost: Infinity,
+
+    state: ["All India"],
+
+    category: ["SC"],
+
+    occupation: ["student"],
+
+    requiresStudent: true,
+
+    benefits: [
+      "Financial assistance for post-matric/post-secondary education",
+      "Applicable to eligible SC students studying in India"
+    ],
+
+    maxLoan: "Not a loan scheme",
+    interest: "Not applicable",
+    emi: "Not applicable",
+
+    documents: [
+      "Aadhaar",
+      "Caste Certificate",
+      "Income Certificate",
+      "Previous Academic Certificate",
+      "Admission / Institution Details",
+      "Bank Account Details"
+    ],
+
+    partnerTypes: [
+      "State / UT Scholarship Department",
+      "District Social Welfare Office",
+      "National Scholarship Portal"
+    ],
+
+    officialSource:
+      "Department of Social Justice & Empowerment",
+
+    sourceUrl:
+      "https://socialjustice.gov.in/schemes/25"
+  },
+
+
+  // =========================================================
+  // 9. PM-USP CENTRAL SECTOR SCHOLARSHIP
+  // =========================================================
+  {
+    id: "pm-usp-csss",
+
+    name: "PM-USP Central Sector Scheme of Scholarship",
+
+    purpose: "education",
+
+    // FIX: null -> 0 / Infinity
+    minAge: 0,
+    maxAge: Infinity,
+
+    minEducation: 12,
+
+    maxIncome: 450000,
+
+    maxProjectCost: Infinity,
+
+    state: ["All India"],
+
+    category: "any",
+
+    occupation: ["student"],
+
+    requiresStudent: true,
+
+    requires80Percentile: true,
+
+    benefits: [
+      "Merit-cum-means scholarship",
+      "Financial assistance for college and university students",
+      "Scholarship support for day-to-day educational expenses"
+    ],
+
+    maxLoan: "Not a loan scheme",
+    interest: "Not applicable",
+    emi: "Not applicable",
+
+    documents: [
+      "Class XII Certificate / Marks",
+      "Income Certificate",
+      "Aadhaar",
+      "Bank Account Details",
+      "Institution Details"
+    ],
+
+    partnerTypes: [
+      "National Scholarship Portal",
+      "Department of Higher Education",
+      "Participating Educational Institution"
+    ],
+
+    officialSource:
+      "Ministry of Education",
+
+    sourceUrl:
+      "https://www.education.gov.in/sites/upload_files/mhrd/files/upload_document/FAQs_PM_USP_CSSS_scheme_AY_2025_26.pdf"
+  },
+
+
+  // =========================================================
+  // 10. PRE-MATRIC SCHOLARSHIP FOR SC
+  // =========================================================
+  {
+    id: "prematric-sc",
+
+    name: "Pre-Matric Scholarship for SC Students",
+
+    purpose: "education",
+
+    // FIX: null -> 0 / Infinity
+    minAge: 0,
+    maxAge: Infinity,
+
+    minEducation: 8,
+
+    maxIncome: Infinity,
+
+    maxProjectCost: Infinity,
+
+    state: ["All India"],
+
+    category: ["SC"],
+
+    occupation: ["student"],
+
+    requiresStudent: true,
+
+    benefits: [
+      "Educational support for eligible SC students",
+      "Implemented through State Governments and UT administrations"
+    ],
+
+    maxLoan: "Not a loan scheme",
+    interest: "Not applicable",
+    emi: "Not applicable",
+
+    documents: [
+      "Aadhaar",
+      "Caste Certificate",
+      "School Certificate",
+      "Bank Account Details",
+      "Income / Other documents as required"
+    ],
+
+    partnerTypes: [
+      "State / UT Government",
+      "District Social Welfare Department",
+      "School / Institution"
+    ],
+
+    officialSource:
+      "Department of Social Justice & Empowerment",
+
+    sourceUrl:
+      "https://socialjustice.gov.in/schemes/23"
+  }
 ];
+
+// Purposes offered in the form's "purpose" dropdown. Kept in one place so the
+// <select> options and the scoring logic can't drift apart.
+const PURPOSE_OPTIONS = [
+  { value: "business", label: "Start / Expand a Business" },
+  { value: "education", label: "Education" },
+  { value: "street-vending", label: "Street Vending" },
+  { value: "artisan", label: "Artisan / Traditional Trade" },
+  { value: "agriculture", label: "Agriculture / Farming" }
+];
+
+const CATEGORY_OPTIONS = ["General", "OBC", "SC", "ST", "EWS", "Other"];
+
+const OCCUPATION_OPTIONS = [
+  { value: "business", label: "Business Owner" },
+  { value: "self-employed", label: "Self-Employed" },
+  { value: "farmer", label: "Farmer" },
+  { value: "street-vendor", label: "Street Vendor" },
+  { value: "artisan", label: "Artisan / Traditional Trade Worker" },
+  { value: "student", label: "Student" },
+  { value: "other", label: "Other" }
+];
+
+// Highest education level completed, mapped to the numeric `minEducation`
+// values used on the scheme objects (years of schooling).
+const EDUCATION_LEVEL_OPTIONS = [
+  { value: "0", label: "Below 8th Standard" },
+  { value: "8", label: "8th Pass" },
+  { value: "10", label: "10th Pass" },
+  { value: "12", label: "12th Pass" },
+  { value: "15", label: "Graduate or Above" }
+];
+
+// Does this scheme's occupation requirement match the user's occupation?
+function occupationMatches(scheme, formData) {
+  if (scheme.occupation === "any") return true;
+  if (!Array.isArray(scheme.occupation)) return false;
+
+  if (scheme.occupation.includes(formData.occupation)) return true;
+
+  // PM Vishwakarma lists specific trades (carpenter, blacksmith, etc.)
+  // rather than a generic "artisan" tag - treat the form's broad
+  // "artisan / traditional trade worker" option as a match for it.
+  if (formData.occupation === "artisan" && scheme.id === "vishwakarma") {
+    return true;
+  }
+
+  return false;
+}
+
+// Does the user satisfy any special eligibility flags this scheme carries
+// (student status, landholding, minimum percentile)?
+function specialFlagsSatisfied(scheme, formData) {
+  if (scheme.requiresStudent && !formData.isStudent) return false;
+  if (scheme.requiresLandholding && !formData.ownsLand) return false;
+  if (scheme.requires80Percentile) {
+    const percentile = Number(formData.percentile);
+    if (!percentile || percentile < 80) return false;
+  }
+  return true;
+}
+
+function categoryMatches(scheme, formData) {
+  if (scheme.category === "any") return true;
+  if (!Array.isArray(scheme.category)) return false;
+  return scheme.category.includes(formData.category);
+}
 
 function App() {
   const [showForm, setShowForm] = useState(false);
@@ -148,27 +702,30 @@ function App() {
     age: "",
     income: "",
     projectCost: "",
-    education: "",
+    educationLevel: "",
+    category: "",
+    occupation: "",
+    isStudent: false,
+    ownsLand: false,
+    percentile: "",
     state: "",
     district: "",
   });
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
+    const nextValue = type === "checkbox" ? checked : value;
 
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-
-    // If state changes, reset district
-    if (name === "state") {
-      setFormData({
-        ...formData,
-        state: value,
-        district: "",
-      });
-    }
+    // FIX: use the functional update form so we never overwrite a change
+    // based on stale `formData` from an earlier render. This also fixes the
+    // old bug where `state` changes were briefly written twice with the
+    // same (correct, but fragile) result.
+    setFormData((prev) => ({
+      ...prev,
+      [name]: nextValue,
+      // Reset district whenever state changes
+      ...(name === "state" ? { district: "" } : {}),
+    }));
   };
 
   const handleSubmit = (e) => {
@@ -177,45 +734,55 @@ function App() {
     const age = Number(formData.age);
     const income = Number(formData.income);
     const projectCost = Number(formData.projectCost);
+    const educationLevel = Number(formData.educationLevel);
 
     const matchedSchemes = schemes.map((scheme) => {
       let score = 0;
 
-      // ---------------- PURPOSE ----------------
+      // ---------------- PURPOSE (25 pts) ----------------
       if (scheme.purpose === formData.purpose) {
-        score += 30;
+        score += 25;
       }
 
-      // ---------------- AGE ----------------
-      if (
-        age >= scheme.minAge &&
-        age <= scheme.maxAge
-      ) {
-        score += 20;
+      // ---------------- AGE (15 pts) ----------------
+      if (age >= scheme.minAge && age <= scheme.maxAge) {
+        score += 15;
       }
 
-      // ---------------- INCOME ----------------
+      // ---------------- INCOME (10 pts) ----------------
       if (income <= scheme.maxIncome) {
-        score += 15;
+        score += 10;
       }
 
-      // ---------------- PROJECT COST ----------------
+      // ---------------- PROJECT COST (10 pts) ----------------
       if (projectCost <= scheme.maxProjectCost) {
-        score += 15;
+        score += 10;
       }
 
-      // ---------------- EDUCATION ----------------
+      // ---------------- EDUCATION (10 pts) ----------------
+      // FIX: schemes store `minEducation` (a number of years), not
+      // `education`. Compare against the numeric level the user picked.
+      if (educationLevel >= scheme.minEducation) {
+        score += 10;
+      }
+
+      // ---------------- STATE (10 pts) ----------------
       if (
-        scheme.education === "no" ||
-        scheme.education === formData.education
+        scheme.state.includes("All India") ||
+        scheme.state.includes(formData.state)
       ) {
         score += 10;
       }
 
-      // ---------------- STATE ----------------
+      // ---------------- CATEGORY (10 pts) ----------------
+      if (categoryMatches(scheme, formData)) {
+        score += 10;
+      }
+
+      // ---------------- OCCUPATION + SPECIAL FLAGS (10 pts) ----------------
       if (
-        scheme.state.includes("All India") ||
-        scheme.state.includes(formData.state)
+        occupationMatches(scheme, formData) &&
+        specialFlagsSatisfied(scheme, formData)
       ) {
         score += 10;
       }
@@ -228,9 +795,6 @@ function App() {
 
     matchedSchemes.sort((a, b) => b.match - a.match);
 
-    console.log("Form Data:", formData);
-    console.log("Matched Schemes:", matchedSchemes);
-
     setRecommendedScheme(matchedSchemes[0]);
     setShowResult(true);
   };
@@ -238,6 +802,8 @@ function App() {
   // ================= RESULT PAGE =================
 
   if (showResult) {
+    const educationLevel = Number(formData.educationLevel);
+
     return (
       <div className="form-page">
 
@@ -347,7 +913,7 @@ function App() {
                   <div>
 
                     {recommendedScheme.purpose ===
-                    formData.purpose
+                      formData.purpose
                       ? "✓ Purpose eligibility"
                       : "✗ Purpose does not match"}
 
@@ -355,22 +921,17 @@ function App() {
 
 
                   {/* Age */}
+                  {/* FIX: this used to be a stray editable <input> instead
+                      of an eligibility readout like every other field. */}
 
                   <div>
 
-                    {Number(formData.age) >=
-                      recommendedScheme.minAge &&
-                    Number(formData.age) <=
-                      recommendedScheme.maxAge
+                    {Number(formData.age) >= recommendedScheme.minAge &&
+                      Number(formData.age) <= recommendedScheme.maxAge
 
                       ? "✓ Age eligibility"
 
-                      : `✗ Age requirement: ${recommendedScheme.minAge}–${
-                          recommendedScheme.maxAge === Infinity
-                            ? "Above"
-                            : recommendedScheme.maxAge
-                        } years`
-                    }
+                      : "✗ Age outside eligible range"}
 
                   </div>
 
@@ -380,7 +941,7 @@ function App() {
                   <div>
 
                     {Number(formData.income) <=
-                    recommendedScheme.maxIncome
+                      recommendedScheme.maxIncome
 
                       ? "✓ Income eligibility"
 
@@ -394,7 +955,7 @@ function App() {
                   <div>
 
                     {Number(formData.projectCost) <=
-                    recommendedScheme.maxProjectCost
+                      recommendedScheme.maxProjectCost
 
                       ? "✓ Project cost suitable"
 
@@ -407,9 +968,7 @@ function App() {
 
                   <div>
 
-                    {recommendedScheme.education === "no" ||
-                    recommendedScheme.education ===
-                      formData.education
+                    {educationLevel >= recommendedScheme.minEducation
 
                       ? "✓ Education eligibility"
 
@@ -425,13 +984,40 @@ function App() {
                     {recommendedScheme.state.includes(
                       "All India"
                     ) ||
-                    recommendedScheme.state.includes(
-                      formData.state
-                    )
+                      recommendedScheme.state.includes(
+                        formData.state
+                      )
 
                       ? "✓ Location eligibility"
 
                       : "✗ Location not covered"}
+
+                  </div>
+
+
+                  {/* Category */}
+
+                  <div>
+
+                    {categoryMatches(recommendedScheme, formData)
+
+                      ? "✓ Category eligibility"
+
+                      : "✗ Category requirement not satisfied"}
+
+                  </div>
+
+
+                  {/* Occupation / special eligibility */}
+
+                  <div>
+
+                    {occupationMatches(recommendedScheme, formData) &&
+                      specialFlagsSatisfied(recommendedScheme, formData)
+
+                      ? "✓ Occupation / special eligibility"
+
+                      : "✗ Occupation or special eligibility not satisfied"}
 
                   </div>
 
@@ -491,7 +1077,9 @@ function App() {
               </div>
 
 
-              {/* SUBSIDY */}
+              {/* SUBSIDY / BENEFITS */}
+              {/* FIX: schemes never had a `subsidy` string field - only a
+                  `benefits` array. Render that instead of a blank field. */}
 
               <div className="result-section">
 
@@ -499,9 +1087,13 @@ function App() {
                   💰 Financial Benefit
                 </h3>
 
-                <p>
-                  {recommendedScheme.subsidy}
-                </p>
+                <ul className="documents-list">
+
+                  {recommendedScheme.benefits.map((benefit, index) => (
+                    <li key={index}>{benefit}</li>
+                  ))}
+
+                </ul>
 
               </div>
 
@@ -658,13 +1250,11 @@ function App() {
                   Select purpose
                 </option>
 
-                <option value="business">
-                  Start / Expand a Business
-                </option>
-
-                <option value="education">
-                  Education
-                </option>
+                {PURPOSE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
 
               </select>
 
@@ -746,17 +1336,20 @@ function App() {
             </div>
 
 
-            {/* EDUCATION */}
+            {/* EDUCATION LEVEL */}
+            {/* FIX: was a yes/no "currently pursuing education" question that
+                could never line up with a scheme's numeric `minEducation`.
+                Now asks for highest level completed instead. */}
 
             <div className="form-group">
 
               <label>
-                Are you currently pursuing education?
+                Highest Education Level Completed
               </label>
 
               <select
-                name="education"
-                value={formData.education}
+                name="educationLevel"
+                value={formData.educationLevel}
                 onChange={handleChange}
                 required
               >
@@ -765,15 +1358,134 @@ function App() {
                   Select option
                 </option>
 
-                <option value="yes">
-                  Yes
-                </option>
-
-                <option value="no">
-                  No
-                </option>
+                {EDUCATION_LEVEL_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
 
               </select>
+
+            </div>
+
+
+            {/* CATEGORY */}
+
+            <div className="form-group">
+
+              <label>
+                Category
+              </label>
+
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                required
+              >
+
+                <option value="">
+                  Select category
+                </option>
+
+                {CATEGORY_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+
+              </select>
+
+            </div>
+
+
+            {/* OCCUPATION */}
+
+            <div className="form-group">
+
+              <label>
+                Occupation
+              </label>
+
+              <select
+                name="occupation"
+                value={formData.occupation}
+                onChange={handleChange}
+                required
+              >
+
+                <option value="">
+                  Select occupation
+                </option>
+
+                {OCCUPATION_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+
+              </select>
+
+            </div>
+
+
+            {/* STUDENT STATUS */}
+
+            <div className="form-group">
+
+              <label>
+                <input
+                  type="checkbox"
+                  name="isStudent"
+                  checked={formData.isStudent}
+                  onChange={handleChange}
+                  style={{ marginRight: "8px" }}
+                />
+                I am currently a student
+              </label>
+
+            </div>
+
+
+            {/* PERCENTILE - only relevant once "student" is checked */}
+
+            {formData.isStudent && (
+
+              <div className="form-group">
+
+                <label>
+                  Your Last Exam Percentile (if applicable)
+                </label>
+
+                <input
+                  type="number"
+                  name="percentile"
+                  placeholder="e.g. 85"
+                  value={formData.percentile}
+                  onChange={handleChange}
+                  min="0"
+                  max="100"
+                />
+
+              </div>
+
+            )}
+
+
+            {/* LANDHOLDING */}
+
+            <div className="form-group">
+
+              <label>
+                <input
+                  type="checkbox"
+                  name="ownsLand"
+                  checked={formData.ownsLand}
+                  onChange={handleChange}
+                  style={{ marginRight: "8px" }}
+                />
+                My family owns agricultural land
+              </label>
 
             </div>
 

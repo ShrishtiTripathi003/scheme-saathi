@@ -1,1262 +1,1936 @@
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  ArrowRight,
+  Banknote,
+  Building2,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  ExternalLink,
+  FileText,
+  Globe,
+  GraduationCap,
+  Hammer,
+  Landmark,
+  MapPin,
+  Sparkles,
+  Store,
+  Users,
+  Wallet,
+  Wheat,
+  XCircle,
+} from "lucide-react";
+
+import {
+  ALL_STATES,
+  CATEGORY_OPTIONS,
+  districts,
+  EDUCATION_LEVELS,
+  getMatchedSchemes,
+  OCCUPATION_OPTIONS,
+  PROJECT_TYPE_OPTIONS,
+  PURPOSE_OPTIONS,
+} from "./schemes";
+
 import "./App.css";
-import { useState } from "react";
-import { districts } from "./districts";
 
-const schemes = [
-  {
-    name: "Mukhyamantri Yuva Udyami Vikas Abhiyan (CM-YUVA)",
-    purpose: "business",
+/* ============================================================
+   TRANSLATION
+   ============================================================ */
 
-    minAge: 21,
-    maxAge: 40,
+const STR = {
 
-    minEducation: 8,
-
-    maxIncome: Infinity,
-    maxProjectCost: 500000,
-
-    education: "no",
-
-    maxLoan: "₹5,00,000",
-    interest: "0%",
-    emi: "Interest-free",
-
-    subsidy: "10% Margin Money Subsidy",
-
-    state: ["Uttar Pradesh"],
-
-    documents: [
-      "Aadhaar Card",
-      "Age Proof",
-      "Education / Training Certificate",
-      "Project Report",
-      "Bank Account Details",
-    ],
-
-    officialSource: "UP MSME",
+  navTag: {
+    en: "Your path to the right scheme",
+    hi: "सही योजना तक आपका रास्ता",
   },
 
-  {
-    name: "Prime Minister's Employment Generation Programme (PMEGP)",
-    purpose: "business",
-
-    minAge: 18,
-    maxAge: Infinity,
-
-    minEducation: 0,
-
-    maxIncome: Infinity,
-    maxProjectCost: 2000000,
-
-    education: "no",
-
-    maxLoan: "₹20,00,000",
-    interest: "Bank applicable",
-    emi: "As per bank loan",
-
-    subsidy: "15%–35% Margin Money Subsidy",
-
-    state: ["All India"],
-
-    documents: [
-      "Aadhaar Card",
-      "PAN Card",
-      "Bank Account Details",
-      "Project Report",
-      "Education Certificate if applicable",
-      "Category Certificate if applicable",
-    ],
-
-    officialSource: "Ministry of MSME",
+  langBtn: {
+    en: "हिन्दी",
+    hi: "English",
   },
 
-  {
-    name: "PMEGP Manufacturing Enterprise",
-    purpose: "business",
-
-    minAge: 18,
-    maxAge: Infinity,
-
-    minEducation: 8,
-
-    maxIncome: Infinity,
-    maxProjectCost: 5000000,
-
-    education: "no",
-
-    maxLoan: "₹50,00,000",
-    interest: "Bank applicable",
-    emi: "As per bank loan",
-
-    subsidy: "15%–35% Margin Money Subsidy",
-
-    state: ["All India"],
-
-    documents: [
-      "Aadhaar Card",
-      "PAN Card",
-      "Bank Account Details",
-      "Project Report",
-      "Education Certificate",
-      "Category Certificate if applicable",
-    ],
-
-    officialSource: "Ministry of MSME",
+  heroKicker: {
+    en: "Government Scheme Assistance",
+    hi: "सरकारी योजना सहायता",
   },
 
-  {
-    name: "Education Support Scheme",
-    purpose: "education",
-
-    minAge: 16,
-    maxAge: 40,
-
-    minEducation: 0,
-
-    maxIncome: 800000,
-    maxProjectCost: 300000,
-
-    education: "yes",
-
-    maxLoan: "₹3,00,000",
-    interest: "As applicable",
-    emi: "As per loan terms",
-
-    subsidy: "Education Assistance",
-
-    state: ["All India"],
-
-    documents: [
-      "Aadhaar Card",
-      "Income Certificate",
-      "Bank Account Details",
-      "Education / Admission Proof",
-      "Education Certificate",
-    ],
-
-    officialSource: "Scheme Saathi",
+  heroTitle1: {
+    en: "Find the right",
+    hi: "अपने लिए सही",
   },
-];
 
-function App() {
-  const [showForm, setShowForm] = useState(false);
-  const [showResult, setShowResult] = useState(false);
-  const [recommendedScheme, setRecommendedScheme] = useState(null);
+  heroTitle2: {
+    en: "government scheme",
+    hi: "सरकारी योजना",
+  },
+
+  heroTitle3: {
+    en: "for you",
+    hi: "खोजें",
+  },
+
+  heroText: {
+    en: "Answer a short form and get matched schemes, benefit details, documents, and where to apply.",
+    hi: "एक छोटा फ़ॉर्म भरें और अपनी जानकारी के अनुसार योजनाएं, लाभ, दस्तावेज़ और आवेदन की जानकारी पाएं।",
+  },
+
+  ctaStart: {
+    en: "Find my scheme",
+    hi: "मेरी योजना खोजें",
+  },
+
+  smallTag: {
+    en: "Independent guide · Not an official portal",
+    hi: "स्वतंत्र मार्गदर्शक · आधिकारिक पोर्टल नहीं",
+  },
+
+  feat1h: {
+    en: "Matched to you",
+    hi: "आपके अनुसार मिलान",
+  },
+
+  feat1t: {
+    en: "We compare your purpose, age, income, education, category, occupation and location.",
+    hi: "हम उद्देश्य, आयु, आय, शिक्षा, श्रेणी, व्यवसाय और स्थान की तुलना करते हैं।",
+  },
+
+  feat2h: {
+    en: "Money, made clear",
+    hi: "स्पष्ट वित्तीय जानकारी",
+  },
+
+  feat2t: {
+    en: "See loan limits, interest, subsidies and repayment information in one place.",
+    hi: "ऋण सीमा, ब्याज, सब्सिडी और भुगतान की जानकारी एक ही जगह देखें।",
+  },
+
+  feat3h: {
+    en: "Papers & partners",
+    hi: "दस्तावेज़ व सहभागी",
+  },
+
+  feat3t: {
+    en: "Know the documents and the type of office or institution that handles the scheme.",
+    hi: "ज़रूरी दस्तावेज़ और आवेदन संभालने वाले कार्यालय या संस्थान की जानकारी पाएं।",
+  },
+
+  formBack: {
+    en: "Back",
+    hi: "वापस",
+  },
+
+  formBadge: {
+    en: "Smart scheme matching",
+    hi: "स्मार्ट योजना मिलान",
+  },
+
+  formTitle: {
+    en: "Application form",
+    hi: "आवेदन पत्र",
+  },
+
+  formSub: {
+    en: "Fill in your details and we will rank schemes based on your answers.",
+    hi: "अपनी जानकारी भरें और हम आपके उत्तरों के आधार पर योजनाओं को क्रमबद्ध करेंगे।",
+  },
+
+  partA: {
+    en: "Part A — What you need",
+    hi: "भाग अ — आपको किस चीज़ की जरूरत है",
+  },
+
+  partB: {
+    en: "Part B — Your details",
+    hi: "भाग ब — आपकी जानकारी",
+  },
+
+  partC: {
+    en: "Part C — Special conditions",
+    hi: "भाग स — विशेष शर्तें",
+  },
+
+  partD: {
+    en: "Part D — Location",
+    hi: "भाग द — स्थान",
+  },
+
+  purposeQ: {
+    en: "What do you need help with?",
+    hi: "आपको किस चीज़ में मदद चाहिए?",
+  },
+
+  category: {
+    en: "Category",
+    hi: "श्रेणी",
+  },
+
+  occupation: {
+    en: "Occupation",
+    hi: "व्यवसाय",
+  },
+
+  age: {
+    en: "Age",
+    hi: "आयु",
+  },
+
+  income: {
+    en: "Annual family income",
+    hi: "वार्षिक पारिवारिक आय",
+  },
+
+  projectCost: {
+    en: "Estimated project / education cost",
+    hi: "अनुमानित परियोजना / शिक्षा लागत",
+  },
+
+  projectType: {
+    en: "Project type",
+    hi: "परियोजना का प्रकार",
+  },
+
+  education: {
+    en: "Highest education completed",
+    hi: "पूर्ण की गई उच्चतम शिक्षा",
+  },
+
+  isStudent: {
+    en: "I am currently a student",
+    hi: "मैं वर्तमान में छात्र हूँ",
+  },
+
+  percentile: {
+    en: "Last exam percentile",
+    hi: "पिछली परीक्षा का प्रतिशत",
+  },
+
+  ownsLand: {
+    en: "My family owns agricultural land",
+    hi: "मेरे परिवार के पास कृषि भूमि है",
+  },
+
+  state: {
+    en: "State / union territory",
+    hi: "राज्य / केंद्र शासित प्रदेश",
+  },
+
+  district: {
+    en: "District",
+    hi: "ज़िला",
+  },
+
+  selectDistrict: {
+    en: "Select district",
+    hi: "ज़िला चुनें",
+  },
+
+  selectState: {
+    en: "Select state first",
+    hi: "पहले राज्य चुनें",
+  },
+
+  submit: {
+    en: "Find my scheme",
+    hi: "मेरी योजना खोजें",
+  },
+
+  resultsBack: {
+    en: "Back to form",
+    hi: "फ़ॉर्म पर वापस जाएं",
+  },
+
+  resultsTitle: {
+    en: "Your matched schemes",
+    hi: "आपकी मिलान योजनाएं",
+  },
+
+  resultsSub: {
+    en: "Eligible schemes are shown first, followed by other potentially relevant schemes.",
+    hi: "पात्र योजनाएं पहले दिखाई जाती हैं, उसके बाद अन्य संभावित योजनाएं।",
+  },
+
+  bestMatch: {
+    en: "Best match",
+    hi: "सर्वश्रेष्ठ मिलान",
+  },
+
+  likelyEligible: {
+    en: "Likely eligible",
+    hi: "संभावित रूप से पात्र",
+  },
+
+  conditionsMissing: {
+    en: "Some conditions are not met",
+    hi: "कुछ शर्तें पूरी नहीं हुईं",
+  },
+
+  eligibilityBreakdown: {
+    en: "Eligibility breakdown",
+    hi: "पात्रता विवरण",
+  },
+
+  whyMatch: {
+    en: "Why this matches you",
+    hi: "यह योजना आपके लिए क्यों उपयुक्त है",
+  },
+
+  maxLoan: {
+    en: "Maximum benefit / loan",
+    hi: "अधिकतम लाभ / ऋण",
+  },
+
+  interestRate: {
+    en: "Interest / subsidy",
+    hi: "ब्याज / सब्सिडी",
+  },
+
+  repayment: {
+    en: "Repayment",
+    hi: "भुगतान",
+  },
+
+  benefitsH: {
+    en: "What you get",
+    hi: "आपको क्या मिलेगा",
+  },
+
+  documentsH: {
+    en: "Documents you'll need",
+    hi: "ज़रूरी दस्तावेज़",
+  },
+
+  partnersH: {
+    en: "Where to apply",
+    hi: "कहाँ आवेदन करें",
+  },
+
+  officialLink: {
+    en: "Open official source",
+    hi: "आधिकारिक स्रोत खोलें",
+  },
+
+  otherMatches: {
+    en: "Other schemes worth a look",
+    hi: "अन्य उपयुक्त योजनाएं",
+  },
+
+  viewDetails: {
+    en: "View details",
+    hi: "विवरण देखें",
+  },
+
+  prototypeNotice: {
+    en: "Prototype coverage: district options currently include selected districts.",
+    hi: "प्रोटोटाइप कवरेज: अभी कुछ चुनिंदा ज़िलों के विकल्प उपलब्ध हैं।",
+  },
+
+  disclaimer: {
+    en: "Scheme Saathi is an independent guide, not a government website. Match scores are estimates and do not constitute official eligibility. Always confirm the latest eligibility, documents and application process on the official source before applying.",
+    hi: "स्कीम साथी एक स्वतंत्र मार्गदर्शक है, कोई सरकारी वेबसाइट नहीं। मिलान स्कोर अनुमानित हैं और आधिकारिक पात्रता नहीं माने जाते। आवेदन से पहले आधिकारिक स्रोत पर नवीनतम पात्रता, दस्तावेज़ और आवेदन प्रक्रिया अवश्य जांचें।",
+  },
+};
+
+function t(key, lang) {
+  return STR[key]?.[lang] || key;
+}
+
+/* ============================================================
+   SEAL
+   ============================================================ */
+
+function describeFullCircle(cx, cy, r) {
+  return `
+    M ${cx + r},${cy}
+    A ${r},${r} 0 1,1 ${cx - r},${cy}
+    A ${r},${r} 0 1,1 ${cx + r},${cy}
+  `;
+}
+
+function StampSeal({
+  percent,
+  size = 120,
+  animate = true,
+}) {
+  const rawId = useId();
+
+  const pathId = `seal-${rawId.replace(/[:]/g, "")}`;
+
+  const cx = size / 2;
+  const cy = size / 2;
+  const r = size / 2 - size * 0.16;
+
+  return (
+    <svg
+      viewBox={`0 0 ${size} ${size}`}
+      width={size}
+      height={size}
+      className={
+        animate
+          ? "ss-stamp ss-stamp-animate"
+          : "ss-stamp"
+      }
+      role="img"
+      aria-label={`${percent}% match`}
+    >
+      <defs>
+        <path
+          id={pathId}
+          d={describeFullCircle(cx, cy, r)}
+          fill="none"
+        />
+      </defs>
+
+      <circle
+        cx={cx}
+        cy={cy}
+        r={r}
+        fill="none"
+        stroke="var(--stamp)"
+        strokeWidth={size * 0.028}
+      />
+
+      <circle
+        cx={cx}
+        cy={cy}
+        r={r - size * 0.075}
+        fill="none"
+        stroke="var(--stamp)"
+        strokeWidth={size * 0.012}
+        strokeDasharray={`${size * 0.02} ${size * 0.028}`}
+      />
+
+      <text
+        fill="var(--stamp)"
+        fontFamily="var(--font-mono)"
+        fontSize={size * 0.072}
+        letterSpacing="2"
+      >
+        <textPath
+          href={`#${pathId}`}
+          startOffset="1%"
+        >
+          SCHEME SAATHI • MATCH • SCHEME SAATHI • MATCH •
+        </textPath>
+      </text>
+
+      <text
+        x={cx}
+        y={cy + size * 0.02}
+        textAnchor="middle"
+        fontFamily="var(--font-display)"
+        fontWeight="700"
+        fontSize={size * 0.26}
+        fill="var(--stamp)"
+      >
+        {percent}%
+      </text>
+
+      <text
+        x={cx}
+        y={cy + size * 0.155}
+        textAnchor="middle"
+        fontFamily="var(--font-mono)"
+        fontSize={size * 0.065}
+        letterSpacing="3"
+        fill="var(--stamp)"
+      >
+        MATCH
+      </text>
+    </svg>
+  );
+}
+
+/* ============================================================
+   CHECK ROW
+   ============================================================ */
+
+function CheckRow({
+  ok,
+  children,
+}) {
+  return (
+    <div className="ss-check-row">
+      {ok ? (
+        <CheckCircle2
+          size={17}
+          className="ss-icon-ok"
+        />
+      ) : (
+        <XCircle
+          size={17}
+          className="ss-icon-no"
+        />
+      )}
+
+      <span className={!ok ? "ss-text-muted" : ""}>
+        {children}
+      </span>
+    </div>
+  );
+}
+
+function Perforation() {
+  return (
+    <div
+      className="ss-perforation"
+      aria-hidden="true"
+    />
+  );
+}
+
+/* ============================================================
+   APP
+   ============================================================ */
+
+export default function App() {
+
+  const [lang, setLang] = useState("en");
+
+  const [view, setView] = useState("home");
+
+  const [results, setResults] = useState([]);
+
+  const [activeResultId, setActiveResultId] =
+    useState(null);
 
   const [formData, setFormData] = useState({
     purpose: "",
     age: "",
     income: "",
     projectCost: "",
-    education: "",
+    educationLevel: "",
+    category: "",
+    occupation: "",
+    projectType: "",
+    isStudent: false,
+    ownsLand: false,
+    percentile: "",
     state: "",
     district: "",
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  useEffect(() => {
+    const id = "ss-fonts-link";
 
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    if (!document.getElementById(id)) {
+      const link = document.createElement("link");
 
-    // If state changes, reset district
-    if (name === "state") {
-      setFormData({
-        ...formData,
-        state: value,
-        district: "",
-      });
+      link.id = id;
+      link.rel = "stylesheet";
+      link.href =
+        "https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap";
+
+      document.head.appendChild(link);
     }
+  }, []);
+
+  const handleChange = (e) => {
+
+    const {
+      name,
+      value,
+      type,
+      checked,
+    } = e.target;
+
+    const nextValue =
+      type === "checkbox"
+        ? checked
+        : value;
+
+    setFormData((previous) => ({
+      ...previous,
+
+      [name]: nextValue,
+
+      ...(name === "state"
+        ? { district: "" }
+        : {}),
+
+      ...(name === "purpose" &&
+      value !== "business"
+        ? { projectType: "" }
+        : {}),
+    }));
   };
 
   const handleSubmit = (e) => {
+
     e.preventDefault();
 
-    const age = Number(formData.age);
-    const income = Number(formData.income);
-    const projectCost = Number(formData.projectCost);
+    const matched =
+      getMatchedSchemes(formData);
 
-    const matchedSchemes = schemes.map((scheme) => {
-      let score = 0;
+    setResults(matched);
 
-      // ---------------- PURPOSE ----------------
-      if (scheme.purpose === formData.purpose) {
-        score += 30;
-      }
+    setActiveResultId(
+      matched[0]?.id || null
+    );
 
-      // ---------------- AGE ----------------
-      if (
-        age >= scheme.minAge &&
-        age <= scheme.maxAge
-      ) {
-        score += 20;
-      }
+    setView("results");
 
-      // ---------------- INCOME ----------------
-      if (income <= scheme.maxIncome) {
-        score += 15;
-      }
-
-      // ---------------- PROJECT COST ----------------
-      if (projectCost <= scheme.maxProjectCost) {
-        score += 15;
-      }
-
-      // ---------------- EDUCATION ----------------
-      if (
-        scheme.education === "no" ||
-        scheme.education === formData.education
-      ) {
-        score += 10;
-      }
-
-      // ---------------- STATE ----------------
-      if (
-        scheme.state.includes("All India") ||
-        scheme.state.includes(formData.state)
-      ) {
-        score += 10;
-      }
-
-      return {
-        ...scheme,
-        match: Math.min(score, 100),
-      };
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
     });
-
-    matchedSchemes.sort((a, b) => b.match - a.match);
-
-    console.log("Form Data:", formData);
-    console.log("Matched Schemes:", matchedSchemes);
-
-    setRecommendedScheme(matchedSchemes[0]);
-    setShowResult(true);
   };
 
-  // ================= RESULT PAGE =================
-
-  if (showResult) {
-    return (
-      <div className="form-page">
-
-        <nav className="navbar">
-
-          <div className="logo">
-
-            <span>🤝</span>
-
-            <div>
-              <h2>Scheme Saathi</h2>
-              <p>Your path to the right scheme</p>
-            </div>
-
-          </div>
-
-        </nav>
-
-
-        <div className="result-container">
-
-          <button
-            className="back-btn"
-            onClick={() => setShowResult(false)}
-          >
-            ← Back to Form
-          </button>
-
-
-          <div className="form-header">
-
-            <div className="form-badge">
-              🎯 Smart Scheme Matching
-            </div>
-
-            <h1>Your Recommended Scheme</h1>
-
-            <p>
-              Based on the information you provided,
-              we found a suitable scheme for you.
-            </p>
-
-          </div>
-
-
-          {recommendedScheme && (
-
-            <div className="scheme-result-card">
-
-              {/* TOP SECTION */}
-
-              <div className="result-top">
-
-                <div>
-
-                  <span className="best-match">
-                    🎯 Best Match
-                  </span>
-
-                  <h2>
-                    {recommendedScheme.name}
-                  </h2>
-
-                  <p>
-                    A suitable scheme based on your
-                    purpose, income and project
-                    requirements.
-                  </p>
-
-                </div>
-
-
-                <div className="match-score">
-
-                  <strong>
-                    {recommendedScheme.match}%
-                  </strong>
-
-                  <span>
-                    Match
-                  </span>
-
-                </div>
-
-              </div>
-
-
-              {/* ELIGIBILITY */}
-
-              <div className="result-section">
-
-                <h3>
-                  ✓ Why you're eligible
-                </h3>
-
-                <p>
-                  Your information was compared
-                  with the eligibility criteria of
-                  this scheme.
-                </p>
-
-
-                <div className="eligibility-list">
-
-                  {/* Purpose */}
-
-                  <div>
-
-                    {recommendedScheme.purpose ===
-                    formData.purpose
-                      ? "✓ Purpose eligibility"
-                      : "✗ Purpose does not match"}
-
-                  </div>
-
-
-                  {/* Age */}
-
-                  <div>
-
-                    {Number(formData.age) >=
-                      recommendedScheme.minAge &&
-                    Number(formData.age) <=
-                      recommendedScheme.maxAge
-
-                      ? "✓ Age eligibility"
-
-                      : `✗ Age requirement: ${recommendedScheme.minAge}–${
-                          recommendedScheme.maxAge === Infinity
-                            ? "Above"
-                            : recommendedScheme.maxAge
-                        } years`
-                    }
-
-                  </div>
-
-
-                  {/* Income */}
-
-                  <div>
-
-                    {Number(formData.income) <=
-                    recommendedScheme.maxIncome
-
-                      ? "✓ Income eligibility"
-
-                      : "✗ Income exceeds eligibility limit"}
-
-                  </div>
-
-
-                  {/* Project Cost */}
-
-                  <div>
-
-                    {Number(formData.projectCost) <=
-                    recommendedScheme.maxProjectCost
-
-                      ? "✓ Project cost suitable"
-
-                      : "✗ Project cost exceeds limit"}
-
-                  </div>
-
-
-                  {/* Education */}
-
-                  <div>
-
-                    {recommendedScheme.education === "no" ||
-                    recommendedScheme.education ===
-                      formData.education
-
-                      ? "✓ Education eligibility"
-
-                      : "✗ Education requirement not satisfied"}
-
-                  </div>
-
-
-                  {/* State */}
-
-                  <div>
-
-                    {recommendedScheme.state.includes(
-                      "All India"
-                    ) ||
-                    recommendedScheme.state.includes(
-                      formData.state
-                    )
-
-                      ? "✓ Location eligibility"
-
-                      : "✗ Location not covered"}
-
-                  </div>
-
-                </div>
-
-              </div>
-
-
-              {/* SCHEME DETAILS */}
-
-              <div className="scheme-details">
-
-                <div className="detail-box">
-
-                  <span>💰</span>
-
-                  <small>
-                    Maximum Loan
-                  </small>
-
-                  <strong>
-                    {recommendedScheme.maxLoan}
-                  </strong>
-
-                </div>
-
-
-                <div className="detail-box">
-
-                  <span>📊</span>
-
-                  <small>
-                    Interest Rate
-                  </small>
-
-                  <strong>
-                    {recommendedScheme.interest}
-                  </strong>
-
-                </div>
-
-
-                <div className="detail-box">
-
-                  <span>💳</span>
-
-                  <small>
-                    Estimated EMI
-                  </small>
-
-                  <strong>
-                    {recommendedScheme.emi}
-                  </strong>
-
-                </div>
-
-              </div>
-
-
-              {/* SUBSIDY */}
-
-              <div className="result-section">
-
-                <h3>
-                  💰 Financial Benefit
-                </h3>
-
-                <p>
-                  {recommendedScheme.subsidy}
-                </p>
-
-              </div>
-
-
-              {/* DOCUMENTS */}
-
-              <div className="result-section">
-
-                <h3>
-                  📄 Required Documents
-                </h3>
-
-                <ul className="documents-list">
-
-                  {recommendedScheme.documents.map(
-                    (document, index) => (
-
-                      <li key={index}>
-                        {document}
-                      </li>
-
-                    )
-                  )}
-
-                </ul>
-
-              </div>
-
-
-              {/* PARTNERS */}
-
-              <div className="result-section">
-
-                <h3>
-                  📍 Nearby Channel Partners
-                </h3>
-
-                <p>
-
-                  Showing potential partners in:
-
-                  <strong>
-                    {" "}
-                    {formData.district},{" "}
-                    {formData.state}
-                  </strong>
-
-                </p>
-
-
-                <div className="partner-card">
-                  🏦 District Financial Centre
-                </div>
-
-
-                <div className="partner-card">
-
-                  🏦 Partner Bank –{" "}
-                  {formData.district}
-
-                </div>
-
-
-                <div className="partner-card">
-
-                  🏢 State Channel Partner –{" "}
-                  {formData.state}
-
-                </div>
-
-              </div>
-
-            </div>
-
-          )}
-
-        </div>
-
-      </div>
-    );
-  }
-
-
-  // ================= FORM PAGE =================
-
-  if (showForm) {
-
-    return (
-
-      <div className="form-page">
-
-        <nav className="navbar">
-
-          <div className="logo">
-
-            <span>🤝</span>
-
-            <div>
-              <h2>Scheme Saathi</h2>
-              <p>Your path to the right scheme</p>
-            </div>
-
-          </div>
-
-        </nav>
-
-
-        <div className="form-container">
-
-          <button
-            className="back-btn"
-            onClick={() => setShowForm(false)}
-          >
-            ← Back
-          </button>
-
-
-          <div className="form-header">
-
-            <div className="form-badge">
-              🎯 Smart Scheme Matching
-            </div>
-
-            <h1>
-              Tell us about yourself
-            </h1>
-
-            <p>
-              Provide a few details and we'll find
-              suitable government schemes for you.
-            </p>
-
-          </div>
-
-
-          <form onSubmit={handleSubmit}>
-
-            {/* PURPOSE */}
-
-            <div className="form-group">
-
-              <label>
-                What do you need help with?
-              </label>
-
-              <select
-                name="purpose"
-                value={formData.purpose}
-                onChange={handleChange}
-                required
-              >
-
-                <option value="">
-                  Select purpose
-                </option>
-
-                <option value="business">
-                  Start / Expand a Business
-                </option>
-
-                <option value="education">
-                  Education
-                </option>
-
-              </select>
-
-            </div>
-
-
-            {/* AGE */}
-
-            <div className="form-group">
-
-              <label>
-                Age
-              </label>
-
-              <input
-                type="number"
-                name="age"
-                placeholder="Enter your age"
-                value={formData.age}
-                onChange={handleChange}
-                min="1"
-                required
-              />
-
-            </div>
-
-
-            {/* INCOME */}
-
-            <div className="form-group">
-
-              <label>
-                Annual Family Income
-              </label>
-
-              <div className="input-wrapper">
-
-                <span>₹</span>
-
-                <input
-                  type="number"
-                  name="income"
-                  placeholder="e.g. 300000"
-                  value={formData.income}
-                  onChange={handleChange}
-                  min="0"
-                  required
-                />
-
-              </div>
-
-            </div>
-
-
-            {/* PROJECT COST */}
-
-            <div className="form-group">
-
-              <label>
-                Estimated Project / Education Cost
-              </label>
-
-              <div className="input-wrapper">
-
-                <span>₹</span>
-
-                <input
-                  type="number"
-                  name="projectCost"
-                  placeholder="e.g. 100000"
-                  value={formData.projectCost}
-                  onChange={handleChange}
-                  min="0"
-                  required
-                />
-
-              </div>
-
-            </div>
-
-
-            {/* EDUCATION */}
-
-            <div className="form-group">
-
-              <label>
-                Are you currently pursuing education?
-              </label>
-
-              <select
-                name="education"
-                value={formData.education}
-                onChange={handleChange}
-                required
-              >
-
-                <option value="">
-                  Select option
-                </option>
-
-                <option value="yes">
-                  Yes
-                </option>
-
-                <option value="no">
-                  No
-                </option>
-
-              </select>
-
-            </div>
-
-
-            {/* STATE */}
-
-            <div className="form-group">
-
-              <label>
-                State / Union Territory
-              </label>
-
-              <select
-                name="state"
-                value={formData.state}
-                onChange={handleChange}
-                required
-              >
-
-                <option value="">
-                  Select State / UT
-                </option>
-
-                <option value="Andhra Pradesh">
-                  Andhra Pradesh
-                </option>
-
-                <option value="Arunachal Pradesh">
-                  Arunachal Pradesh
-                </option>
-
-                <option value="Assam">
-                  Assam
-                </option>
-
-                <option value="Bihar">
-                  Bihar
-                </option>
-
-                <option value="Chhattisgarh">
-                  Chhattisgarh
-                </option>
-
-                <option value="Goa">
-                  Goa
-                </option>
-
-                <option value="Gujarat">
-                  Gujarat
-                </option>
-
-                <option value="Haryana">
-                  Haryana
-                </option>
-
-                <option value="Himachal Pradesh">
-                  Himachal Pradesh
-                </option>
-
-                <option value="Jharkhand">
-                  Jharkhand
-                </option>
-
-                <option value="Karnataka">
-                  Karnataka
-                </option>
-
-                <option value="Kerala">
-                  Kerala
-                </option>
-
-                <option value="Madhya Pradesh">
-                  Madhya Pradesh
-                </option>
-
-                <option value="Maharashtra">
-                  Maharashtra
-                </option>
-
-                <option value="Manipur">
-                  Manipur
-                </option>
-
-                <option value="Meghalaya">
-                  Meghalaya
-                </option>
-
-                <option value="Mizoram">
-                  Mizoram
-                </option>
-
-                <option value="Nagaland">
-                  Nagaland
-                </option>
-
-                <option value="Odisha">
-                  Odisha
-                </option>
-
-                <option value="Punjab">
-                  Punjab
-                </option>
-
-                <option value="Rajasthan">
-                  Rajasthan
-                </option>
-
-                <option value="Sikkim">
-                  Sikkim
-                </option>
-
-                <option value="Tamil Nadu">
-                  Tamil Nadu
-                </option>
-
-                <option value="Telangana">
-                  Telangana
-                </option>
-
-                <option value="Tripura">
-                  Tripura
-                </option>
-
-                <option value="Uttar Pradesh">
-                  Uttar Pradesh
-                </option>
-
-                <option value="Uttarakhand">
-                  Uttarakhand
-                </option>
-
-                <option value="West Bengal">
-                  West Bengal
-                </option>
-
-                <option value="Andaman and Nicobar Islands">
-                  Andaman and Nicobar Islands
-                </option>
-
-                <option value="Chandigarh">
-                  Chandigarh
-                </option>
-
-                <option value="Dadra and Nagar Haveli and Daman and Diu">
-                  Dadra and Nagar Haveli and Daman and Diu
-                </option>
-
-                <option value="Delhi">
-                  Delhi
-                </option>
-
-                <option value="Jammu and Kashmir">
-                  Jammu and Kashmir
-                </option>
-
-                <option value="Ladakh">
-                  Ladakh
-                </option>
-
-                <option value="Lakshadweep">
-                  Lakshadweep
-                </option>
-
-                <option value="Puducherry">
-                  Puducherry
-                </option>
-
-              </select>
-
-            </div>
-
-
-            {/* DISTRICT */}
-
-            <div className="form-group">
-
-              <label>
-                District
-              </label>
-
-              <select
-                name="district"
-                value={formData.district}
-                onChange={handleChange}
-                required
-                disabled={!formData.state}
-              >
-
-                <option value="">
-
-                  {formData.state
-                    ? "Select District"
-                    : "Select State first"}
-
-                </option>
-
-
-                {formData.state &&
-                  districts[formData.state]?.map(
-                    (district) => (
-
-                      <option
-                        key={district}
-                        value={district}
-                      >
-                        {district}
-                      </option>
-
-                    )
-                  )}
-
-              </select>
-
-            </div>
-
-
-            {/* SUBMIT */}
-
-            <button
-              className="submit-btn"
-              type="submit"
-            >
-              Find My Scheme →
-            </button>
-
-          </form>
-
-        </div>
-
-      </div>
-    );
-  }
-
-
-  // ================= HOME PAGE =================
+  const activeScheme = useMemo(
+    () =>
+      results.find(
+        (result) =>
+          result.id === activeResultId
+      ) || results[0],
+
+    [results, activeResultId]
+  );
 
   return (
+    <div className="ss-app">
 
-    <div className="app">
+      {view === "home" && (
+        <HomeView
+          lang={lang}
+          setLang={setLang}
+          onStart={() => setView("form")}
+        />
+      )}
 
-      <nav className="navbar">
+      {view === "form" && (
+        <FormView
+          lang={lang}
+          setLang={setLang}
+          formData={formData}
+          handleChange={handleChange}
+          handleSubmit={handleSubmit}
+          onBack={() => setView("home")}
+        />
+      )}
 
-        <div className="logo">
+      {view === "results" &&
+        activeScheme && (
+          <ResultsView
+            lang={lang}
+            setLang={setLang}
+            formData={formData}
+            results={results}
+            activeScheme={activeScheme}
+            setActiveResultId={
+              setActiveResultId
+            }
+            onBack={() => setView("form")}
+          />
+        )}
+    </div>
+  );
+}
 
-          <span>🤝</span>
+/* ============================================================
+   NAVBAR
+   ============================================================ */
+
+function NavBar({
+  lang,
+  setLang,
+}) {
+  return (
+    <nav className="ss-nav">
+
+      <div className="ss-nav-inner">
+
+        <div className="ss-logo">
+
+          <div className="ss-logo-mark">
+            SS
+          </div>
 
           <div>
             <h2>Scheme Saathi</h2>
-            <p>Your path to the right scheme</p>
+
+            <p>
+              {t("navTag", lang)}
+            </p>
           </div>
 
         </div>
 
+        <button
+          className="ss-lang-btn"
+          onClick={() =>
+            setLang(
+              lang === "en"
+                ? "hi"
+                : "en"
+            )
+          }
+        >
+          <Globe size={15} />
 
-        <div className="nav-right">
+          {t("langBtn", lang)}
+        </button>
 
-          <button className="language-btn">
-            हिन्दी
-          </button>
+      </div>
 
-          <button className="login-btn">
-            Login
-          </button>
+    </nav>
+  );
+}
 
-        </div>
+/* ============================================================
+   HOME
+   ============================================================ */
 
-      </nav>
+function HomeView({
+  lang,
+  setLang,
+  onStart,
+}) {
 
+  const features = [
+    {
+      Icon: Sparkles,
+      h: "feat1h",
+      text: "feat1t",
+    },
+    {
+      Icon: Banknote,
+      h: "feat2h",
+      text: "feat2t",
+    },
+    {
+      Icon: ClipboardList,
+      h: "feat3h",
+      text: "feat3t",
+    },
+  ];
 
-      <main className="hero">
+  return (
+    <div className="ss-shell">
 
-        <div className="hero-content">
+      <NavBar
+        lang={lang}
+        setLang={setLang}
+      />
 
-          <div className="badge">
-            🇮🇳 Government Scheme Assistance
+      <header className="ss-hero">
+
+        <div className="ss-hero-copy">
+
+          <div className="ss-kicker">
+            🇮🇳 {t("heroKicker", lang)}
           </div>
 
+          <h1 className="ss-hero-title">
 
-          <h1>
+            {t("heroTitle1", lang)}{" "}
 
-            Find the Right
+            <span className="ss-hero-accent">
+              {t("heroTitle2", lang)}
+            </span>{" "}
 
-            <span>
-              {" "}Government Scheme{" "}
-            </span>
-
-            for You
+            {t("heroTitle3", lang)}
 
           </h1>
 
-
-          <p className="hero-text">
-
-            Tell us about your needs and get
-            personalized scheme recommendations,
-            financial guidance and nearby eligible
-            channel partners.
-
+          <p className="ss-hero-text">
+            {t("heroText", lang)}
           </p>
 
-
           <button
-            className="primary-btn"
-            onClick={() => setShowForm(true)}
+            className="ss-btn-primary"
+            onClick={onStart}
           >
+            {t("ctaStart", lang)}
 
-            Find My Scheme
-
-            <span>→</span>
-
+            <ArrowRight size={18} />
           </button>
 
-
-          <p className="small-text">
-
-            Simple • Personalized • Accessible
-
+          <p className="ss-small-tag">
+            {t("smallTag", lang)}
           </p>
 
         </div>
 
+        <div
+          className="ss-hero-doc"
+          aria-hidden="true"
+        >
 
-        <div className="hero-card">
+          <div className="ss-doc-header">
+            <FileText size={16} />
+            <span>SCHEME MATCH</span>
+          </div>
 
-          <div className="card-header">
+          <div
+            className="ss-doc-line"
+            style={{ width: "78%" }}
+          />
 
-            <span className="card-icon">
-              🎯
-            </span>
+          <div
+            className="ss-doc-line"
+            style={{ width: "56%" }}
+          />
+
+          <div
+            className="ss-doc-line"
+            style={{ width: "68%" }}
+          />
+
+          <Perforation />
+
+          <div className="ss-doc-stamp-wrap">
+
+            <StampSeal
+              percent={94}
+              size={104}
+              animate={false}
+            />
 
             <div>
+              <strong>
+                PM Vishwakarma
+              </strong>
+
+              <span
+                className="ss-text-muted"
+                style={{
+                  display: "block",
+                  fontSize: "0.8rem",
+                }}
+              >
+                Illustrative match
+              </span>
+            </div>
+
+          </div>
+
+        </div>
+
+      </header>
+
+      <section className="ss-features">
+
+        {features.map(
+          ({
+            Icon,
+            h,
+            text,
+          }) => (
+            <div
+              className="ss-feature"
+              key={h}
+            >
+
+              <div className="ss-feature-icon">
+                <Icon size={20} />
+              </div>
 
               <h3>
-                Smart Scheme Matching
+                {t(h, lang)}
               </h3>
 
               <p>
-                Get recommendations based
-                on your needs
+                {t(text, lang)}
               </p>
 
             </div>
-
-          </div>
-
-
-          <div className="match-box">
-
-            <div className="match-top">
-
-              <span>
-                Best Match
-              </span>
-
-              <strong>
-
-                {recommendedScheme
-                  ? `${recommendedScheme.match}%`
-                  : "94%"}
-
-              </strong>
-
-            </div>
-
-
-            <h3>
-
-              {recommendedScheme
-                ? recommendedScheme.name
-                : "Micro Finance Scheme"}
-
-            </h3>
-
-
-            <div className="checks">
-
-              <p>
-                ✓ Income eligibility
-              </p>
-
-              <p>
-                ✓ Purpose eligibility
-              </p>
-
-              <p>
-                ✓ Project cost suitable
-              </p>
-
-            </div>
-
-          </div>
-
-
-          <div className="card-footer">
-
-            <div>
-
-              <span>💰</span>
-
-              <p>
-                Financial Calculator
-              </p>
-
-            </div>
-
-
-            <div>
-
-              <span>📍</span>
-
-              <p>
-                Nearby Partners
-              </p>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </main>
-
-
-      <section className="features">
-
-        <div className="feature">
-
-          <div className="feature-icon">
-            🎯
-          </div>
-
-          <h3>
-            Smart Matching
-          </h3>
-
-          <p>
-            Find schemes that best match
-            your income, purpose and
-            requirements.
-          </p>
-
-        </div>
-
-
-        <div className="feature">
-
-          <div className="feature-icon">
-            💰
-          </div>
-
-          <h3>
-            Financial Calculator
-          </h3>
-
-          <p>
-            Estimate your EMI and understand
-            your potential repayment.
-          </p>
-
-        </div>
-
-
-        <div className="feature">
-
-          <div className="feature-icon">
-            📍
-          </div>
-
-          <h3>
-            Find Nearby Partners
-          </h3>
-
-          <p>
-            Locate eligible channel partners
-            near your location.
-          </p>
-
-        </div>
+          )
+        )}
 
       </section>
+
+      <footer className="ss-footer ss-footer-dark">
+
+        <p>
+          {t("disclaimer", lang)}
+        </p>
+
+      </footer>
 
     </div>
   );
 }
 
-export default App;
+/* ============================================================
+   FORM
+   ============================================================ */
+
+function FormView({
+  lang,
+  setLang,
+  formData,
+  handleChange,
+  handleSubmit,
+  onBack,
+}) {
+
+  const showProjectType =
+    formData.purpose === "business";
+
+  const showStudentQuestions =
+    formData.purpose === "education" ||
+    formData.occupation === "student";
+
+  const showLandQuestion =
+    formData.purpose === "agriculture" ||
+    formData.occupation === "farmer";
+
+  const showPercentile =
+    formData.isStudent;
+
+  const partsDone = [
+    formData.purpose &&
+      formData.category &&
+      formData.occupation,
+
+    formData.age &&
+      formData.income &&
+      formData.projectCost &&
+      formData.educationLevel,
+
+    true,
+
+    formData.state &&
+      formData.district,
+  ];
+
+  return (
+    <div className="ss-shell">
+
+      <NavBar
+        lang={lang}
+        setLang={setLang}
+      />
+
+      <div className="ss-page">
+
+        <button
+          className="ss-back-btn"
+          onClick={onBack}
+        >
+          <ChevronLeft size={16} />
+
+          {t("formBack", lang)}
+        </button>
+
+        <div className="ss-page-header">
+
+          <div className="ss-badge">
+            🎯 {t("formBadge", lang)}
+          </div>
+
+          <h1>
+            {t("formTitle", lang)}
+          </h1>
+
+          <p>
+            {t("formSub", lang)}
+          </p>
+
+        </div>
+
+        <div className="ss-progress">
+
+          {partsDone.map(
+            (done, index) => (
+              <div
+                key={index}
+                className={
+                  `ss-progress-dot ${
+                    done
+                      ? "ss-progress-dot-on"
+                      : ""
+                  }`
+                }
+              />
+            )
+          )}
+
+        </div>
+
+        <form
+          onSubmit={handleSubmit}
+          className="ss-form"
+        >
+
+          {/* PART A */}
+
+          <fieldset className="ss-part">
+
+            <legend>
+              {t("partA", lang)}
+            </legend>
+
+            <div className="ss-form-group">
+
+              <label>
+                {t("purposeQ", lang)}
+              </label>
+
+              <div className="ss-purpose-grid">
+
+                {PURPOSE_OPTIONS.map(
+                  ({
+                    value,
+                    label,
+                  }) => {
+
+                    const Icon =
+                      value === "business"
+                        ? Store
+                        : value === "education"
+                        ? GraduationCap
+                        : value === "street-vending"
+                        ? Landmark
+                        : value === "artisan"
+                        ? Hammer
+                        : Wheat;
+
+                    return (
+                      <label
+                        key={value}
+                        className={
+                          `ss-purpose-card ${
+                            formData.purpose === value
+                              ? "ss-purpose-card-on"
+                              : ""
+                          }`
+                        }
+                      >
+
+                        <input
+                          type="radio"
+                          name="purpose"
+                          value={value}
+                          checked={
+                            formData.purpose === value
+                          }
+                          onChange={
+                            handleChange
+                          }
+                          required
+                        />
+
+                        <Icon size={18} />
+
+                        <span>
+                          {label[lang]}
+                        </span>
+
+                      </label>
+                    );
+                  }
+                )}
+
+              </div>
+
+            </div>
+
+            <div className="ss-form-row">
+
+              <div className="ss-form-group">
+
+                <label>
+                  {t("category", lang)}
+                </label>
+
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">
+                    —
+                  </option>
+
+                  {CATEGORY_OPTIONS.map(
+                    (option) => (
+                      <option
+                        key={option}
+                        value={option}
+                      >
+                        {option}
+                      </option>
+                    )
+                  )}
+
+                </select>
+
+              </div>
+
+              <div className="ss-form-group">
+
+                <label>
+                  {t("occupation", lang)}
+                </label>
+
+                <select
+                  name="occupation"
+                  value={formData.occupation}
+                  onChange={handleChange}
+                  required
+                >
+
+                  <option value="">
+                    —
+                  </option>
+
+                  {OCCUPATION_OPTIONS.map(
+                    (option) => (
+                      <option
+                        key={option.value}
+                        value={option.value}
+                      >
+                        {option.label[lang]}
+                      </option>
+                    )
+                  )}
+
+                </select>
+
+              </div>
+
+            </div>
+
+            {showProjectType && (
+              <div className="ss-form-group">
+
+                <label>
+                  {t(
+                    "projectType",
+                    lang
+                  )}
+                </label>
+
+                <select
+                  name="projectType"
+                  value={formData.projectType}
+                  onChange={handleChange}
+                  required
+                >
+
+                  <option value="">
+                    —
+                  </option>
+
+                  {PROJECT_TYPE_OPTIONS.map(
+                    (option) => (
+                      <option
+                        key={option.value}
+                        value={option.value}
+                      >
+                        {option.label[lang]}
+                      </option>
+                    )
+                  )}
+
+                </select>
+
+              </div>
+            )}
+
+          </fieldset>
+
+          <Perforation />
+
+          {/* PART B */}
+
+          <fieldset className="ss-part">
+
+            <legend>
+              {t("partB", lang)}
+            </legend>
+
+            <div className="ss-form-row">
+
+              <div className="ss-form-group">
+
+                <label>
+                  {t("age", lang)}
+                </label>
+
+                <input
+                  type="number"
+                  name="age"
+                  min="1"
+                  max="100"
+                  value={formData.age}
+                  onChange={handleChange}
+                  required
+                />
+
+              </div>
+
+              <div className="ss-form-group">
+
+                <label>
+                  {t("education", lang)}
+                </label>
+
+                <select
+                  name="educationLevel"
+                  value={
+                    formData.educationLevel
+                  }
+                  onChange={handleChange}
+                  required
+                >
+
+                  <option value="">
+                    —
+                  </option>
+
+                  {EDUCATION_LEVELS.map(
+                    (option) => (
+                      <option
+                        key={option.value}
+                        value={option.value}
+                      >
+                        {option.label[lang]}
+                      </option>
+                    )
+                  )}
+
+                </select>
+
+              </div>
+
+            </div>
+
+            <div className="ss-form-row">
+
+              <div className="ss-form-group">
+
+                <label>
+                  {t("income", lang)}
+                </label>
+
+                <div className="ss-input-wrapper">
+
+                  <span>₹</span>
+
+                  <input
+                    type="number"
+                    name="income"
+                    min="0"
+                    value={formData.income}
+                    onChange={handleChange}
+                    required
+                  />
+
+                </div>
+
+              </div>
+
+              <div className="ss-form-group">
+
+                <label>
+                  {t(
+                    "projectCost",
+                    lang
+                  )}
+                </label>
+
+                <div className="ss-input-wrapper">
+
+                  <span>₹</span>
+
+                  <input
+                    type="number"
+                    name="projectCost"
+                    min="0"
+                    value={
+                      formData.projectCost
+                    }
+                    onChange={handleChange}
+                    required
+                  />
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </fieldset>
+
+          <Perforation />
+
+          {/* PART C */}
+
+          <fieldset className="ss-part">
+
+            <legend>
+              {t("partC", lang)}
+            </legend>
+
+            {(showStudentQuestions ||
+              formData.occupation === "student") && (
+              <label className="ss-checkbox-row">
+
+                <input
+                  type="checkbox"
+                  name="isStudent"
+                  checked={
+                    formData.isStudent
+                  }
+                  onChange={handleChange}
+                />
+
+                {t(
+                  "isStudent",
+                  lang
+                )}
+
+              </label>
+            )}
+
+            {showPercentile &&
+              formData.isStudent && (
+                <div
+                  className="ss-form-group"
+                  style={{ maxWidth: 320 }}
+                >
+
+                  <label>
+                    {t(
+                      "percentile",
+                      lang
+                    )}
+                  </label>
+
+                  <input
+                    type="number"
+                    name="percentile"
+                    min="0"
+                    max="100"
+                    value={
+                      formData.percentile
+                    }
+                    onChange={handleChange}
+                  />
+
+                </div>
+              )}
+
+            {showLandQuestion && (
+              <label className="ss-checkbox-row">
+
+                <input
+                  type="checkbox"
+                  name="ownsLand"
+                  checked={
+                    formData.ownsLand
+                  }
+                  onChange={handleChange}
+                />
+
+                {t(
+                  "ownsLand",
+                  lang
+                )}
+
+              </label>
+            )}
+
+            {!showStudentQuestions &&
+              !showLandQuestion && (
+                <p className="ss-helper-text">
+                  No additional special
+                  conditions are needed for
+                  your selected purpose.
+                </p>
+              )}
+
+          </fieldset>
+
+          <Perforation />
+
+          {/* PART D */}
+
+          <fieldset className="ss-part">
+
+            <legend>
+              {t("partD", lang)}
+            </legend>
+
+            <div className="ss-form-row">
+
+              <div className="ss-form-group">
+
+                <label>
+                  {t("state", lang)}
+                </label>
+
+                <select
+                  name="state"
+                  value={formData.state}
+                  onChange={handleChange}
+                  required
+                >
+
+                  <option value="">
+                    —
+                  </option>
+
+                  {ALL_STATES.map(
+                    (state) => (
+                      <option
+                        key={state}
+                        value={state}
+                      >
+                        {state}
+                      </option>
+                    )
+                  )}
+
+                </select>
+
+              </div>
+
+              <div className="ss-form-group">
+
+                <label>
+                  {t(
+                    "district",
+                    lang
+                  )}
+                </label>
+
+                <select
+                  name="district"
+                  value={
+                    formData.district
+                  }
+                  onChange={handleChange}
+                  required
+                  disabled={
+                    !formData.state
+                  }
+                >
+
+                  <option value="">
+                    {formData.state
+                      ? t(
+                          "selectDistrict",
+                          lang
+                        )
+                      : t(
+                          "selectState",
+                          lang
+                        )}
+                  </option>
+
+                  {formData.state &&
+                    districts[
+                      formData.state
+                    ]?.map(
+                      (district) => (
+                        <option
+                          key={district}
+                          value={district}
+                        >
+                          {district}
+                        </option>
+                      )
+                    )}
+
+                </select>
+
+              </div>
+
+            </div>
+
+            <p className="ss-prototype-note">
+              <MapPin size={14} />
+              {t(
+                "prototypeNotice",
+                lang
+              )}
+            </p>
+
+          </fieldset>
+
+          <button
+            className="ss-btn-primary ss-btn-full"
+            type="submit"
+          >
+
+            {t("submit", lang)}
+
+            <ArrowRight size={18} />
+
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
+  );
+}
+
+/* ============================================================
+   RESULTS
+   ============================================================ */
+
+function ResultsView({
+  lang,
+  setLang,
+  formData,
+  results,
+  activeScheme,
+  setActiveResultId,
+  onBack,
+}) {
+
+  const alternates =
+    results
+      .filter(
+        (result) =>
+          result.id !== activeScheme.id
+      )
+      .slice(0, 4);
+
+  return (
+    <div className="ss-shell">
+
+      <NavBar
+        lang={lang}
+        setLang={setLang}
+      />
+
+      <div className="ss-page">
+
+        <button
+          className="ss-back-btn"
+          onClick={onBack}
+        >
+          <ChevronLeft size={16} />
+
+          {t(
+            "resultsBack",
+            lang
+          )}
+        </button>
+
+        <div className="ss-page-header">
+
+          <div className="ss-badge">
+            🎯 {t(
+              "formBadge",
+              lang
+            )}
+          </div>
+
+          <h1>
+            {t(
+              "resultsTitle",
+              lang
+            )}
+          </h1>
+
+          <p>
+            {t(
+              "resultsSub",
+              lang
+            )}
+          </p>
+
+        </div>
+
+        <div className="ss-result-card">
+
+          <div className="ss-result-top">
+
+            <div>
+
+              <span className="ss-best-tag">
+                {t(
+                  "bestMatch",
+                  lang
+                )}
+              </span>
+
+              <h2>
+                {activeScheme.name}
+              </h2>
+
+              <div
+                className={
+                  activeScheme.eligible
+                    ? "ss-status ss-status-good"
+                    : "ss-status ss-status-warning"
+                }
+              >
+
+                {activeScheme.eligible
+                  ? (
+                    <>
+                      <CheckCircle2 size={15} />
+
+                      {t(
+                        "likelyEligible",
+                        lang
+                      )}
+                    </>
+                  )
+                  : (
+                    <>
+                      <XCircle size={15} />
+
+                      {t(
+                        "conditionsMissing",
+                        lang
+                      )}
+                    </>
+                  )}
+
+              </div>
+
+            </div>
+
+            <StampSeal
+              percent={
+                activeScheme.match
+              }
+              size={116}
+            />
+
+          </div>
+
+          <Perforation />
+
+          {/* ELIGIBILITY */}
+
+          <div className="ss-result-section">
+
+            <h3>
+              <CheckCircle2 size={16} />
+
+              {t(
+                "eligibilityBreakdown",
+                lang
+              )}
+            </h3>
+
+            <div className="ss-eligibility-grid">
+
+              {activeScheme.checks.map(
+                (check) => (
+                  <CheckRow
+                    key={check.key}
+                    ok={check.ok}
+                  >
+                    {check.label[lang]}
+                  </CheckRow>
+                )
+              )}
+
+            </div>
+
+          </div>
+
+          {/* WHY MATCH */}
+
+          <div className="ss-result-section">
+
+            <h3>
+              ✨{" "}
+              {t(
+                "whyMatch",
+                lang
+              )}
+            </h3>
+
+            <ul className="ss-reasons-list">
+
+              {activeScheme.reasons.map(
+                (reason, index) => (
+                  <li key={index}>
+                    <CheckCircle2
+                      size={15}
+                    />
+
+                    {reason[lang]}
+                  </li>
+                )
+              )}
+
+            </ul>
+
+          </div>
+
+          {/* MONEY */}
+
+          <div className="ss-scheme-details">
+
+            <div className="ss-detail-box">
+
+              <Wallet size={18} />
+
+              <small>
+                {t(
+                  "maxLoan",
+                  lang
+                )}
+              </small>
+
+              <strong>
+                {activeScheme.maxLoan}
+              </strong>
+
+            </div>
+
+            <div className="ss-detail-box">
+
+              <Banknote size={18} />
+
+              <small>
+                {t(
+                  "interestRate",
+                  lang
+                )}
+              </small>
+
+              <strong>
+                {activeScheme.interest}
+              </strong>
+
+            </div>
+
+            <div className="ss-detail-box">
+
+              <Building2 size={18} />
+
+              <small>
+                {t(
+                  "repayment",
+                  lang
+                )}
+              </small>
+
+              <strong>
+                {activeScheme.repayment}
+              </strong>
+
+            </div>
+
+          </div>
+
+          {/* BENEFITS */}
+
+          <div className="ss-result-section">
+
+            <h3>
+              💰{" "}
+              {t(
+                "benefitsH",
+                lang
+              )}
+            </h3>
+
+            <ul className="ss-list">
+
+              {activeScheme.benefits.map(
+                (benefit, index) => (
+                  <li key={index}>
+                    {benefit}
+                  </li>
+                )
+              )}
+
+            </ul>
+
+          </div>
+
+          {/* DOCUMENTS */}
+
+          <div className="ss-result-section">
+
+            <h3>
+              <FileText size={16} />
+
+              {t(
+                "documentsH",
+                lang
+              )}
+            </h3>
+
+            <ul className="ss-doc-checklist">
+
+              {activeScheme.documents.map(
+                (document, index) => (
+                  <li key={index}>
+                    {document}
+                  </li>
+                )
+              )}
+
+            </ul>
+
+          </div>
+
+          {/* PARTNERS */}
+
+          <div className="ss-result-section">
+
+            <h3>
+              <MapPin size={16} />
+
+              {t(
+                "partnersH",
+                lang
+              )}
+            </h3>
+
+            <p
+              className="ss-text-muted"
+              style={{
+                marginBottom:
+                  "0.75rem",
+              }}
+            >
+              {formData.district},{" "}
+              {formData.state}
+            </p>
+
+            <div className="ss-partner-list">
+
+              {activeScheme.partners.map(
+                (partner, index) => (
+                  <div
+                    className="ss-partner-card"
+                    key={index}
+                  >
+
+                    <Users size={15} />
+
+                    {partner}
+
+                  </div>
+                )
+              )}
+
+            </div>
+
+            <a
+              className="ss-official-link"
+              href={
+                activeScheme.sourceUrl
+              }
+              target="_blank"
+              rel="noreferrer"
+            >
+
+              {t(
+                "officialLink",
+                lang
+              )}
+
+              {" — "}
+
+              {activeScheme.sourceName}
+
+              <ExternalLink
+                size={14}
+              />
+
+            </a>
+
+          </div>
+
+        </div>
+
+        {/* ALTERNATES */}
+
+        {alternates.length > 0 && (
+
+          <div className="ss-alternates">
+
+            <h3>
+              {t(
+                "otherMatches",
+                lang
+              )}
+            </h3>
+
+            <div className="ss-alternates-grid">
+
+              {alternates.map(
+                (scheme) => (
+
+                  <button
+                    key={scheme.id}
+                    className="ss-alt-card"
+                    onClick={() =>
+                      setActiveResultId(
+                        scheme.id
+                      )
+                    }
+                  >
+
+                    <div>
+
+                      <strong>
+                        {scheme.name}
+                      </strong>
+
+                      <span className="ss-text-muted">
+
+                        {scheme.eligible
+                          ? "✓ "
+                          : ""}
+
+                        {t(
+                          "viewDetails",
+                          lang
+                        )}
+
+                        <ChevronRight
+                          size={13}
+                        />
+
+                      </span>
+
+                    </div>
+
+                    <span className="ss-alt-score">
+                      {scheme.match}%
+                    </span>
+
+                  </button>
+
+                )
+              )}
+
+            </div>
+
+          </div>
+
+        )}
+
+        <footer className="ss-footer">
+
+          <p>
+            {t(
+              "disclaimer",
+              lang
+            )}
+          </p>
+
+        </footer>
+
+      </div>
+
+    </div>
+  );
+}
