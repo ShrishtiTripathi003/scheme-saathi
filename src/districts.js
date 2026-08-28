@@ -76,3 +76,6 @@ export const districts = {
     "West Delhi",
   ],
 };
+
+// Automatically create state list from district data
+export const ALL_STATES = Object.keys(districts);

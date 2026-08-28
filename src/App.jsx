@@ -1,9 +1,4 @@
-import {
-  useEffect,
-  useId,
-  useMemo,
-  useState,
-} from "react";
+import { useMemo, useState } from "react";
 
 import {
   ArrowRight,
@@ -12,7 +7,6 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  ClipboardList,
   ExternalLink,
   FileText,
   Globe,
@@ -31,13 +25,14 @@ import {
 import {
   ALL_STATES,
   CATEGORY_OPTIONS,
-  districts,
   EDUCATION_LEVELS,
   getMatchedSchemes,
   OCCUPATION_OPTIONS,
   PROJECT_TYPE_OPTIONS,
   PURPOSE_OPTIONS,
 } from "./schemes";
+
+import { districts } from "./districts";
 
 import "./App.css";
 
@@ -46,7 +41,6 @@ import "./App.css";
    ============================================================ */
 
 const STR = {
-
   navTag: {
     en: "Your path to the right scheme",
     hi: "सही योजना तक आपका रास्ता",
@@ -78,8 +72,10 @@ const STR = {
   },
 
   heroText: {
-    en: "Answer a short form and get matched schemes, benefit details, documents, and where to apply.",
-    hi: "एक छोटा फ़ॉर्म भरें और अपनी जानकारी के अनुसार योजनाएं, लाभ, दस्तावेज़ और आवेदन की जानकारी पाएं।",
+    en:
+      "Answer a short form and get matched schemes, benefits, documents and where to apply.",
+    hi:
+      "एक छोटा फ़ॉर्म भरें और अपनी जानकारी के अनुसार योजनाएं, लाभ, दस्तावेज़ और आवेदन की जानकारी पाएं।",
   },
 
   ctaStart: {
@@ -98,8 +94,10 @@ const STR = {
   },
 
   feat1t: {
-    en: "We compare your purpose, age, income, education, category, occupation and location.",
-    hi: "हम उद्देश्य, आयु, आय, शिक्षा, श्रेणी, व्यवसाय और स्थान की तुलना करते हैं।",
+    en:
+      "We compare your purpose, age, income, education, category, occupation and location.",
+    hi:
+      "हम उद्देश्य, आयु, आय, शिक्षा, श्रेणी, व्यवसाय और स्थान की तुलना करते हैं।",
   },
 
   feat2h: {
@@ -108,63 +106,64 @@ const STR = {
   },
 
   feat2t: {
-    en: "See loan limits, interest, subsidies and repayment information in one place.",
-    hi: "ऋण सीमा, ब्याज, सब्सिडी और भुगतान की जानकारी एक ही जगह देखें।",
+    en:
+      "See loan limits, interest, subsidies and benefits in one place.",
+    hi:
+      "ऋण सीमा, ब्याज, सब्सिडी और लाभ की जानकारी एक ही जगह देखें।",
   },
 
   feat3h: {
-    en: "Papers & partners",
-    hi: "दस्तावेज़ व सहभागी",
+    en: "Know what to carry",
+    hi: "ज़रूरी दस्तावेज़ जानें",
   },
 
   feat3t: {
-    en: "Know the documents and the type of office or institution that handles the scheme.",
-    hi: "ज़रूरी दस्तावेज़ और आवेदन संभालने वाले कार्यालय या संस्थान की जानकारी पाएं।",
-  },
-
-  formBack: {
-    en: "Back",
-    hi: "वापस",
+    en:
+      "Get a simple document checklist and application guidance.",
+    hi:
+      "ज़रूरी दस्तावेज़ों की सूची और आवेदन की जानकारी पाएं।",
   },
 
   formBadge: {
-    en: "Smart scheme matching",
-    hi: "स्मार्ट योजना मिलान",
+    en: "Your details",
+    hi: "आपकी जानकारी",
   },
 
   formTitle: {
-    en: "Application form",
-    hi: "आवेदन पत्र",
+    en: "Tell us about yourself",
+    hi: "अपने बारे में बताएं",
   },
 
   formSub: {
-    en: "Fill in your details and we will rank schemes based on your answers.",
-    hi: "अपनी जानकारी भरें और हम आपके उत्तरों के आधार पर योजनाओं को क्रमबद्ध करेंगे।",
+    en:
+      "Your answers help us rank the most relevant government schemes.",
+    hi:
+      "आपके उत्तरों से हम आपके लिए सबसे उपयुक्त सरकारी योजनाओं को रैंक करते हैं।",
   },
 
   partA: {
-    en: "Part A — What you need",
-    hi: "भाग अ — आपको किस चीज़ की जरूरत है",
+    en: "PART A — WHAT YOU NEED",
+    hi: "भाग A — आपको क्या चाहिए",
   },
 
   partB: {
-    en: "Part B — Your details",
-    hi: "भाग ब — आपकी जानकारी",
+    en: "PART B — YOUR DETAILS",
+    hi: "भाग B — आपकी जानकारी",
   },
 
   partC: {
-    en: "Part C — Special conditions",
-    hi: "भाग स — विशेष शर्तें",
+    en: "PART C — ADDITIONAL DETAILS",
+    hi: "भाग C — अतिरिक्त जानकारी",
   },
 
   partD: {
-    en: "Part D — Location",
-    hi: "भाग द — स्थान",
+    en: "PART D — YOUR LOCATION",
+    hi: "भाग D — आपका स्थान",
   },
 
   purposeQ: {
     en: "What do you need help with?",
-    hi: "आपको किस चीज़ में मदद चाहिए?",
+    hi: "आपको किस चीज़ में सहायता चाहिए?",
   },
 
   category: {
@@ -177,9 +176,19 @@ const STR = {
     hi: "व्यवसाय",
   },
 
+  projectType: {
+    en: "Project type",
+    hi: "परियोजना का प्रकार",
+  },
+
   age: {
     en: "Age",
     hi: "आयु",
+  },
+
+  education: {
+    en: "Highest education completed",
+    hi: "उच्चतम शिक्षा",
   },
 
   income: {
@@ -192,44 +201,29 @@ const STR = {
     hi: "अनुमानित परियोजना / शिक्षा लागत",
   },
 
-  projectType: {
-    en: "Project type",
-    hi: "परियोजना का प्रकार",
-  },
-
-  education: {
-    en: "Highest education completed",
-    hi: "पूर्ण की गई उच्चतम शिक्षा",
-  },
-
   isStudent: {
     en: "I am currently a student",
-    hi: "मैं वर्तमान में छात्र हूँ",
+    hi: "मैं वर्तमान में छात्र/छात्रा हूं",
   },
 
   percentile: {
-    en: "Last exam percentile",
-    hi: "पिछली परीक्षा का प्रतिशत",
+    en: "Class 12 percentile",
+    hi: "कक्षा 12 पर्सेंटाइल",
   },
 
   ownsLand: {
-    en: "My family owns agricultural land",
-    hi: "मेरे परिवार के पास कृषि भूमि है",
+    en: "I own / cultivate agricultural land",
+    hi: "मेरे पास कृषि भूमि है / मैं कृषि भूमि पर खेती करता/करती हूं",
   },
 
   state: {
-    en: "State / union territory",
+    en: "State / UT",
     hi: "राज्य / केंद्र शासित प्रदेश",
   },
 
   district: {
     en: "District",
-    hi: "ज़िला",
-  },
-
-  selectDistrict: {
-    en: "Select district",
-    hi: "ज़िला चुनें",
+    hi: "जिला",
   },
 
   selectState: {
@@ -237,69 +231,61 @@ const STR = {
     hi: "पहले राज्य चुनें",
   },
 
+  selectDistrict: {
+    en: "Select district",
+    hi: "जिला चुनें",
+  },
+
   submit: {
-    en: "Find my scheme",
-    hi: "मेरी योजना खोजें",
+    en: "Find my schemes",
+    hi: "मेरी योजनाएं खोजें",
+  },
+
+  formBack: {
+    en: "Back",
+    hi: "वापस",
   },
 
   resultsBack: {
-    en: "Back to form",
-    hi: "फ़ॉर्म पर वापस जाएं",
+    en: "Change my answers",
+    hi: "मेरे उत्तर बदलें",
   },
 
   resultsTitle: {
     en: "Your matched schemes",
-    hi: "आपकी मिलान योजनाएं",
+    hi: "आपके लिए मिली योजनाएं",
   },
 
   resultsSub: {
-    en: "Eligible schemes are shown first, followed by other potentially relevant schemes.",
-    hi: "पात्र योजनाएं पहले दिखाई जाती हैं, उसके बाद अन्य संभावित योजनाएं।",
+    en:
+      "These schemes are ranked using the information you provided.",
+    hi:
+      "इन योजनाओं को आपके द्वारा दी गई जानकारी के आधार पर रैंक किया गया है।",
   },
 
   bestMatch: {
-    en: "Best match",
-    hi: "सर्वश्रेष्ठ मिलान",
+    en: "BEST MATCH",
+    hi: "सबसे अच्छा मिलान",
   },
 
-  likelyEligible: {
-    en: "Likely eligible",
-    hi: "संभावित रूप से पात्र",
-  },
-
-  conditionsMissing: {
-    en: "Some conditions are not met",
-    hi: "कुछ शर्तें पूरी नहीं हुईं",
-  },
-
-  eligibilityBreakdown: {
-    en: "Eligibility breakdown",
-    hi: "पात्रता विवरण",
+  match: {
+    en: "match",
+    hi: "मिलान",
   },
 
   whyMatch: {
-    en: "Why this matches you",
+    en: "Why this scheme matches",
     hi: "यह योजना आपके लिए क्यों उपयुक्त है",
   },
 
-  maxLoan: {
-    en: "Maximum benefit / loan",
-    hi: "अधिकतम लाभ / ऋण",
-  },
-
-  interestRate: {
-    en: "Interest / subsidy",
-    hi: "ब्याज / सब्सिडी",
-  },
-
-  repayment: {
-    en: "Repayment",
-    hi: "भुगतान",
+  conditions: {
+    en: "Eligibility signals",
+    hi: "पात्रता संकेत",
   },
 
   benefitsH: {
-    en: "What you get",
-    hi: "आपको क्या मिलेगा",
+    en: "Benefits",
+    hi: "लाभ",
   },
 
   documentsH: {
@@ -312,9 +298,19 @@ const STR = {
     hi: "कहाँ आवेदन करें",
   },
 
+  maxLoan: {
+    en: "Loan / financial support",
+    hi: "ऋण / वित्तीय सहायता",
+  },
+
+  subsidy: {
+    en: "Subsidy / support",
+    hi: "सब्सिडी / सहायता",
+  },
+
   officialLink: {
-    en: "Open official source",
-    hi: "आधिकारिक स्रोत खोलें",
+    en: "Open official page",
+    hi: "आधिकारिक पृष्ठ खोलें",
   },
 
   otherMatches: {
@@ -327,23 +323,90 @@ const STR = {
     hi: "विवरण देखें",
   },
 
-  prototypeNotice: {
-    en: "Prototype coverage: district options currently include selected districts.",
-    hi: "प्रोटोटाइप कवरेज: अभी कुछ चुनिंदा ज़िलों के विकल्प उपलब्ध हैं।",
+  noMatch: {
+    en:
+      "We couldn't find a strong match. Try changing some answers.",
+    hi:
+      "हमें कोई मजबूत मिलान नहीं मिला। कुछ उत्तर बदलकर फिर कोशिश करें।",
   },
 
   disclaimer: {
-    en: "Scheme Saathi is an independent guide, not a government website. Match scores are estimates and do not constitute official eligibility. Always confirm the latest eligibility, documents and application process on the official source before applying.",
-    hi: "स्कीम साथी एक स्वतंत्र मार्गदर्शक है, कोई सरकारी वेबसाइट नहीं। मिलान स्कोर अनुमानित हैं और आधिकारिक पात्रता नहीं माने जाते। आवेदन से पहले आधिकारिक स्रोत पर नवीनतम पात्रता, दस्तावेज़ और आवेदन प्रक्रिया अवश्य जांचें।",
+    en:
+      "Scheme Saathi is an independent guide, not a government website. Match scores are estimates — always confirm final eligibility on the official portal before applying.",
+    hi:
+      "स्कीम साथी एक स्वतंत्र मार्गदर्शक है, कोई सरकारी वेबसाइट नहीं। मिलान स्कोर अनुमानित हैं — आवेदन से पहले आधिकारिक पोर्टल पर अंतिम पात्रता अवश्य जांचें।",
   },
 };
 
-function t(key, lang) {
-  return STR[key]?.[lang] || key;
+function t(field, lang) {
+  return STR[field]?.[lang] ?? field;
 }
 
+
 /* ============================================================
-   SEAL
+   HELPERS
+   ============================================================ */
+
+function getLabel(option, lang) {
+  if (!option) return "";
+
+  if (typeof option === "string") {
+    return option;
+  }
+
+  if (typeof option.label === "object") {
+    return option.label?.[lang] ?? option.label?.en ?? "";
+  }
+
+  return option.label ?? option.value ?? "";
+}
+
+
+function getValue(option) {
+  if (typeof option === "string") {
+    return option;
+  }
+
+  return option?.value ?? "";
+}
+
+
+function getPurposeIcon(value) {
+  switch (value) {
+    case "business":
+      return Store;
+
+    case "education":
+      return GraduationCap;
+
+    case "street_vendor":
+    case "street-vendor":
+      return Landmark;
+
+    case "artisan":
+      return Hammer;
+
+    case "agriculture":
+      return Wheat;
+
+    case "livestock":
+      return Wheat;
+
+    case "solar":
+      return Sparkles;
+
+    case "food_processing":
+    case "food":
+      return Store;
+
+    default:
+      return Store;
+  }
+}
+
+
+/* ============================================================
+   STAMP
    ============================================================ */
 
 function describeFullCircle(cx, cy, r) {
@@ -354,31 +417,27 @@ function describeFullCircle(cx, cy, r) {
   `;
 }
 
-function StampSeal({
-  percent,
-  size = 120,
-  animate = true,
-}) {
-  const rawId = useId();
 
-  const pathId = `seal-${rawId.replace(/[:]/g, "")}`;
+function StampSeal({ percent = 0, size = 120 }) {
+  const safePercent = Math.max(
+    0,
+    Math.min(100, Number(percent) || 0)
+  );
 
   const cx = size / 2;
   const cy = size / 2;
   const r = size / 2 - size * 0.16;
+
+  const pathId = `seal-path-${size}-${safePercent}`;
 
   return (
     <svg
       viewBox={`0 0 ${size} ${size}`}
       width={size}
       height={size}
-      className={
-        animate
-          ? "ss-stamp ss-stamp-animate"
-          : "ss-stamp"
-      }
+      className="ss-stamp"
       role="img"
-      aria-label={`${percent}% match`}
+      aria-label={`${safePercent}% match`}
     >
       <defs>
         <path
@@ -410,37 +469,22 @@ function StampSeal({
       <text
         fill="var(--stamp)"
         fontFamily="var(--font-mono)"
-        fontSize={size * 0.072}
-        letterSpacing="2"
-      >
-        <textPath
-          href={`#${pathId}`}
-          startOffset="1%"
-        >
-          SCHEME SAATHI • MATCH • SCHEME SAATHI • MATCH •
-        </textPath>
-      </text>
-
-      <text
-        x={cx}
-        y={cy + size * 0.02}
-        textAnchor="middle"
-        fontFamily="var(--font-display)"
+        fontSize={size * 0.22}
         fontWeight="700"
-        fontSize={size * 0.26}
-        fill="var(--stamp)"
+        textAnchor="middle"
+        x={cx}
+        y={cy + size * 0.075}
       >
-        {percent}%
+        {safePercent}%
       </text>
 
       <text
-        x={cx}
-        y={cy + size * 0.155}
-        textAnchor="middle"
-        fontFamily="var(--font-mono)"
-        fontSize={size * 0.065}
-        letterSpacing="3"
         fill="var(--stamp)"
+        fontFamily="var(--font-mono)"
+        fontSize={size * 0.075}
+        textAnchor="middle"
+        x={cx}
+        y={cy + size * 0.25}
       >
         MATCH
       </text>
@@ -448,206 +492,45 @@ function StampSeal({
   );
 }
 
+
+/* ============================================================
+   PERFORATION
+   ============================================================ */
+
+function Perforation() {
+  return <div className="ss-perforation" />;
+}
+
+
 /* ============================================================
    CHECK ROW
    ============================================================ */
 
-function CheckRow({
-  ok,
-  children,
-}) {
+function CheckRow({ ok, children }) {
   return (
     <div className="ss-check-row">
       {ok ? (
-        <CheckCircle2
-          size={17}
-          className="ss-icon-ok"
-        />
+        <CheckCircle2 size={16} />
       ) : (
-        <XCircle
-          size={17}
-          className="ss-icon-no"
-        />
+        <XCircle size={16} />
       )}
 
-      <span className={!ok ? "ss-text-muted" : ""}>
-        {children}
-      </span>
+      <span>{children}</span>
     </div>
   );
 }
 
-function Perforation() {
-  return (
-    <div
-      className="ss-perforation"
-      aria-hidden="true"
-    />
-  );
-}
-
-/* ============================================================
-   APP
-   ============================================================ */
-
-export default function App() {
-
-  const [lang, setLang] = useState("en");
-
-  const [view, setView] = useState("home");
-
-  const [results, setResults] = useState([]);
-
-  const [activeResultId, setActiveResultId] =
-    useState(null);
-
-  const [formData, setFormData] = useState({
-    purpose: "",
-    age: "",
-    income: "",
-    projectCost: "",
-    educationLevel: "",
-    category: "",
-    occupation: "",
-    projectType: "",
-    isStudent: false,
-    ownsLand: false,
-    percentile: "",
-    state: "",
-    district: "",
-  });
-
-  useEffect(() => {
-    const id = "ss-fonts-link";
-
-    if (!document.getElementById(id)) {
-      const link = document.createElement("link");
-
-      link.id = id;
-      link.rel = "stylesheet";
-      link.href =
-        "https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap";
-
-      document.head.appendChild(link);
-    }
-  }, []);
-
-  const handleChange = (e) => {
-
-    const {
-      name,
-      value,
-      type,
-      checked,
-    } = e.target;
-
-    const nextValue =
-      type === "checkbox"
-        ? checked
-        : value;
-
-    setFormData((previous) => ({
-      ...previous,
-
-      [name]: nextValue,
-
-      ...(name === "state"
-        ? { district: "" }
-        : {}),
-
-      ...(name === "purpose" &&
-      value !== "business"
-        ? { projectType: "" }
-        : {}),
-    }));
-  };
-
-  const handleSubmit = (e) => {
-
-    e.preventDefault();
-
-    const matched =
-      getMatchedSchemes(formData);
-
-    setResults(matched);
-
-    setActiveResultId(
-      matched[0]?.id || null
-    );
-
-    setView("results");
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
-
-  const activeScheme = useMemo(
-    () =>
-      results.find(
-        (result) =>
-          result.id === activeResultId
-      ) || results[0],
-
-    [results, activeResultId]
-  );
-
-  return (
-    <div className="ss-app">
-
-      {view === "home" && (
-        <HomeView
-          lang={lang}
-          setLang={setLang}
-          onStart={() => setView("form")}
-        />
-      )}
-
-      {view === "form" && (
-        <FormView
-          lang={lang}
-          setLang={setLang}
-          formData={formData}
-          handleChange={handleChange}
-          handleSubmit={handleSubmit}
-          onBack={() => setView("home")}
-        />
-      )}
-
-      {view === "results" &&
-        activeScheme && (
-          <ResultsView
-            lang={lang}
-            setLang={setLang}
-            formData={formData}
-            results={results}
-            activeScheme={activeScheme}
-            setActiveResultId={
-              setActiveResultId
-            }
-            onBack={() => setView("form")}
-          />
-        )}
-    </div>
-  );
-}
 
 /* ============================================================
    NAVBAR
    ============================================================ */
 
-function NavBar({
-  lang,
-  setLang,
-}) {
+function NavBar({ lang, setLang }) {
   return (
     <nav className="ss-nav">
-
       <div className="ss-nav-inner">
 
         <div className="ss-logo">
-
           <div className="ss-logo-mark">
             SS
           </div>
@@ -659,11 +542,11 @@ function NavBar({
               {t("navTag", lang)}
             </p>
           </div>
-
         </div>
 
         <button
           className="ss-lang-btn"
+          type="button"
           onClick={() =>
             setLang(
               lang === "en"
@@ -678,10 +561,10 @@ function NavBar({
         </button>
 
       </div>
-
     </nav>
   );
 }
+
 
 /* ============================================================
    HOME
@@ -692,7 +575,6 @@ function HomeView({
   setLang,
   onStart,
 }) {
-
   const features = [
     {
       Icon: Sparkles,
@@ -705,7 +587,7 @@ function HomeView({
       text: "feat2t",
     },
     {
-      Icon: ClipboardList,
+      Icon: FileText,
       h: "feat3h",
       text: "feat3t",
     },
@@ -745,10 +627,10 @@ function HomeView({
 
           <button
             className="ss-btn-primary"
+            type="button"
             onClick={onStart}
           >
             {t("ctaStart", lang)}
-
             <ArrowRight size={18} />
           </button>
 
@@ -758,6 +640,7 @@ function HomeView({
 
         </div>
 
+
         <div
           className="ss-hero-doc"
           aria-hidden="true"
@@ -765,7 +648,7 @@ function HomeView({
 
           <div className="ss-doc-header">
             <FileText size={16} />
-            <span>SCHEME MATCH</span>
+            <span>Scheme Saathi</span>
           </div>
 
           <div
@@ -790,12 +673,11 @@ function HomeView({
             <StampSeal
               percent={94}
               size={104}
-              animate={false}
             />
 
             <div>
               <strong>
-                PM Vishwakarma
+                Government Scheme
               </strong>
 
               <span
@@ -805,7 +687,9 @@ function HomeView({
                   fontSize: "0.8rem",
                 }}
               >
-                Illustrative match
+                {lang === "en"
+                  ? "Illustrative match"
+                  : "उदाहरण मिलान"}
               </span>
             </div>
 
@@ -815,13 +699,14 @@ function HomeView({
 
       </header>
 
+
       <section className="ss-features">
 
         {features.map(
           ({
             Icon,
             h,
-            text,
+            text: textKey,
           }) => (
             <div
               className="ss-feature"
@@ -837,7 +722,7 @@ function HomeView({
               </h3>
 
               <p>
-                {t(text, lang)}
+                {t(textKey, lang)}
               </p>
 
             </div>
@@ -846,17 +731,17 @@ function HomeView({
 
       </section>
 
-      <footer className="ss-footer ss-footer-dark">
 
+      <footer className="ss-footer ss-footer-dark">
         <p>
           {t("disclaimer", lang)}
         </p>
-
       </footer>
 
     </div>
   );
 }
+
 
 /* ============================================================
    FORM
@@ -870,36 +755,27 @@ function FormView({
   handleSubmit,
   onBack,
 }) {
-
-  const showProjectType =
-    formData.purpose === "business";
-
-  const showStudentQuestions =
-    formData.purpose === "education" ||
-    formData.occupation === "student";
-
-  const showLandQuestion =
-    formData.purpose === "agriculture" ||
-    formData.occupation === "farmer";
-
-  const showPercentile =
-    formData.isStudent;
-
   const partsDone = [
-    formData.purpose &&
-      formData.category &&
-      formData.occupation,
-
-    formData.age &&
-      formData.income &&
-      formData.projectCost &&
-      formData.educationLevel,
-
-    true,
-
-    formData.state &&
-      formData.district,
+    ["purpose", "category", "occupation"],
+    [
+      "age",
+      "income",
+      "projectCost",
+      "education",
+    ],
+    [],
+    ["state", "district"],
   ];
+
+  const isPartDone = (keys) =>
+    keys.length === 0
+      ? true
+      : keys.every(
+          (key) =>
+            String(
+              formData[key] ?? ""
+            ).length > 0
+        );
 
   return (
     <div className="ss-shell">
@@ -913,12 +789,13 @@ function FormView({
 
         <button
           className="ss-back-btn"
+          type="button"
           onClick={onBack}
         >
           <ChevronLeft size={16} />
-
           {t("formBack", lang)}
         </button>
+
 
         <div className="ss-page-header">
 
@@ -936,31 +813,33 @@ function FormView({
 
         </div>
 
+
         <div className="ss-progress">
 
           {partsDone.map(
-            (done, index) => (
+            (keys, index) => (
               <div
                 key={index}
-                className={
-                  `ss-progress-dot ${
-                    done
-                      ? "ss-progress-dot-on"
-                      : ""
-                  }`
-                }
+                className={`ss-progress-dot ${
+                  isPartDone(keys)
+                    ? "ss-progress-dot-on"
+                    : ""
+                }`}
               />
             )
           )}
 
         </div>
 
+
         <form
-          onSubmit={handleSubmit}
           className="ss-form"
+          onSubmit={handleSubmit}
         >
 
-          {/* PART A */}
+          {/* ==================================================
+              PART A
+              ================================================== */}
 
           <fieldset className="ss-part">
 
@@ -968,41 +847,41 @@ function FormView({
               {t("partA", lang)}
             </legend>
 
+
             <div className="ss-form-group">
 
               <label>
                 {t("purposeQ", lang)}
               </label>
 
+
               <div className="ss-purpose-grid">
 
                 {PURPOSE_OPTIONS.map(
-                  ({
-                    value,
-                    label,
-                  }) => {
+                  (option) => {
+                    const value =
+                      getValue(option);
+
+                    const label =
+                      getLabel(
+                        option,
+                        lang
+                      );
 
                     const Icon =
-                      value === "business"
-                        ? Store
-                        : value === "education"
-                        ? GraduationCap
-                        : value === "street-vending"
-                        ? Landmark
-                        : value === "artisan"
-                        ? Hammer
-                        : Wheat;
+                      option.icon ||
+                      getPurposeIcon(
+                        value
+                      );
 
                     return (
                       <label
                         key={value}
-                        className={
-                          `ss-purpose-card ${
-                            formData.purpose === value
-                              ? "ss-purpose-card-on"
-                              : ""
-                          }`
-                        }
+                        className={`ss-purpose-card ${
+                          formData.purpose === value
+                            ? "ss-purpose-card-on"
+                            : ""
+                        }`}
                       >
 
                         <input
@@ -1010,7 +889,8 @@ function FormView({
                           name="purpose"
                           value={value}
                           checked={
-                            formData.purpose === value
+                            formData.purpose ===
+                            value
                           }
                           onChange={
                             handleChange
@@ -1021,7 +901,7 @@ function FormView({
                         <Icon size={18} />
 
                         <span>
-                          {label[lang]}
+                          {label}
                         </span>
 
                       </label>
@@ -1032,6 +912,7 @@ function FormView({
               </div>
 
             </div>
+
 
             <div className="ss-form-row">
 
@@ -1047,6 +928,7 @@ function FormView({
                   onChange={handleChange}
                   required
                 >
+
                   <option value="">
                     —
                   </option>
@@ -1054,10 +936,13 @@ function FormView({
                   {CATEGORY_OPTIONS.map(
                     (option) => (
                       <option
-                        key={option}
-                        value={option}
+                        key={getValue(option)}
+                        value={getValue(option)}
                       >
-                        {option}
+                        {getLabel(
+                          option,
+                          lang
+                        )}
                       </option>
                     )
                   )}
@@ -1065,6 +950,7 @@ function FormView({
                 </select>
 
               </div>
+
 
               <div className="ss-form-group">
 
@@ -1086,10 +972,13 @@ function FormView({
                   {OCCUPATION_OPTIONS.map(
                     (option) => (
                       <option
-                        key={option.value}
-                        value={option.value}
+                        key={getValue(option)}
+                        value={getValue(option)}
                       >
-                        {option.label[lang]}
+                        {getLabel(
+                          option,
+                          lang
+                        )}
                       </option>
                     )
                   )}
@@ -1100,21 +989,21 @@ function FormView({
 
             </div>
 
-            {showProjectType && (
+
+            <div className="ss-form-row">
+
               <div className="ss-form-group">
 
                 <label>
-                  {t(
-                    "projectType",
-                    lang
-                  )}
+                  {t("projectType", lang)}
                 </label>
 
                 <select
                   name="projectType"
-                  value={formData.projectType}
+                  value={
+                    formData.projectType
+                  }
                   onChange={handleChange}
-                  required
                 >
 
                   <option value="">
@@ -1124,10 +1013,13 @@ function FormView({
                   {PROJECT_TYPE_OPTIONS.map(
                     (option) => (
                       <option
-                        key={option.value}
-                        value={option.value}
+                        key={getValue(option)}
+                        value={getValue(option)}
                       >
-                        {option.label[lang]}
+                        {getLabel(
+                          option,
+                          lang
+                        )}
                       </option>
                     )
                   )}
@@ -1135,19 +1027,25 @@ function FormView({
                 </select>
 
               </div>
-            )}
+
+            </div>
 
           </fieldset>
 
+
           <Perforation />
 
-          {/* PART B */}
+
+          {/* ==================================================
+              PART B
+              ================================================== */}
 
           <fieldset className="ss-part">
 
             <legend>
               {t("partB", lang)}
             </legend>
+
 
             <div className="ss-form-row">
 
@@ -1169,6 +1067,7 @@ function FormView({
 
               </div>
 
+
               <div className="ss-form-group">
 
                 <label>
@@ -1176,10 +1075,8 @@ function FormView({
                 </label>
 
                 <select
-                  name="educationLevel"
-                  value={
-                    formData.educationLevel
-                  }
+                  name="education"
+                  value={formData.education}
                   onChange={handleChange}
                   required
                 >
@@ -1191,10 +1088,13 @@ function FormView({
                   {EDUCATION_LEVELS.map(
                     (option) => (
                       <option
-                        key={option.value}
-                        value={option.value}
+                        key={getValue(option)}
+                        value={getValue(option)}
                       >
-                        {option.label[lang]}
+                        {getLabel(
+                          option,
+                          lang
+                        )}
                       </option>
                     )
                   )}
@@ -1204,6 +1104,7 @@ function FormView({
               </div>
 
             </div>
+
 
             <div className="ss-form-row">
 
@@ -1230,13 +1131,11 @@ function FormView({
 
               </div>
 
+
               <div className="ss-form-group">
 
                 <label>
-                  {t(
-                    "projectCost",
-                    lang
-                  )}
+                  {t("projectCost", lang)}
                 </label>
 
                 <div className="ss-input-wrapper">
@@ -1262,9 +1161,13 @@ function FormView({
 
           </fieldset>
 
+
           <Perforation />
 
-          {/* PART C */}
+
+          {/* ==================================================
+              PART C
+              ================================================== */}
 
           <fieldset className="ss-part">
 
@@ -1272,95 +1175,90 @@ function FormView({
               {t("partC", lang)}
             </legend>
 
-            {(showStudentQuestions ||
-              formData.occupation === "student") && (
-              <label className="ss-checkbox-row">
+
+            <label className="ss-checkbox-row">
+
+              <input
+                type="checkbox"
+                name="isStudent"
+                checked={
+                  formData.isStudent
+                }
+                onChange={handleChange}
+              />
+
+              {t(
+                "isStudent",
+                lang
+              )}
+
+            </label>
+
+
+            {formData.isStudent && (
+              <div
+                className="ss-form-group"
+                style={{
+                  maxWidth: 320,
+                }}
+              >
+
+                <label>
+                  {t(
+                    "percentile",
+                    lang
+                  )}
+                </label>
 
                 <input
-                  type="checkbox"
-                  name="isStudent"
-                  checked={
-                    formData.isStudent
+                  type="number"
+                  name="percentile"
+                  min="0"
+                  max="100"
+                  value={
+                    formData.percentile
                   }
                   onChange={handleChange}
                 />
 
-                {t(
-                  "isStudent",
-                  lang
-                )}
-
-              </label>
+              </div>
             )}
 
-            {showPercentile &&
-              formData.isStudent && (
-                <div
-                  className="ss-form-group"
-                  style={{ maxWidth: 320 }}
-                >
 
-                  <label>
-                    {t(
-                      "percentile",
-                      lang
-                    )}
-                  </label>
+            <label className="ss-checkbox-row">
 
-                  <input
-                    type="number"
-                    name="percentile"
-                    min="0"
-                    max="100"
-                    value={
-                      formData.percentile
-                    }
-                    onChange={handleChange}
-                  />
+              <input
+                type="checkbox"
+                name="ownsLand"
+                checked={
+                  formData.ownsLand
+                }
+                onChange={handleChange}
+              />
 
-                </div>
+              {t(
+                "ownsLand",
+                lang
               )}
 
-            {showLandQuestion && (
-              <label className="ss-checkbox-row">
-
-                <input
-                  type="checkbox"
-                  name="ownsLand"
-                  checked={
-                    formData.ownsLand
-                  }
-                  onChange={handleChange}
-                />
-
-                {t(
-                  "ownsLand",
-                  lang
-                )}
-
-              </label>
-            )}
-
-            {!showStudentQuestions &&
-              !showLandQuestion && (
-                <p className="ss-helper-text">
-                  No additional special
-                  conditions are needed for
-                  your selected purpose.
-                </p>
-              )}
+            </label>
 
           </fieldset>
 
+
           <Perforation />
 
-          {/* PART D */}
+
+          {/* ==================================================
+              PART D
+              ================================================== */}
 
           <fieldset className="ss-part">
 
             <legend>
               {t("partD", lang)}
             </legend>
+
 
             <div className="ss-form-row">
 
@@ -1396,25 +1294,19 @@ function FormView({
 
               </div>
 
+
               <div className="ss-form-group">
 
                 <label>
-                  {t(
-                    "district",
-                    lang
-                  )}
+                  {t("district", lang)}
                 </label>
 
                 <select
                   name="district"
-                  value={
-                    formData.district
-                  }
+                  value={formData.district}
                   onChange={handleChange}
                   required
-                  disabled={
-                    !formData.state
-                  }
+                  disabled={!formData.state}
                 >
 
                   <option value="">
@@ -1430,9 +1322,14 @@ function FormView({
                   </option>
 
                   {formData.state &&
+                    Array.isArray(
+                      districts[
+                        formData.state
+                      ]
+                    ) &&
                     districts[
                       formData.state
-                    ]?.map(
+                    ].map(
                       (district) => (
                         <option
                           key={district}
@@ -1449,25 +1346,15 @@ function FormView({
 
             </div>
 
-            <p className="ss-prototype-note">
-              <MapPin size={14} />
-              {t(
-                "prototypeNotice",
-                lang
-              )}
-            </p>
-
           </fieldset>
+
 
           <button
             className="ss-btn-primary ss-btn-full"
             type="submit"
           >
-
             {t("submit", lang)}
-
             <ArrowRight size={18} />
-
           </button>
 
         </form>
@@ -1477,6 +1364,7 @@ function FormView({
     </div>
   );
 }
+
 
 /* ============================================================
    RESULTS
@@ -1491,14 +1379,53 @@ function ResultsView({
   setActiveResultId,
   onBack,
 }) {
+  const alternates = results
+    .filter(
+      (scheme) =>
+        scheme.id !== activeScheme.id
+    )
+    .slice(0, 3);
 
-  const alternates =
-    results
-      .filter(
-        (result) =>
-          result.id !== activeScheme.id
-      )
-      .slice(0, 4);
+
+  const reasons =
+    Array.isArray(
+      activeScheme.reasons
+    )
+      ? activeScheme.reasons
+      : [];
+
+
+  const warnings =
+    Array.isArray(
+      activeScheme.warnings
+    )
+      ? activeScheme.warnings
+      : [];
+
+
+  const benefits =
+    Array.isArray(
+      activeScheme.benefits
+    )
+      ? activeScheme.benefits
+      : [];
+
+
+  const documents =
+    Array.isArray(
+      activeScheme.documents
+    )
+      ? activeScheme.documents
+      : [];
+
+
+  const agencies =
+    Array.isArray(
+      activeScheme.implementingAgency
+    )
+      ? activeScheme.implementingAgency
+      : [];
+
 
   return (
     <div className="ss-shell">
@@ -1512,21 +1439,22 @@ function ResultsView({
 
         <button
           className="ss-back-btn"
+          type="button"
           onClick={onBack}
         >
           <ChevronLeft size={16} />
-
           {t(
             "resultsBack",
             lang
           )}
         </button>
 
+
         <div className="ss-page-header">
 
           <div className="ss-badge">
             🎯 {t(
-              "formBadge",
+              "resultsTitle",
               lang
             )}
           </div>
@@ -1547,6 +1475,11 @@ function ResultsView({
 
         </div>
 
+
+        {/* ==================================================
+            MAIN RESULT CARD
+            ================================================== */}
+
         <div className="ss-result-card">
 
           <div className="ss-result-top">
@@ -1564,52 +1497,68 @@ function ResultsView({
                 {activeScheme.name}
               </h2>
 
-              <div
-                className={
-                  activeScheme.eligible
-                    ? "ss-status ss-status-good"
-                    : "ss-status ss-status-warning"
-                }
-              >
-
-                {activeScheme.eligible
-                  ? (
-                    <>
-                      <CheckCircle2 size={15} />
-
-                      {t(
-                        "likelyEligible",
-                        lang
-                      )}
-                    </>
-                  )
-                  : (
-                    <>
-                      <XCircle size={15} />
-
-                      {t(
-                        "conditionsMissing",
-                        lang
-                      )}
-                    </>
-                  )}
-
-              </div>
+              <p className="ss-text-muted">
+                {activeScheme.description}
+              </p>
 
             </div>
 
+
             <StampSeal
               percent={
-                activeScheme.match
+                activeScheme.matchScore
               }
               size={116}
             />
 
           </div>
 
+
           <Perforation />
 
-          {/* ELIGIBILITY */}
+
+          {/* MATCH SCORE */}
+
+          <div className="ss-result-section">
+
+            <h3>
+              <Sparkles size={16} />
+              {activeScheme.matchScore}%{" "}
+              {t(
+                "match",
+                lang
+              )}
+            </h3>
+
+            <div
+              className="ss-match-bar"
+              style={{
+                width: "100%",
+              }}
+            >
+
+              <div
+                className="ss-match-bar-fill"
+                style={{
+                  width: `${Math.max(
+                    0,
+                    Math.min(
+                      100,
+                      activeScheme.matchScore ||
+                        0
+                    )
+                  )}%`,
+                }}
+              />
+
+            </div>
+
+          </div>
+
+
+          {/* ==================================================
+              ELIGIBILITY
+              ================================================== */}
 
           <div className="ss-result-section">
 
@@ -1617,59 +1566,55 @@ function ResultsView({
               <CheckCircle2 size={16} />
 
               {t(
-                "eligibilityBreakdown",
+                "conditions",
                 lang
               )}
             </h3>
 
+
             <div className="ss-eligibility-grid">
 
-              {activeScheme.checks.map(
-                (check) => (
+              {reasons.map(
+                (reason, index) => (
                   <CheckRow
-                    key={check.key}
-                    ok={check.ok}
+                    key={`reason-${index}`}
+                    ok={true}
                   >
-                    {check.label[lang]}
+                    {reason}
                   </CheckRow>
                 )
               )}
+
+
+              {warnings.map(
+                (warning, index) => (
+                  <CheckRow
+                    key={`warning-${index}`}
+                    ok={false}
+                  >
+                    {warning}
+                  </CheckRow>
+                )
+              )}
+
+
+              {reasons.length === 0 &&
+                warnings.length === 0 && (
+                  <CheckRow ok={true}>
+                    {lang === "en"
+                      ? "No additional matching notes."
+                      : "कोई अतिरिक्त मिलान जानकारी नहीं।"}
+                  </CheckRow>
+                )}
 
             </div>
 
           </div>
 
-          {/* WHY MATCH */}
 
-          <div className="ss-result-section">
-
-            <h3>
-              ✨{" "}
-              {t(
-                "whyMatch",
-                lang
-              )}
-            </h3>
-
-            <ul className="ss-reasons-list">
-
-              {activeScheme.reasons.map(
-                (reason, index) => (
-                  <li key={index}>
-                    <CheckCircle2
-                      size={15}
-                    />
-
-                    {reason[lang]}
-                  </li>
-                )
-              )}
-
-            </ul>
-
-          </div>
-
-          {/* MONEY */}
+          {/* ==================================================
+              MONEY
+              ================================================== */}
 
           <div className="ss-scheme-details">
 
@@ -1685,10 +1630,12 @@ function ResultsView({
               </small>
 
               <strong>
-                {activeScheme.maxLoan}
+                {activeScheme.loanAmount ||
+                  "—"}
               </strong>
 
             </div>
+
 
             <div className="ss-detail-box">
 
@@ -1696,37 +1643,93 @@ function ResultsView({
 
               <small>
                 {t(
-                  "interestRate",
+                  "subsidy",
                   lang
                 )}
               </small>
 
               <strong>
-                {activeScheme.interest}
+                {activeScheme.subsidy ||
+                  "—"}
               </strong>
 
             </div>
+
 
             <div className="ss-detail-box">
 
               <Building2 size={18} />
 
               <small>
-                {t(
-                  "repayment",
-                  lang
-                )}
+                {lang === "en"
+                  ? "Scheme category"
+                  : "योजना श्रेणी"}
               </small>
 
               <strong>
-                {activeScheme.repayment}
+                {activeScheme.category ||
+                  "—"}
               </strong>
 
             </div>
 
           </div>
 
-          {/* BENEFITS */}
+
+          {/* ==================================================
+              WHY MATCH
+              ================================================== */}
+
+          <div className="ss-result-section">
+
+            <h3>
+              ✨{" "}
+              {t(
+                "whyMatch",
+                lang
+              )}
+            </h3>
+
+
+            <ul className="ss-reasons-list">
+
+              {reasons.map(
+                (reason, index) => (
+                  <li key={index}>
+
+                    <CheckCircle2
+                      size={15}
+                    />
+
+                    {reason}
+
+                  </li>
+                )
+              )}
+
+
+              {warnings.map(
+                (warning, index) => (
+                  <li key={`w-${index}`}>
+
+                    <XCircle
+                      size={15}
+                    />
+
+                    {warning}
+
+                  </li>
+                )
+              )}
+
+            </ul>
+
+          </div>
+
+
+          {/* ==================================================
+              BENEFITS
+              ================================================== */}
 
           <div className="ss-result-section">
 
@@ -1738,9 +1741,10 @@ function ResultsView({
               )}
             </h3>
 
+
             <ul className="ss-list">
 
-              {activeScheme.benefits.map(
+              {benefits.map(
                 (benefit, index) => (
                   <li key={index}>
                     {benefit}
@@ -1752,22 +1756,28 @@ function ResultsView({
 
           </div>
 
-          {/* DOCUMENTS */}
+
+          {/* ==================================================
+              DOCUMENTS
+              ================================================== */}
 
           <div className="ss-result-section">
 
             <h3>
+
               <FileText size={16} />
 
               {t(
                 "documentsH",
                 lang
               )}
+
             </h3>
+
 
             <ul className="ss-doc-checklist">
 
-              {activeScheme.documents.map(
+              {documents.map(
                 (document, index) => (
                   <li key={index}>
                     {document}
@@ -1779,18 +1789,24 @@ function ResultsView({
 
           </div>
 
-          {/* PARTNERS */}
+
+          {/* ==================================================
+              WHERE TO APPLY
+              ================================================== */}
 
           <div className="ss-result-section">
 
             <h3>
+
               <MapPin size={16} />
 
               {t(
                 "partnersH",
                 lang
               )}
+
             </h3>
+
 
             <p
               className="ss-text-muted"
@@ -1799,14 +1815,16 @@ function ResultsView({
                   "0.75rem",
               }}
             >
-              {formData.district},{" "}
-              {formData.state}
+              {formData.district
+                ? `${formData.district}, ${formData.state}`
+                : formData.state}
             </p>
+
 
             <div className="ss-partner-list">
 
-              {activeScheme.partners.map(
-                (partner, index) => (
+              {agencies.map(
+                (agency, index) => (
                   <div
                     className="ss-partner-card"
                     key={index}
@@ -1814,7 +1832,7 @@ function ResultsView({
 
                     <Users size={15} />
 
-                    {partner}
+                    {agency}
 
                   </div>
                 )
@@ -1822,38 +1840,44 @@ function ResultsView({
 
             </div>
 
-            <a
-              className="ss-official-link"
-              href={
-                activeScheme.sourceUrl
-              }
-              target="_blank"
-              rel="noreferrer"
-            >
 
-              {t(
-                "officialLink",
-                lang
-              )}
+            {activeScheme.officialUrl && (
+              <a
+                className="ss-official-link"
+                href={
+                  activeScheme.officialUrl
+                }
+                target="_blank"
+                rel="noreferrer"
+              >
 
-              {" — "}
+                {t(
+                  "officialLink",
+                  lang
+                )}
 
-              {activeScheme.sourceName}
+                {" — "}
 
-              <ExternalLink
-                size={14}
-              />
+                {activeScheme.officialSource ||
+                  "Official source"}
 
-            </a>
+                <ExternalLink
+                  size={14}
+                />
+
+              </a>
+            )}
 
           </div>
 
         </div>
 
-        {/* ALTERNATES */}
+
+        {/* ==================================================
+            ALTERNATE SCHEMES
+            ================================================== */}
 
         {alternates.length > 0 && (
-
           <div className="ss-alternates">
 
             <h3>
@@ -1863,13 +1887,14 @@ function ResultsView({
               )}
             </h3>
 
+
             <div className="ss-alternates-grid">
 
               {alternates.map(
                 (scheme) => (
-
                   <button
                     key={scheme.id}
+                    type="button"
                     className="ss-alt-card"
                     onClick={() =>
                       setActiveResultId(
@@ -1886,10 +1911,6 @@ function ResultsView({
 
                       <span className="ss-text-muted">
 
-                        {scheme.eligible
-                          ? "✓ "
-                          : ""}
-
                         {t(
                           "viewDetails",
                           lang
@@ -1903,20 +1924,20 @@ function ResultsView({
 
                     </div>
 
+
                     <span className="ss-alt-score">
-                      {scheme.match}%
+                      {scheme.matchScore}%
                     </span>
 
                   </button>
-
                 )
               )}
 
             </div>
 
           </div>
-
         )}
+
 
         <footer className="ss-footer">
 
@@ -1930,6 +1951,279 @@ function ResultsView({
         </footer>
 
       </div>
+
+    </div>
+  );
+}
+
+
+/* ============================================================
+   MAIN APP
+   ============================================================ */
+
+export default function App() {
+
+  const [lang, setLang] =
+    useState("en");
+
+
+  const [view, setView] =
+    useState("home");
+
+
+  const [formData, setFormData] =
+    useState({
+      purpose: "",
+      category: "",
+      projectType: "",
+      occupation: "",
+
+      age: "",
+      income: "",
+      projectCost: "",
+      education: "",
+
+      isStudent: false,
+      percentile: "",
+
+      ownsLand: false,
+
+      state: "",
+      district: "",
+    });
+
+
+  const [results, setResults] =
+    useState([]);
+
+
+  const [activeResultId, setActiveResultId] =
+    useState(null);
+
+
+  /* ==========================================================
+     FORM CHANGE
+     ========================================================== */
+
+  const handleChange = (event) => {
+
+    const {
+      name,
+      value,
+      type,
+      checked,
+    } = event.target;
+
+
+    setFormData((previous) => {
+
+      const next = {
+        ...previous,
+
+        [name]:
+          type === "checkbox"
+            ? checked
+            : value,
+      };
+
+
+      /* Reset district whenever state changes */
+
+      if (name === "state") {
+        next.district = "";
+      }
+
+
+      return next;
+    });
+  };
+
+
+  /* ==========================================================
+     SUBMIT
+     ========================================================== */
+
+  const handleSubmit = (event) => {
+
+    event.preventDefault();
+
+
+    const matched =
+      getMatchedSchemes(
+        formData
+      );
+
+
+    setResults(
+      Array.isArray(matched)
+        ? matched
+        : []
+    );
+
+
+    if (
+      Array.isArray(matched) &&
+      matched.length > 0
+    ) {
+
+      setActiveResultId(
+        matched[0].id
+      );
+
+      setView("results");
+
+    } else {
+
+      setActiveResultId(null);
+
+      setView("results");
+    }
+  };
+
+
+  /* ==========================================================
+     ACTIVE RESULT
+     ========================================================== */
+
+  const activeScheme = useMemo(
+    () =>
+      results.find(
+        (scheme) =>
+          scheme.id ===
+          activeResultId
+      ) ||
+      results[0] ||
+      null,
+    [
+      results,
+      activeResultId,
+    ]
+  );
+
+
+  return (
+    <div className="ss-app">
+
+      {/* ======================================================
+          HOME
+          ====================================================== */}
+
+      {view === "home" && (
+        <HomeView
+          lang={lang}
+          setLang={setLang}
+          onStart={() =>
+            setView("form")
+          }
+        />
+      )}
+
+
+      {/* ======================================================
+          FORM
+          ====================================================== */}
+
+      {view === "form" && (
+        <FormView
+          lang={lang}
+          setLang={setLang}
+          formData={formData}
+          handleChange={
+            handleChange
+          }
+          handleSubmit={
+            handleSubmit
+          }
+          onBack={() =>
+            setView("home")
+          }
+        />
+      )}
+
+
+      {/* ======================================================
+          RESULTS
+          ====================================================== */}
+
+      {view === "results" &&
+        activeScheme && (
+          <ResultsView
+            lang={lang}
+            setLang={setLang}
+            formData={formData}
+            results={results}
+            activeScheme={
+              activeScheme
+            }
+            setActiveResultId={
+              setActiveResultId
+            }
+            onBack={() =>
+              setView("form")
+            }
+          />
+        )}
+
+
+      {/* ======================================================
+          NO RESULTS
+          ====================================================== */}
+
+      {view === "results" &&
+        !activeScheme && (
+          <div className="ss-shell">
+
+            <NavBar
+              lang={lang}
+              setLang={setLang}
+            />
+
+            <div className="ss-page">
+
+              <button
+                className="ss-back-btn"
+                type="button"
+                onClick={() =>
+                  setView("form")
+                }
+              >
+                <ChevronLeft
+                  size={16}
+                />
+
+                {t(
+                  "resultsBack",
+                  lang
+                )}
+              </button>
+
+
+              <div className="ss-page-header">
+
+                <div className="ss-badge">
+                  ⚠️
+                </div>
+
+                <h1>
+                  {t(
+                    "noMatch",
+                    lang
+                  )}
+                </h1>
+
+                <p>
+                  {t(
+                    "disclaimer",
+                    lang
+                  )}
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+        )}
 
     </div>
   );
