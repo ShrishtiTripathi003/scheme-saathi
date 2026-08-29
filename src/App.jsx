@@ -42,6 +42,9 @@ import {
   getPartnerChannels,
   getMapSearchUrl,
 } from "./partners";
+import {
+  DEMO_PROFILES,
+} from "./demoProfiles";
 
 import "./App.css";
 
@@ -1304,6 +1307,74 @@ function HomeView({
 // ============================================================
 // FORM
 // ============================================================
+// ============================================================
+// DEMO PROFILES
+// ============================================================
+
+function DemoProfiles({
+  onSelect,
+  lang,
+}) {
+  return (
+    <div className="ss-demo-box">
+
+      <div className="ss-demo-header">
+
+        <div>
+          <strong>
+            {lang === "en"
+              ? "Demo / Test Profiles"
+              : "डेमो / टेस्ट प्रोफ़ाइल"}
+          </strong>
+
+          <p>
+            {lang === "en"
+              ? "Use a ready-made profile to demonstrate the matcher quickly."
+              : "मैचर को जल्दी दिखाने के लिए तैयार प्रोफ़ाइल चुनें।"}
+          </p>
+        </div>
+
+        <Sparkles
+          size={19}
+        />
+
+      </div>
+
+
+      <div className="ss-demo-grid">
+
+        {DEMO_PROFILES.map(
+          (profile) => (
+            <button
+              type="button"
+              className="ss-demo-card"
+              key={profile.id}
+              onClick={() =>
+                onSelect(
+                  profile.data
+                )
+              }
+            >
+
+              <strong>
+                {profile.name}
+              </strong>
+
+              <span>
+                {
+                  profile.description
+                }
+              </span>
+
+            </button>
+          )
+        )}
+
+      </div>
+
+    </div>
+  );
+}
 
 function FormView({
   lang,
@@ -1312,6 +1383,7 @@ function FormView({
   handleChange,
   handleSubmit,
   onBack,
+  onDemoSelect,
 }) {
   const adult =
     Number(formData.age) >=
@@ -1388,6 +1460,12 @@ function FormView({
           </p>
 
         </div>
+        <DemoProfiles
+          lang={lang}
+          onSelect={
+            onDemoSelect
+          }
+        />
 
         <div className="ss-progress">
 
@@ -3584,7 +3662,26 @@ export default function App() {
       }
     );
   };
+  // ==========================================================
+  // DEMO PROFILE
+  // ==========================================================
 
+  const handleDemoSelect = (
+    profile
+  ) => {
+    setFormData({
+      ...profile,
+    });
+
+    setView(
+      "form"
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
 
   // ==========================================================
   // SUBMIT
@@ -3696,6 +3793,9 @@ export default function App() {
           }
           onBack={() =>
             setView("home")
+          }
+          onDemoSelect={
+            handleDemoSelect
           }
         />
       )}
