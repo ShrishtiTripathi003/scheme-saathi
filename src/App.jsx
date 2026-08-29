@@ -1,4 +1,9 @@
-import { useMemo, useState } from "react";
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useState,
+} from "react";
 
 import {
   ArrowRight,
@@ -7,6 +12,7 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  ClipboardList,
   ExternalLink,
   FileText,
   Globe,
@@ -26,19 +32,20 @@ import {
   ALL_STATES,
   CATEGORY_OPTIONS,
   EDUCATION_LEVELS,
-  getMatchedSchemes,
   OCCUPATION_OPTIONS,
   PROJECT_TYPE_OPTIONS,
   PURPOSE_OPTIONS,
+  getMatchedSchemes,
 } from "./schemes";
 
 import { districts } from "./districts";
 
 import "./App.css";
 
-/* ============================================================
-   TRANSLATION
-   ============================================================ */
+
+// ============================================================
+// TRANSLATION
+// ============================================================
 
 const STR = {
   navTag: {
@@ -73,9 +80,9 @@ const STR = {
 
   heroText: {
     en:
-      "Answer a short form and get matched schemes, benefits, documents and where to apply.",
+      "Tell us what you need and we'll compare relevant government schemes, eligibility conditions, benefits and application information.",
     hi:
-      "एक छोटा फ़ॉर्म भरें और अपनी जानकारी के अनुसार योजनाएं, लाभ, दस्तावेज़ और आवेदन की जानकारी पाएं।",
+      "हमें बताएं कि आपको किस सहायता की आवश्यकता है और हम संबंधित सरकारी योजनाओं, पात्रता शर्तों, लाभ और आवेदन जानकारी की तुलना करेंगे।",
   },
 
   ctaStart: {
@@ -89,44 +96,49 @@ const STR = {
   },
 
   feat1h: {
-    en: "Matched to you",
-    hi: "आपके अनुसार मिलान",
+    en: "Purpose-first matching",
+    hi: "उद्देश्य के आधार पर मिलान",
   },
 
   feat1t: {
     en:
-      "We compare your purpose, age, income, education, category, occupation and location.",
+      "Your actual requirement is compared with the activities supported by each scheme.",
     hi:
-      "हम उद्देश्य, आयु, आय, शिक्षा, श्रेणी, व्यवसाय और स्थान की तुलना करते हैं।",
+      "आपकी वास्तविक आवश्यकता की तुलना प्रत्येक योजना की समर्थित गतिविधियों से की जाती है।",
   },
 
   feat2h: {
-    en: "Money, made clear",
-    hi: "स्पष्ट वित्तीय जानकारी",
+    en: "Eligibility separately checked",
+    hi: "पात्रता अलग से जांची जाती है",
   },
 
   feat2t: {
     en:
-      "See loan limits, interest, subsidies and benefits in one place.",
+      "A high match score does not automatically mean government eligibility.",
     hi:
-      "ऋण सीमा, ब्याज, सब्सिडी और लाभ की जानकारी एक ही जगह देखें।",
+      "उच्च मिलान स्कोर का अर्थ स्वतः सरकारी पात्रता नहीं है।",
   },
 
   feat3h: {
-    en: "Know what to carry",
-    hi: "ज़रूरी दस्तावेज़ जानें",
+    en: "Documents & official source",
+    hi: "दस्तावेज़ और आधिकारिक स्रोत",
   },
 
   feat3t: {
     en:
-      "Get a simple document checklist and application guidance.",
+      "See documents, implementing agencies and the official scheme page.",
     hi:
-      "ज़रूरी दस्तावेज़ों की सूची और आवेदन की जानकारी पाएं।",
+      "दस्तावेज़, कार्यान्वयन एजेंसी और आधिकारिक योजना पृष्ठ देखें।",
+  },
+
+  formBack: {
+    en: "Back",
+    hi: "वापस",
   },
 
   formBadge: {
-    en: "Your details",
-    hi: "आपकी जानकारी",
+    en: "Government-aligned scheme matching",
+    hi: "सरकारी नियम आधारित योजना मिलान",
   },
 
   formTitle: {
@@ -136,39 +148,39 @@ const STR = {
 
   formSub: {
     en:
-      "Your answers help us rank the most relevant government schemes.",
+      "Only information relevant to scheme matching is requested.",
     hi:
-      "आपके उत्तरों से हम आपके लिए सबसे उपयुक्त सरकारी योजनाओं को रैंक करते हैं।",
+      "केवल योजना मिलान के लिए आवश्यक जानकारी मांगी जाती है।",
   },
 
   partA: {
-    en: "PART A — WHAT YOU NEED",
-    hi: "भाग A — आपको क्या चाहिए",
+    en: "Part A — Your requirement",
+    hi: "भाग A — आपकी आवश्यकता",
   },
 
   partB: {
-    en: "PART B — YOUR DETAILS",
-    hi: "भाग B — आपकी जानकारी",
+    en: "Part B — Your profile",
+    hi: "भाग B — आपकी प्रोफ़ाइल",
   },
 
   partC: {
-    en: "PART C — ADDITIONAL DETAILS",
-    hi: "भाग C — अतिरिक्त जानकारी",
+    en: "Part C — Eligibility details",
+    hi: "भाग C — पात्रता विवरण",
   },
 
   partD: {
-    en: "PART D — YOUR LOCATION",
-    hi: "भाग D — आपका स्थान",
+    en: "Part D — Location",
+    hi: "भाग D — स्थान",
   },
 
   purposeQ: {
     en: "What do you need help with?",
-    hi: "आपको किस चीज़ में सहायता चाहिए?",
+    hi: "आपको किस चीज़ में मदद चाहिए?",
   },
 
   category: {
-    en: "Category",
-    hi: "श्रेणी",
+    en: "Social category",
+    hi: "सामाजिक श्रेणी",
   },
 
   occupation: {
@@ -186,34 +198,87 @@ const STR = {
     hi: "आयु",
   },
 
-  education: {
-    en: "Highest education completed",
-    hi: "उच्चतम शिक्षा",
-  },
-
   income: {
     en: "Annual family income",
     hi: "वार्षिक पारिवारिक आय",
   },
 
   projectCost: {
-    en: "Estimated project / education cost",
-    hi: "अनुमानित परियोजना / शिक्षा लागत",
+    en: "Estimated project / activity cost",
+    hi: "अनुमानित परियोजना / गतिविधि लागत",
   },
 
-  isStudent: {
+  education: {
+    en: "Highest education completed",
+    hi: "उच्चतम शिक्षा",
+  },
+
+  newEnterprise: {
+    en: "Is this a new enterprise / project?",
+    hi: "क्या यह नया उद्यम / परियोजना है?",
+  },
+
+  previousSubsidy: {
+    en:
+      "Have you already received government subsidy for this unit/project?",
+    hi:
+      "क्या इस इकाई/परियोजना के लिए पहले सरकारी सब्सिडी मिली है?",
+  },
+
+  previousTarun: {
+    en:
+      "Have you successfully repaid a previous MUDRA Tarun loan?",
+    hi:
+      "क्या आपने पिछला MUDRA Tarun ऋण सफलतापूर्वक चुका दिया है?",
+  },
+
+  gender: {
+    en: "Gender",
+    hi: "लिंग",
+  },
+
+  artisanTrade: {
+    en: "Traditional artisan trade",
+    hi: "पारंपरिक शिल्प ट्रेड",
+  },
+
+  similarGovernmentLoan: {
+    en:
+      "Have you taken a similar government self-employment/business loan in the last 5 years?",
+    hi:
+      "क्या पिछले 5 वर्षों में समान सरकारी स्व-रोजगार/व्यवसाय ऋण लिया है?",
+  },
+
+  governmentEmployee: {
+    en: "Are you a government employee?",
+    hi: "क्या आप सरकारी कर्मचारी हैं?",
+  },
+
+  streetVendorProof: {
+    en:
+      "Do you have street-vendor identification/certificate or applicable proof?",
+    hi:
+      "क्या आपके पास स्ट्रीट वेंडर पहचान/प्रमाणपत्र या लागू प्रमाण है?",
+  },
+
+  farmerStatus: {
+    en: "Are you currently a farmer?",
+    hi: "क्या आप वर्तमान में किसान हैं?",
+  },
+
+  landAvailable: {
+    en: "Is land available for the proposed activity?",
+    hi: "क्या प्रस्तावित गतिविधि के लिए भूमि उपलब्ध है?",
+  },
+
+  agriculturalPump: {
+    en: "Do you have an agricultural pump?",
+    hi: "क्या आपके पास कृषि पंप है?",
+  },
+
+  student: {
     en: "I am currently a student",
-    hi: "मैं वर्तमान में छात्र/छात्रा हूं",
-  },
-
-  percentile: {
-    en: "Class 12 percentile",
-    hi: "कक्षा 12 पर्सेंटाइल",
-  },
-
-  ownsLand: {
-    en: "I own / cultivate agricultural land",
-    hi: "मेरे पास कृषि भूमि है / मैं कृषि भूमि पर खेती करता/करती हूं",
+    hi: "मैं वर्तमान में छात्र/छात्रा हूँ",
   },
 
   state: {
@@ -236,19 +301,19 @@ const STR = {
     hi: "जिला चुनें",
   },
 
-  submit: {
-    en: "Find my schemes",
-    hi: "मेरी योजनाएं खोजें",
+  optional: {
+    en: "Optional",
+    hi: "वैकल्पिक",
   },
 
-  formBack: {
-    en: "Back",
-    hi: "वापस",
+  submit: {
+    en: "Find my scheme",
+    hi: "मेरी योजना खोजें",
   },
 
   resultsBack: {
-    en: "Change my answers",
-    hi: "मेरे उत्तर बदलें",
+    en: "Back to form",
+    hi: "फ़ॉर्म पर वापस जाएं",
   },
 
   resultsTitle: {
@@ -258,29 +323,44 @@ const STR = {
 
   resultsSub: {
     en:
-      "These schemes are ranked using the information you provided.",
+      "Match score shows relevance. Eligibility is checked separately.",
     hi:
-      "इन योजनाओं को आपके द्वारा दी गई जानकारी के आधार पर रैंक किया गया है।",
+      "मिलान स्कोर प्रासंगिकता बताता है। पात्रता अलग से जांची जाती है।",
   },
 
   bestMatch: {
-    en: "BEST MATCH",
-    hi: "सबसे अच्छा मिलान",
+    en: "Best match",
+    hi: "सर्वश्रेष्ठ मिलान",
   },
 
-  match: {
-    en: "match",
-    hi: "मिलान",
+  matchScore: {
+    en: "Match score",
+    hi: "मिलान स्कोर",
+  },
+
+  eligibility: {
+    en: "Eligibility",
+    hi: "पात्रता",
+  },
+
+  likelyEligible: {
+    en: "Likely eligible",
+    hi: "संभावित रूप से पात्र",
+  },
+
+  conditionsMissing: {
+    en: "Conditions not met",
+    hi: "कुछ शर्तें पूरी नहीं हुईं",
+  },
+
+  eligibilityBreakdown: {
+    en: "Government eligibility checks",
+    hi: "सरकारी पात्रता जांच",
   },
 
   whyMatch: {
-    en: "Why this scheme matches",
-    hi: "यह योजना आपके लिए क्यों उपयुक्त है",
-  },
-
-  conditions: {
-    en: "Eligibility signals",
-    hi: "पात्रता संकेत",
+    en: "Why this scheme matched",
+    hi: "यह योजना क्यों मिली",
   },
 
   benefitsH: {
@@ -289,8 +369,8 @@ const STR = {
   },
 
   documentsH: {
-    en: "Documents you'll need",
-    hi: "ज़रूरी दस्तावेज़",
+    en: "Documents you may need",
+    hi: "संभावित ज़रूरी दस्तावेज़",
   },
 
   partnersH: {
@@ -298,14 +378,19 @@ const STR = {
     hi: "कहाँ आवेदन करें",
   },
 
-  maxLoan: {
+  loanAmount: {
     en: "Loan / financial support",
     hi: "ऋण / वित्तीय सहायता",
   },
 
-  subsidy: {
-    en: "Subsidy / support",
-    hi: "सब्सिडी / सहायता",
+  interest: {
+    en: "Interest / rate",
+    hi: "ब्याज / दर",
+  },
+
+  repayment: {
+    en: "Repayment",
+    hi: "भुगतान",
   },
 
   officialLink: {
@@ -314,8 +399,8 @@ const STR = {
   },
 
   otherMatches: {
-    en: "Other schemes worth a look",
-    hi: "अन्य उपयुक्त योजनाएं",
+    en: "Other relevant schemes",
+    hi: "अन्य संबंधित योजनाएं",
   },
 
   viewDetails: {
@@ -325,62 +410,61 @@ const STR = {
 
   noMatch: {
     en:
-      "We couldn't find a strong match. Try changing some answers.",
+      "No directly relevant scheme was found for this requirement.",
     hi:
-      "हमें कोई मजबूत मिलान नहीं मिला। कुछ उत्तर बदलकर फिर कोशिश करें।",
+      "इस आवश्यकता के लिए कोई सीधे संबंधित योजना नहीं मिली।",
   },
 
   disclaimer: {
     en:
-      "Scheme Saathi is an independent guide, not a government website. Match scores are estimates — always confirm final eligibility on the official portal before applying.",
+      "Scheme Saathi is an independent guide, not a government website. Match scores and eligibility checks are indicative. Final eligibility is determined by the relevant implementing agency and current scheme guidelines.",
     hi:
-      "स्कीम साथी एक स्वतंत्र मार्गदर्शक है, कोई सरकारी वेबसाइट नहीं। मिलान स्कोर अनुमानित हैं — आवेदन से पहले आधिकारिक पोर्टल पर अंतिम पात्रता अवश्य जांचें।",
+      "स्कीम साथी एक स्वतंत्र मार्गदर्शक है, कोई सरकारी वेबसाइट नहीं। मिलान स्कोर और पात्रता जांच संकेतात्मक हैं। अंतिम पात्रता संबंधित कार्यान्वयन एजेंसी और वर्तमान योजना दिशानिर्देशों द्वारा निर्धारित होती है।",
   },
 };
 
-function t(field, lang) {
-  return STR[field]?.[lang] ?? field;
+
+function t(key, lang) {
+  return (
+    STR[key]?.[lang] ??
+    key
+  );
 }
 
 
-/* ============================================================
-   HELPERS
-   ============================================================ */
+// ============================================================
+// HELPERS
+// ============================================================
 
-function getLabel(option, lang) {
+function labelOf(
+  option,
+  lang
+) {
   if (!option) return "";
 
-  if (typeof option === "string") {
-    return option;
+  if (
+    typeof option.label ===
+    "object"
+  ) {
+    return (
+      option.label?.[lang] ??
+      option.label?.en ??
+      ""
+    );
   }
 
-  if (typeof option.label === "object") {
-    return option.label?.[lang] ?? option.label?.en ?? "";
-  }
-
-  return option.label ?? option.value ?? "";
+  return option.label ?? "";
 }
 
 
-function getValue(option) {
-  if (typeof option === "string") {
-    return option;
-  }
-
-  return option?.value ?? "";
-}
-
-
-function getPurposeIcon(value) {
+function iconForPurpose(
+  value
+) {
   switch (value) {
     case "business":
       return Store;
 
-    case "education":
-      return GraduationCap;
-
-    case "street_vendor":
-    case "street-vendor":
+    case "street-vending":
       return Landmark;
 
     case "artisan":
@@ -389,15 +473,11 @@ function getPurposeIcon(value) {
     case "agriculture":
       return Wheat;
 
-    case "livestock":
-      return Wheat;
-
     case "solar":
       return Sparkles;
 
-    case "food_processing":
-    case "food":
-      return Store;
+    case "livestock":
+      return Wheat;
 
     default:
       return Store;
@@ -405,11 +485,15 @@ function getPurposeIcon(value) {
 }
 
 
-/* ============================================================
-   STAMP
-   ============================================================ */
+// ============================================================
+// STAMP
+// ============================================================
 
-function describeFullCircle(cx, cy, r) {
+function circlePath(
+  cx,
+  cy,
+  r
+) {
   return `
     M ${cx + r},${cy}
     A ${r},${r} 0 1,1 ${cx - r},${cy}
@@ -418,17 +502,27 @@ function describeFullCircle(cx, cy, r) {
 }
 
 
-function StampSeal({ percent = 0, size = 120 }) {
-  const safePercent = Math.max(
-    0,
-    Math.min(100, Number(percent) || 0)
-  );
+function StampSeal({
+  percent,
+  size = 116,
+}) {
+  const rawId = useId();
 
-  const cx = size / 2;
-  const cy = size / 2;
-  const r = size / 2 - size * 0.16;
+  const pathId =
+    `seal-${rawId.replace(
+      /:/g,
+      ""
+    )}`;
 
-  const pathId = `seal-path-${size}-${safePercent}`;
+  const cx =
+    size / 2;
+
+  const cy =
+    size / 2;
+
+  const r =
+    size / 2 -
+    size * 0.16;
 
   return (
     <svg
@@ -436,13 +530,17 @@ function StampSeal({ percent = 0, size = 120 }) {
       width={size}
       height={size}
       className="ss-stamp"
+      aria-label={`${percent}% match`}
       role="img"
-      aria-label={`${safePercent}% match`}
     >
       <defs>
         <path
           id={pathId}
-          d={describeFullCircle(cx, cy, r)}
+          d={circlePath(
+            cx,
+            cy,
+            r
+          )}
           fill="none"
         />
       </defs>
@@ -453,38 +551,56 @@ function StampSeal({ percent = 0, size = 120 }) {
         r={r}
         fill="none"
         stroke="var(--stamp)"
-        strokeWidth={size * 0.028}
+        strokeWidth={
+          size * 0.028
+        }
       />
 
       <circle
         cx={cx}
         cy={cy}
-        r={r - size * 0.075}
+        r={
+          r -
+          size * 0.075
+        }
         fill="none"
         stroke="var(--stamp)"
-        strokeWidth={size * 0.012}
+        strokeWidth={
+          size * 0.012
+        }
         strokeDasharray={`${size * 0.02} ${size * 0.028}`}
       />
 
       <text
-        fill="var(--stamp)"
-        fontFamily="var(--font-mono)"
-        fontSize={size * 0.22}
-        fontWeight="700"
-        textAnchor="middle"
         x={cx}
-        y={cy + size * 0.075}
+        y={
+          cy +
+          size * 0.07
+        }
+        textAnchor="middle"
+        fill="var(--stamp)"
+        fontFamily="var(--font-display)"
+        fontWeight="700"
+        fontSize={
+          size * 0.25
+        }
       >
-        {safePercent}%
+        {percent}%
       </text>
 
       <text
+        x={cx}
+        y={
+          cy +
+          size * 0.23
+        }
+        textAnchor="middle"
         fill="var(--stamp)"
         fontFamily="var(--font-mono)"
-        fontSize={size * 0.075}
-        textAnchor="middle"
-        x={cx}
-        y={cy + size * 0.25}
+        fontSize={
+          size * 0.065
+        }
+        letterSpacing="2"
       >
         MATCH
       </text>
@@ -493,82 +609,123 @@ function StampSeal({ percent = 0, size = 120 }) {
 }
 
 
-/* ============================================================
-   PERFORATION
-   ============================================================ */
+// ============================================================
+// CHECK ROW
+// ============================================================
 
-function Perforation() {
-  return <div className="ss-perforation" />;
-}
-
-
-/* ============================================================
-   CHECK ROW
-   ============================================================ */
-
-function CheckRow({ ok, children }) {
+function CheckRow({
+  ok,
+  children,
+}) {
   return (
     <div className="ss-check-row">
       {ok ? (
-        <CheckCircle2 size={16} />
+        <CheckCircle2
+          size={17}
+          className="ss-icon-ok"
+        />
       ) : (
-        <XCircle size={16} />
+        <XCircle
+          size={17}
+          className="ss-icon-no"
+        />
       )}
 
-      <span>{children}</span>
+      <span
+        className={
+          ok
+            ? ""
+            : "ss-text-muted"
+        }
+      >
+        {children}
+      </span>
     </div>
   );
 }
 
 
-/* ============================================================
-   NAVBAR
-   ============================================================ */
+// ============================================================
+// PERFORATION
+// ============================================================
 
-function NavBar({ lang, setLang }) {
+function Perforation() {
+  return (
+    <div
+      className="ss-perforation"
+      aria-hidden="true"
+    />
+  );
+}
+
+
+// ============================================================
+// NAVBAR
+// ============================================================
+
+function NavBar({
+  lang,
+  setLang,
+}) {
   return (
     <nav className="ss-nav">
+
       <div className="ss-nav-inner">
 
         <div className="ss-logo">
+
           <div className="ss-logo-mark">
             SS
           </div>
 
           <div>
-            <h2>Scheme Saathi</h2>
+            <h2>
+              Scheme Saathi
+            </h2>
 
             <p>
-              {t("navTag", lang)}
+              {t(
+                "navTag",
+                lang
+              )}
             </p>
           </div>
+
         </div>
 
+
         <button
-          className="ss-lang-btn"
           type="button"
+          className="ss-lang-btn"
           onClick={() =>
             setLang(
-              lang === "en"
+              lang ===
+                "en"
                 ? "hi"
                 : "en"
             )
           }
         >
-          <Globe size={15} />
+          <Globe
+            size={15}
+          />
 
-          {t("langBtn", lang)}
+          {t(
+            "langBtn",
+            lang
+          )}
         </button>
 
       </div>
+
     </nav>
   );
 }
 
 
-/* ============================================================
-   HOME
-   ============================================================ */
+// ============================================================
+// HOME
+// ============================================================
 
 function HomeView({
   lang,
@@ -579,17 +736,17 @@ function HomeView({
     {
       Icon: Sparkles,
       h: "feat1h",
-      text: "feat1t",
+      p: "feat1t",
     },
     {
-      Icon: Banknote,
+      Icon: CheckCircle2,
       h: "feat2h",
-      text: "feat2t",
+      p: "feat2t",
     },
     {
       Icon: FileText,
       h: "feat3h",
-      text: "feat3t",
+      p: "feat3t",
     },
   ];
 
@@ -606,36 +763,63 @@ function HomeView({
         <div className="ss-hero-copy">
 
           <div className="ss-kicker">
-            🇮🇳 {t("heroKicker", lang)}
+            🇮🇳{" "}
+            {t(
+              "heroKicker",
+              lang
+            )}
           </div>
 
           <h1 className="ss-hero-title">
 
-            {t("heroTitle1", lang)}{" "}
+            {t(
+              "heroTitle1",
+              lang
+            )}{" "}
 
             <span className="ss-hero-accent">
-              {t("heroTitle2", lang)}
+              {t(
+                "heroTitle2",
+                lang
+              )}
             </span>{" "}
 
-            {t("heroTitle3", lang)}
+            {t(
+              "heroTitle3",
+              lang
+            )}
 
           </h1>
 
           <p className="ss-hero-text">
-            {t("heroText", lang)}
+            {t(
+              "heroText",
+              lang
+            )}
           </p>
 
           <button
-            className="ss-btn-primary"
             type="button"
-            onClick={onStart}
+            className="ss-btn-primary"
+            onClick={
+              onStart
+            }
           >
-            {t("ctaStart", lang)}
-            <ArrowRight size={18} />
+            {t(
+              "ctaStart",
+              lang
+            )}
+
+            <ArrowRight
+              size={18}
+            />
           </button>
 
           <p className="ss-small-tag">
-            {t("smallTag", lang)}
+            {t(
+              "smallTag",
+              lang
+            )}
           </p>
 
         </div>
@@ -647,23 +831,36 @@ function HomeView({
         >
 
           <div className="ss-doc-header">
-            <FileText size={16} />
-            <span>Scheme Saathi</span>
+
+            <FileText
+              size={16}
+            />
+
+            <span>
+              Scheme Saathi
+            </span>
+
           </div>
 
           <div
             className="ss-doc-line"
-            style={{ width: "78%" }}
+            style={{
+              width: "78%",
+            }}
           />
 
           <div
             className="ss-doc-line"
-            style={{ width: "56%" }}
+            style={{
+              width: "54%",
+            }}
           />
 
           <div
             className="ss-doc-line"
-            style={{ width: "68%" }}
+            style={{
+              width: "66%",
+            }}
           />
 
           <Perforation />
@@ -676,21 +873,23 @@ function HomeView({
             />
 
             <div>
+
               <strong>
-                Government Scheme
+                Verified-style match
               </strong>
 
               <span
                 className="ss-text-muted"
                 style={{
-                  display: "block",
-                  fontSize: "0.8rem",
+                  display:
+                    "block",
+                  fontSize:
+                    "0.8rem",
                 }}
               >
-                {lang === "en"
-                  ? "Illustrative match"
-                  : "उदाहरण मिलान"}
+                Illustrative only
               </span>
+
             </div>
 
           </div>
@@ -706,7 +905,7 @@ function HomeView({
           ({
             Icon,
             h,
-            text: textKey,
+            p,
           }) => (
             <div
               className="ss-feature"
@@ -714,7 +913,9 @@ function HomeView({
             >
 
               <div className="ss-feature-icon">
-                <Icon size={20} />
+                <Icon
+                  size={20}
+                />
               </div>
 
               <h3>
@@ -722,7 +923,7 @@ function HomeView({
               </h3>
 
               <p>
-                {t(textKey, lang)}
+                {t(p, lang)}
               </p>
 
             </div>
@@ -734,7 +935,10 @@ function HomeView({
 
       <footer className="ss-footer ss-footer-dark">
         <p>
-          {t("disclaimer", lang)}
+          {t(
+            "disclaimer",
+            lang
+          )}
         </p>
       </footer>
 
@@ -743,9 +947,9 @@ function HomeView({
 }
 
 
-/* ============================================================
-   FORM
-   ============================================================ */
+// ============================================================
+// FORM
+// ============================================================
 
 function FormView({
   lang,
@@ -755,27 +959,74 @@ function FormView({
   handleSubmit,
   onBack,
 }) {
-  const partsDone = [
-    ["purpose", "category", "occupation"],
+  const adult =
+    Number(
+      formData.age
+    ) >= 18;
+
+
+  const progress = [
+    [
+      "purpose",
+      "category",
+    ].every(
+      (key) =>
+        String(
+          formData[key] ??
+            ""
+        ).length > 0
+    ),
+
     [
       "age",
       "income",
       "projectCost",
       "education",
-    ],
-    [],
-    ["state", "district"],
+    ].every(
+      (key) =>
+        String(
+          formData[key] ??
+            ""
+        ).length > 0
+    ),
+
+    true,
+
+    [
+      "state",
+      "district",
+    ].every(
+      (key) =>
+        String(
+          formData[key] ??
+            ""
+        ).length > 0
+    ),
   ];
 
-  const isPartDone = (keys) =>
-    keys.length === 0
-      ? true
-      : keys.every(
-          (key) =>
-            String(
-              formData[key] ?? ""
-            ).length > 0
-        );
+
+  const trades = [
+    "Carpenter",
+    "Boat Maker",
+    "Armourer",
+    "Blacksmith",
+    "Hammer and Tool Kit Maker",
+    "Locksmith",
+    "Goldsmith",
+    "Potter",
+    "Sculptor",
+    "Stone Worker",
+    "Cobbler",
+    "Mason",
+    "Basket / Mat / Broom Maker",
+    "Traditional Toy Maker",
+    "Barber",
+    "Garland Maker",
+    "Washerman",
+    "Tailor",
+    "Fishing Net Maker",
+  ];
+
 
   return (
     <div className="ss-shell">
@@ -788,27 +1039,43 @@ function FormView({
       <div className="ss-page">
 
         <button
-          className="ss-back-btn"
           type="button"
+          className="ss-back-btn"
           onClick={onBack}
         >
-          <ChevronLeft size={16} />
-          {t("formBack", lang)}
+          <ChevronLeft
+            size={16}
+          />
+
+          {t(
+            "formBack",
+            lang
+          )}
         </button>
 
 
         <div className="ss-page-header">
 
           <div className="ss-badge">
-            🎯 {t("formBadge", lang)}
+            🎯{" "}
+            {t(
+              "formBadge",
+              lang
+            )}
           </div>
 
           <h1>
-            {t("formTitle", lang)}
+            {t(
+              "formTitle",
+              lang
+            )}
           </h1>
 
           <p>
-            {t("formSub", lang)}
+            {t(
+              "formSub",
+              lang
+            )}
           </p>
 
         </div>
@@ -816,12 +1083,12 @@ function FormView({
 
         <div className="ss-progress">
 
-          {partsDone.map(
-            (keys, index) => (
+          {progress.map(
+            (done, index) => (
               <div
                 key={index}
                 className={`ss-progress-dot ${
-                  isPartDone(keys)
+                  done
                     ? "ss-progress-dot-on"
                     : ""
                 }`}
@@ -834,7 +1101,9 @@ function FormView({
 
         <form
           className="ss-form"
-          onSubmit={handleSubmit}
+          onSubmit={
+            handleSubmit
+          }
         >
 
           {/* ==================================================
@@ -844,14 +1113,20 @@ function FormView({
           <fieldset className="ss-part">
 
             <legend>
-              {t("partA", lang)}
+              {t(
+                "partA",
+                lang
+              )}
             </legend>
 
 
             <div className="ss-form-group">
 
               <label>
-                {t("purposeQ", lang)}
+                {t(
+                  "purposeQ",
+                  lang
+                )}
               </label>
 
 
@@ -859,26 +1134,19 @@ function FormView({
 
                 {PURPOSE_OPTIONS.map(
                   (option) => {
-                    const value =
-                      getValue(option);
-
-                    const label =
-                      getLabel(
-                        option,
-                        lang
-                      );
-
                     const Icon =
-                      option.icon ||
-                      getPurposeIcon(
-                        value
+                      iconForPurpose(
+                        option.value
                       );
 
                     return (
                       <label
-                        key={value}
+                        key={
+                          option.value
+                        }
                         className={`ss-purpose-card ${
-                          formData.purpose === value
+                          formData.purpose ===
+                          option.value
                             ? "ss-purpose-card-on"
                             : ""
                         }`}
@@ -887,10 +1155,12 @@ function FormView({
                         <input
                           type="radio"
                           name="purpose"
-                          value={value}
+                          value={
+                            option.value
+                          }
                           checked={
                             formData.purpose ===
-                            value
+                            option.value
                           }
                           onChange={
                             handleChange
@@ -898,10 +1168,15 @@ function FormView({
                           required
                         />
 
-                        <Icon size={18} />
+                        <Icon
+                          size={18}
+                        />
 
                         <span>
-                          {label}
+                          {labelOf(
+                            option,
+                            lang
+                          )}
                         </span>
 
                       </label>
@@ -919,13 +1194,20 @@ function FormView({
               <div className="ss-form-group">
 
                 <label>
-                  {t("category", lang)}
+                  {t(
+                    "category",
+                    lang
+                  )}
                 </label>
 
                 <select
                   name="category"
-                  value={formData.category}
-                  onChange={handleChange}
+                  value={
+                    formData.category
+                  }
+                  onChange={
+                    handleChange
+                  }
                   required
                 >
 
@@ -934,15 +1216,20 @@ function FormView({
                   </option>
 
                   {CATEGORY_OPTIONS.map(
-                    (option) => (
+                    (
+                      option
+                    ) => (
                       <option
-                        key={getValue(option)}
-                        value={getValue(option)}
+                        key={
+                          option.value
+                        }
+                        value={
+                          option.value
+                        }
                       >
-                        {getLabel(
-                          option,
-                          lang
-                        )}
+                        {
+                          option.label
+                        }
                       </option>
                     )
                   )}
@@ -952,40 +1239,55 @@ function FormView({
               </div>
 
 
-              <div className="ss-form-group">
+              {adult && (
+                <div className="ss-form-group">
 
-                <label>
-                  {t("occupation", lang)}
-                </label>
+                  <label>
+                    {t(
+                      "occupation",
+                      lang
+                    )}
+                  </label>
 
-                <select
-                  name="occupation"
-                  value={formData.occupation}
-                  onChange={handleChange}
-                  required
-                >
+                  <select
+                    name="occupation"
+                    value={
+                      formData.occupation
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    required
+                  >
 
-                  <option value="">
-                    —
-                  </option>
+                    <option value="">
+                      —
+                    </option>
 
-                  {OCCUPATION_OPTIONS.map(
-                    (option) => (
-                      <option
-                        key={getValue(option)}
-                        value={getValue(option)}
-                      >
-                        {getLabel(
-                          option,
-                          lang
-                        )}
-                      </option>
-                    )
-                  )}
+                    {OCCUPATION_OPTIONS.map(
+                      (
+                        option
+                      ) => (
+                        <option
+                          key={
+                            option.value
+                          }
+                          value={
+                            option.value
+                          }
+                        >
+                          {labelOf(
+                            option,
+                            lang
+                          )}
+                        </option>
+                      )
+                    )}
 
-                </select>
+                  </select>
 
-              </div>
+                </div>
+              )}
 
             </div>
 
@@ -995,7 +1297,10 @@ function FormView({
               <div className="ss-form-group">
 
                 <label>
-                  {t("projectType", lang)}
+                  {t(
+                    "projectType",
+                    lang
+                  )}
                 </label>
 
                 <select
@@ -1003,7 +1308,10 @@ function FormView({
                   value={
                     formData.projectType
                   }
-                  onChange={handleChange}
+                  onChange={
+                    handleChange
+                  }
+                  required
                 >
 
                   <option value="">
@@ -1011,12 +1319,18 @@ function FormView({
                   </option>
 
                   {PROJECT_TYPE_OPTIONS.map(
-                    (option) => (
+                    (
+                      option
+                    ) => (
                       <option
-                        key={getValue(option)}
-                        value={getValue(option)}
+                        key={
+                          option.value
+                        }
+                        value={
+                          option.value
+                        }
                       >
-                        {getLabel(
+                        {labelOf(
                           option,
                           lang
                         )}
@@ -1043,7 +1357,10 @@ function FormView({
           <fieldset className="ss-part">
 
             <legend>
-              {t("partB", lang)}
+              {t(
+                "partB",
+                lang
+              )}
             </legend>
 
 
@@ -1052,7 +1369,10 @@ function FormView({
               <div className="ss-form-group">
 
                 <label>
-                  {t("age", lang)}
+                  {t(
+                    "age",
+                    lang
+                  )}
                 </label>
 
                 <input
@@ -1060,8 +1380,12 @@ function FormView({
                   name="age"
                   min="1"
                   max="100"
-                  value={formData.age}
-                  onChange={handleChange}
+                  value={
+                    formData.age
+                  }
+                  onChange={
+                    handleChange
+                  }
                   required
                 />
 
@@ -1071,13 +1395,20 @@ function FormView({
               <div className="ss-form-group">
 
                 <label>
-                  {t("education", lang)}
+                  {t(
+                    "education",
+                    lang
+                  )}
                 </label>
 
                 <select
                   name="education"
-                  value={formData.education}
-                  onChange={handleChange}
+                  value={
+                    formData.education
+                  }
+                  onChange={
+                    handleChange
+                  }
                   required
                 >
 
@@ -1086,12 +1417,18 @@ function FormView({
                   </option>
 
                   {EDUCATION_LEVELS.map(
-                    (option) => (
+                    (
+                      option
+                    ) => (
                       <option
-                        key={getValue(option)}
-                        value={getValue(option)}
+                        key={
+                          option.value
+                        }
+                        value={
+                          option.value
+                        }
                       >
-                        {getLabel(
+                        {labelOf(
                           option,
                           lang
                         )}
@@ -1111,19 +1448,28 @@ function FormView({
               <div className="ss-form-group">
 
                 <label>
-                  {t("income", lang)}
+                  {t(
+                    "income",
+                    lang
+                  )}
                 </label>
 
                 <div className="ss-input-wrapper">
 
-                  <span>₹</span>
+                  <span>
+                    ₹
+                  </span>
 
                   <input
                     type="number"
                     name="income"
                     min="0"
-                    value={formData.income}
-                    onChange={handleChange}
+                    value={
+                      formData.income
+                    }
+                    onChange={
+                      handleChange
+                    }
                     required
                   />
 
@@ -1135,12 +1481,17 @@ function FormView({
               <div className="ss-form-group">
 
                 <label>
-                  {t("projectCost", lang)}
+                  {t(
+                    "projectCost",
+                    lang
+                  )}
                 </label>
 
                 <div className="ss-input-wrapper">
 
-                  <span>₹</span>
+                  <span>
+                    ₹
+                  </span>
 
                   <input
                     type="number"
@@ -1149,7 +1500,9 @@ function FormView({
                     value={
                       formData.projectCost
                     }
-                    onChange={handleChange}
+                    onChange={
+                      handleChange
+                    }
                     required
                   />
 
@@ -1172,8 +1525,472 @@ function FormView({
           <fieldset className="ss-part">
 
             <legend>
-              {t("partC", lang)}
+              {t(
+                "partC",
+                lang
+              )}
             </legend>
+
+
+            <div className="ss-form-row">
+
+              <div className="ss-form-group">
+
+                <label>
+                  {t(
+                    "newEnterprise",
+                    lang
+                  )}
+                </label>
+
+                <select
+                  name="isNewEnterprise"
+                  value={
+                    formData.isNewEnterprise
+                  }
+                  onChange={
+                    handleChange
+                  }
+                >
+
+                  <option value="">
+                    Select
+                  </option>
+
+                  <option value="yes">
+                    Yes
+                  </option>
+
+                  <option value="no">
+                    No
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <div className="ss-form-group">
+
+                <label>
+                  {t(
+                    "previousSubsidy",
+                    lang
+                  )}
+                </label>
+
+                <select
+                  name="previousGovernmentSubsidy"
+                  value={
+                    formData.previousGovernmentSubsidy
+                  }
+                  onChange={
+                    handleChange
+                  }
+                >
+
+                  <option value="">
+                    Select
+                  </option>
+
+                  <option value="yes">
+                    Yes
+                  </option>
+
+                  <option value="no">
+                    No
+                  </option>
+
+                </select>
+
+              </div>
+
+            </div>
+
+
+            <div className="ss-form-row">
+
+              <div className="ss-form-group">
+
+                <label>
+                  {t(
+                    "gender",
+                    lang
+                  )}
+                </label>
+
+                <select
+                  name="gender"
+                  value={
+                    formData.gender
+                  }
+                  onChange={
+                    handleChange
+                  }
+                >
+
+                  <option value="">
+                    Select
+                  </option>
+
+                  <option value="female">
+                    Female
+                  </option>
+
+                  <option value="male">
+                    Male
+                  </option>
+
+                  <option value="other">
+                    Other
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <div className="ss-form-group">
+
+                <label>
+                  {t(
+                    "previousTarun",
+                    lang
+                  )}
+                </label>
+
+                <select
+                  name="previousTarunLoanRepaid"
+                  value={
+                    formData.previousTarunLoanRepaid
+                  }
+                  onChange={
+                    handleChange
+                  }
+                >
+
+                  <option value="">
+                    {t(
+                      "optional",
+                      lang
+                    )}
+                  </option>
+
+                  <option value="yes">
+                    Yes
+                  </option>
+
+                  <option value="no">
+                    No
+                  </option>
+
+                  <option value="not-applicable">
+                    Not applicable
+                  </option>
+
+                </select>
+
+              </div>
+
+            </div>
+
+
+            <div className="ss-form-row">
+
+              <div className="ss-form-group">
+
+                <label>
+                  {t(
+                    "artisanTrade",
+                    lang
+                  )}
+                </label>
+
+                <select
+                  name="artisanTrade"
+                  value={
+                    formData.artisanTrade
+                  }
+                  onChange={
+                    handleChange
+                  }
+                >
+
+                  <option value="">
+                    {t(
+                      "optional",
+                      lang
+                    )}
+                  </option>
+
+                  {trades.map(
+                    (
+                      trade
+                    ) => (
+                      <option
+                        key={
+                          trade
+                        }
+                        value={
+                          trade
+                        }
+                      >
+                        {trade}
+                      </option>
+                    )
+                  )}
+
+                </select>
+
+              </div>
+
+
+              <div className="ss-form-group">
+
+                <label>
+                  {t(
+                    "streetVendorProof",
+                    lang
+                  )}
+                </label>
+
+                <select
+                  name="streetVendorProof"
+                  value={
+                    formData.streetVendorProof
+                  }
+                  onChange={
+                    handleChange
+                  }
+                >
+
+                  <option value="">
+                    {t(
+                      "optional",
+                      lang
+                    )}
+                  </option>
+
+                  <option value="yes">
+                    Yes
+                  </option>
+
+                  <option value="no">
+                    No
+                  </option>
+
+                </select>
+
+              </div>
+
+            </div>
+
+
+            <div className="ss-form-row">
+
+              <div className="ss-form-group">
+
+                <label>
+                  {t(
+                    "similarGovernmentLoan",
+                    lang
+                  )}
+                </label>
+
+                <select
+                  name="similarGovernmentLoanLast5Years"
+                  value={
+                    formData.similarGovernmentLoanLast5Years
+                  }
+                  onChange={
+                    handleChange
+                  }
+                >
+
+                  <option value="">
+                    {t(
+                      "optional",
+                      lang
+                    )}
+                  </option>
+
+                  <option value="yes">
+                    Yes
+                  </option>
+
+                  <option value="no">
+                    No
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <div className="ss-form-group">
+
+                <label>
+                  {t(
+                    "governmentEmployee",
+                    lang
+                  )}
+                </label>
+
+                <select
+                  name="governmentEmployee"
+                  value={
+                    formData.governmentEmployee
+                  }
+                  onChange={
+                    handleChange
+                  }
+                >
+
+                  <option value="">
+                    {t(
+                      "optional",
+                      lang
+                    )}
+                  </option>
+
+                  <option value="yes">
+                    Yes
+                  </option>
+
+                  <option value="no">
+                    No
+                  </option>
+
+                </select>
+
+              </div>
+
+            </div>
+
+
+            <div className="ss-form-row">
+
+              <div className="ss-form-group">
+
+                <label>
+                  {t(
+                    "farmerStatus",
+                    lang
+                  )}
+                </label>
+
+                <select
+                  name="farmerStatus"
+                  value={
+                    formData.farmerStatus
+                  }
+                  onChange={
+                    handleChange
+                  }
+                >
+
+                  <option value="">
+                    {t(
+                      "optional",
+                      lang
+                    )}
+                  </option>
+
+                  <option value="yes">
+                    Yes
+                  </option>
+
+                  <option value="no">
+                    No
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <div className="ss-form-group">
+
+                <label>
+                  {t(
+                    "landAvailable",
+                    lang
+                  )}
+                </label>
+
+                <select
+                  name="landAvailable"
+                  value={
+                    formData.landAvailable
+                  }
+                  onChange={
+                    handleChange
+                  }
+                >
+
+                  <option value="">
+                    {t(
+                      "optional",
+                      lang
+                    )}
+                  </option>
+
+                  <option value="yes">
+                    Yes
+                  </option>
+
+                  <option value="no">
+                    No
+                  </option>
+
+                </select>
+
+              </div>
+
+            </div>
+
+
+            <div className="ss-form-row">
+
+              <div className="ss-form-group">
+
+                <label>
+                  {t(
+                    "agriculturalPump",
+                    lang
+                  )}
+                </label>
+
+                <select
+                  name="existingAgriculturalPump"
+                  value={
+                    formData.existingAgriculturalPump
+                  }
+                  onChange={
+                    handleChange
+                  }
+                >
+
+                  <option value="">
+                    {t(
+                      "optional",
+                      lang
+                    )}
+                  </option>
+
+                  <option value="yes">
+                    Yes
+                  </option>
+
+                  <option value="no">
+                    No
+                  </option>
+
+                </select>
+
+              </div>
+
+            </div>
 
 
             <label className="ss-checkbox-row">
@@ -1184,60 +2001,13 @@ function FormView({
                 checked={
                   formData.isStudent
                 }
-                onChange={handleChange}
-              />
-
-              {t(
-                "isStudent",
-                lang
-              )}
-
-            </label>
-
-
-            {formData.isStudent && (
-              <div
-                className="ss-form-group"
-                style={{
-                  maxWidth: 320,
-                }}
-              >
-
-                <label>
-                  {t(
-                    "percentile",
-                    lang
-                  )}
-                </label>
-
-                <input
-                  type="number"
-                  name="percentile"
-                  min="0"
-                  max="100"
-                  value={
-                    formData.percentile
-                  }
-                  onChange={handleChange}
-                />
-
-              </div>
-            )}
-
-
-            <label className="ss-checkbox-row">
-
-              <input
-                type="checkbox"
-                name="ownsLand"
-                checked={
-                  formData.ownsLand
+                onChange={
+                  handleChange
                 }
-                onChange={handleChange}
               />
 
               {t(
-                "ownsLand",
+                "student",
                 lang
               )}
 
@@ -1256,7 +2026,10 @@ function FormView({
           <fieldset className="ss-part">
 
             <legend>
-              {t("partD", lang)}
+              {t(
+                "partD",
+                lang
+              )}
             </legend>
 
 
@@ -1265,13 +2038,20 @@ function FormView({
               <div className="ss-form-group">
 
                 <label>
-                  {t("state", lang)}
+                  {t(
+                    "state",
+                    lang
+                  )}
                 </label>
 
                 <select
                   name="state"
-                  value={formData.state}
-                  onChange={handleChange}
+                  value={
+                    formData.state
+                  }
+                  onChange={
+                    handleChange
+                  }
                   required
                 >
 
@@ -1280,10 +2060,16 @@ function FormView({
                   </option>
 
                   {ALL_STATES.map(
-                    (state) => (
+                    (
+                      state
+                    ) => (
                       <option
-                        key={state}
-                        value={state}
+                        key={
+                          state
+                        }
+                        value={
+                          state
+                        }
                       >
                         {state}
                       </option>
@@ -1298,15 +2084,24 @@ function FormView({
               <div className="ss-form-group">
 
                 <label>
-                  {t("district", lang)}
+                  {t(
+                    "district",
+                    lang
+                  )}
                 </label>
 
                 <select
                   name="district"
-                  value={formData.district}
-                  onChange={handleChange}
+                  value={
+                    formData.district
+                  }
+                  onChange={
+                    handleChange
+                  }
                   required
-                  disabled={!formData.state}
+                  disabled={
+                    !formData.state
+                  }
                 >
 
                   <option value="">
@@ -1321,21 +2116,28 @@ function FormView({
                         )}
                   </option>
 
-                  {formData.state &&
-                    Array.isArray(
-                      districts[
-                        formData.state
-                      ]
-                    ) &&
+                  {Array.isArray(
+                    districts[
+                      formData.state
+                    ]
+                  ) &&
                     districts[
                       formData.state
                     ].map(
-                      (district) => (
+                      (
+                        district
+                      ) => (
                         <option
-                          key={district}
-                          value={district}
+                          key={
+                            district
+                          }
+                          value={
+                            district
+                          }
                         >
-                          {district}
+                          {
+                            district
+                          }
                         </option>
                       )
                     )}
@@ -1350,11 +2152,17 @@ function FormView({
 
 
           <button
-            className="ss-btn-primary ss-btn-full"
             type="submit"
+            className="ss-btn-primary ss-btn-full"
           >
-            {t("submit", lang)}
-            <ArrowRight size={18} />
+            {t(
+              "submit",
+              lang
+            )}
+
+            <ArrowRight
+              size={18}
+            />
           </button>
 
         </form>
@@ -1366,9 +2174,9 @@ function FormView({
 }
 
 
-/* ============================================================
-   RESULTS
-   ============================================================ */
+// ============================================================
+// RESULTS
+// ============================================================
 
 function ResultsView({
   lang,
@@ -1379,52 +2187,14 @@ function ResultsView({
   setActiveResultId,
   onBack,
 }) {
-  const alternates = results
-    .filter(
-      (scheme) =>
-        scheme.id !== activeScheme.id
-    )
-    .slice(0, 3);
-
-
-  const reasons =
-    Array.isArray(
-      activeScheme.reasons
-    )
-      ? activeScheme.reasons
-      : [];
-
-
-  const warnings =
-    Array.isArray(
-      activeScheme.warnings
-    )
-      ? activeScheme.warnings
-      : [];
-
-
-  const benefits =
-    Array.isArray(
-      activeScheme.benefits
-    )
-      ? activeScheme.benefits
-      : [];
-
-
-  const documents =
-    Array.isArray(
-      activeScheme.documents
-    )
-      ? activeScheme.documents
-      : [];
-
-
-  const agencies =
-    Array.isArray(
-      activeScheme.implementingAgency
-    )
-      ? activeScheme.implementingAgency
-      : [];
+  const alternates =
+    results
+      .filter(
+        (scheme) =>
+          scheme.id !==
+          activeScheme.id
+      )
+      .slice(0, 3);
 
 
   return (
@@ -1438,11 +2208,14 @@ function ResultsView({
       <div className="ss-page">
 
         <button
-          className="ss-back-btn"
           type="button"
+          className="ss-back-btn"
           onClick={onBack}
         >
-          <ChevronLeft size={16} />
+          <ChevronLeft
+            size={16}
+          />
+
           {t(
             "resultsBack",
             lang
@@ -1453,7 +2226,8 @@ function ResultsView({
         <div className="ss-page-header">
 
           <div className="ss-badge">
-            🎯 {t(
+            🎯{" "}
+            {t(
               "resultsTitle",
               lang
             )}
@@ -1476,10 +2250,6 @@ function ResultsView({
         </div>
 
 
-        {/* ==================================================
-            MAIN RESULT CARD
-            ================================================== */}
-
         <div className="ss-result-card">
 
           <div className="ss-result-top">
@@ -1498,15 +2268,52 @@ function ResultsView({
               </h2>
 
               <p className="ss-text-muted">
-                {activeScheme.description}
+                {
+                  activeScheme.description
+                }
               </p>
+
+
+              <div
+                className={
+                  activeScheme.eligible
+                    ? "ss-status ss-status-good"
+                    : "ss-status ss-status-warning"
+                }
+              >
+
+                {activeScheme.eligible ? (
+                  <>
+                    <CheckCircle2
+                      size={15}
+                    />
+
+                    {t(
+                      "likelyEligible",
+                      lang
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <XCircle
+                      size={15}
+                    />
+
+                    {t(
+                      "conditionsMissing",
+                      lang
+                    )}
+                  </>
+                )}
+
+              </div>
 
             </div>
 
 
             <StampSeal
               percent={
-                activeScheme.matchScore
+                activeScheme.match
               }
               size={116}
             />
@@ -1522,89 +2329,68 @@ function ResultsView({
           <div className="ss-result-section">
 
             <h3>
-              <Sparkles size={16} />
-              {activeScheme.matchScore}%{" "}
-              {t(
-                "match",
-                lang
-              )}
-            </h3>
-
-            <div
-              className="ss-match-bar"
-              style={{
-                width: "100%",
-              }}
-            >
-
-              <div
-                className="ss-match-bar-fill"
-                style={{
-                  width: `${Math.max(
-                    0,
-                    Math.min(
-                      100,
-                      activeScheme.matchScore ||
-                        0
-                    )
-                  )}%`,
-                }}
+              <Sparkles
+                size={16}
               />
 
-            </div>
+              {t(
+                "matchScore",
+                lang
+              )}
+
+              :{" "}
+
+              {
+                activeScheme.match
+              }%
+
+            </h3>
 
           </div>
 
 
-          {/* ==================================================
-              ELIGIBILITY
-              ================================================== */}
+          {/* ELIGIBILITY */}
 
           <div className="ss-result-section">
 
             <h3>
-              <CheckCircle2 size={16} />
+
+              <CheckCircle2
+                size={16}
+              />
 
               {t(
-                "conditions",
+                "eligibilityBreakdown",
                 lang
               )}
+
             </h3>
 
 
             <div className="ss-eligibility-grid">
 
-              {reasons.map(
-                (reason, index) => (
-                  <CheckRow
-                    key={`reason-${index}`}
-                    ok={true}
-                  >
-                    {reason}
-                  </CheckRow>
-                )
-              )}
-
-
-              {warnings.map(
-                (warning, index) => (
-                  <CheckRow
-                    key={`warning-${index}`}
-                    ok={false}
-                  >
-                    {warning}
-                  </CheckRow>
-                )
-              )}
-
-
-              {reasons.length === 0 &&
-                warnings.length === 0 && (
-                  <CheckRow ok={true}>
-                    {lang === "en"
-                      ? "No additional matching notes."
-                      : "कोई अतिरिक्त मिलान जानकारी नहीं।"}
-                  </CheckRow>
+              {Array.isArray(
+                activeScheme.checks
+              ) &&
+                activeScheme.checks.map(
+                  (
+                    check
+                  ) => (
+                    <CheckRow
+                      key={
+                        check.key
+                      }
+                      ok={
+                        check.ok
+                      }
+                    >
+                      {
+                        check.label[
+                          lang
+                        ]
+                      }
+                    </CheckRow>
+                  )
                 )}
 
             </div>
@@ -1612,26 +2398,121 @@ function ResultsView({
           </div>
 
 
-          {/* ==================================================
-              MONEY
-              ================================================== */}
+          {/* WHY MATCH */}
+
+          {activeScheme.reasons?.length >
+            0 && (
+            <div className="ss-result-section">
+
+              <h3>
+                ✨{" "}
+                {t(
+                  "whyMatch",
+                  lang
+                )}
+              </h3>
+
+
+              <ul className="ss-reasons-list">
+
+                {activeScheme.reasons.map(
+                  (
+                    reason,
+                    index
+                  ) => (
+                    <li
+                      key={
+                        index
+                      }
+                    >
+
+                      <CheckCircle2
+                        size={15}
+                      />
+
+                      {
+                        reason[
+                          lang
+                        ]
+                      }
+
+                    </li>
+                  )
+                )}
+
+              </ul>
+
+            </div>
+          )}
+
+
+          {/* WARNINGS */}
+
+          {activeScheme.warnings?.length >
+            0 && (
+            <div className="ss-result-section">
+
+              <h3>
+                <XCircle
+                  size={16}
+                />
+
+                {t(
+                  "conditionsMissing",
+                  lang
+                )}
+              </h3>
+
+
+              <ul className="ss-list">
+
+                {activeScheme.warnings.map(
+                  (
+                    warning,
+                    index
+                  ) => (
+                    <li
+                      key={
+                        index
+                      }
+                    >
+                      {
+                        warning[
+                          lang
+                        ]
+                      }
+                    </li>
+                  )
+                )}
+
+              </ul>
+
+            </div>
+          )}
+
+
+          {/* MONEY */}
 
           <div className="ss-scheme-details">
 
             <div className="ss-detail-box">
 
-              <Wallet size={18} />
+              <Wallet
+                size={18}
+              />
 
               <small>
                 {t(
-                  "maxLoan",
+                  "loanAmount",
                   lang
                 )}
               </small>
 
               <strong>
-                {activeScheme.loanAmount ||
-                  "—"}
+                {
+                  activeScheme.loanAmount ??
+                  "—"
+                }
               </strong>
 
             </div>
@@ -1639,18 +2520,22 @@ function ResultsView({
 
             <div className="ss-detail-box">
 
-              <Banknote size={18} />
+              <Banknote
+                size={18}
+              />
 
               <small>
                 {t(
-                  "subsidy",
+                  "interest",
                   lang
                 )}
               </small>
 
               <strong>
-                {activeScheme.subsidy ||
-                  "—"}
+                {
+                  activeScheme.interest ??
+                  "—"
+                }
               </strong>
 
             </div>
@@ -1658,17 +2543,22 @@ function ResultsView({
 
             <div className="ss-detail-box">
 
-              <Building2 size={18} />
+              <Building2
+                size={18}
+              />
 
               <small>
-                {lang === "en"
-                  ? "Scheme category"
-                  : "योजना श्रेणी"}
+                {t(
+                  "repayment",
+                  lang
+                )}
               </small>
 
               <strong>
-                {activeScheme.category ||
-                  "—"}
+                {
+                  activeScheme.emi ??
+                  "—"
+                }
               </strong>
 
             </div>
@@ -1676,60 +2566,7 @@ function ResultsView({
           </div>
 
 
-          {/* ==================================================
-              WHY MATCH
-              ================================================== */}
-
-          <div className="ss-result-section">
-
-            <h3>
-              ✨{" "}
-              {t(
-                "whyMatch",
-                lang
-              )}
-            </h3>
-
-
-            <ul className="ss-reasons-list">
-
-              {reasons.map(
-                (reason, index) => (
-                  <li key={index}>
-
-                    <CheckCircle2
-                      size={15}
-                    />
-
-                    {reason}
-
-                  </li>
-                )
-              )}
-
-
-              {warnings.map(
-                (warning, index) => (
-                  <li key={`w-${index}`}>
-
-                    <XCircle
-                      size={15}
-                    />
-
-                    {warning}
-
-                  </li>
-                )
-              )}
-
-            </ul>
-
-          </div>
-
-
-          {/* ==================================================
-              BENEFITS
-              ================================================== */}
+          {/* BENEFITS */}
 
           <div className="ss-result-section">
 
@@ -1744,9 +2581,18 @@ function ResultsView({
 
             <ul className="ss-list">
 
-              {benefits.map(
-                (benefit, index) => (
-                  <li key={index}>
+              {(activeScheme.benefits ??
+                []
+              ).map(
+                (
+                  benefit,
+                  index
+                ) => (
+                  <li
+                    key={
+                      index
+                    }
+                  >
                     {benefit}
                   </li>
                 )
@@ -1757,15 +2603,15 @@ function ResultsView({
           </div>
 
 
-          {/* ==================================================
-              DOCUMENTS
-              ================================================== */}
+          {/* DOCUMENTS */}
 
           <div className="ss-result-section">
 
             <h3>
 
-              <FileText size={16} />
+              <FileText
+                size={16}
+              />
 
               {t(
                 "documentsH",
@@ -1777,9 +2623,18 @@ function ResultsView({
 
             <ul className="ss-doc-checklist">
 
-              {documents.map(
-                (document, index) => (
-                  <li key={index}>
+              {(activeScheme.documents ??
+                []
+              ).map(
+                (
+                  document,
+                  index
+                ) => (
+                  <li
+                    key={
+                      index
+                    }
+                  >
                     {document}
                   </li>
                 )
@@ -1790,15 +2645,15 @@ function ResultsView({
           </div>
 
 
-          {/* ==================================================
-              WHERE TO APPLY
-              ================================================== */}
+          {/* APPLY */}
 
           <div className="ss-result-section">
 
             <h3>
 
-              <MapPin size={16} />
+              <MapPin
+                size={16}
+              />
 
               {t(
                 "partnersH",
@@ -1823,14 +2678,24 @@ function ResultsView({
 
             <div className="ss-partner-list">
 
-              {agencies.map(
-                (agency, index) => (
+              {(
+                activeScheme.implementingAgency ??
+                []
+              ).map(
+                (
+                  agency,
+                  index
+                ) => (
                   <div
                     className="ss-partner-card"
-                    key={index}
+                    key={
+                      index
+                    }
                   >
 
-                    <Users size={15} />
+                    <Users
+                      size={15}
+                    />
 
                     {agency}
 
@@ -1858,8 +2723,9 @@ function ResultsView({
 
                 {" — "}
 
-                {activeScheme.officialSource ||
-                  "Official source"}
+                {
+                  activeScheme.officialSource
+                }
 
                 <ExternalLink
                   size={14}
@@ -1873,11 +2739,10 @@ function ResultsView({
         </div>
 
 
-        {/* ==================================================
-            ALTERNATE SCHEMES
-            ================================================== */}
+        {/* ALTERNATES */}
 
-        {alternates.length > 0 && (
+        {alternates.length >
+          0 && (
           <div className="ss-alternates">
 
             <h3>
@@ -1891,9 +2756,13 @@ function ResultsView({
             <div className="ss-alternates-grid">
 
               {alternates.map(
-                (scheme) => (
+                (
+                  scheme
+                ) => (
                   <button
-                    key={scheme.id}
+                    key={
+                      scheme.id
+                    }
                     type="button"
                     className="ss-alt-card"
                     onClick={() =>
@@ -1906,13 +2775,21 @@ function ResultsView({
                     <div>
 
                       <strong>
-                        {scheme.name}
+                        {
+                          scheme.name
+                        }
                       </strong>
 
                       <span className="ss-text-muted">
 
+                        {
+                          scheme.match
+                        }%
+
+                        {" "}
+
                         {t(
-                          "viewDetails",
+                          "matchScore",
                           lang
                         )}
 
@@ -1926,7 +2803,9 @@ function ResultsView({
 
 
                     <span className="ss-alt-score">
-                      {scheme.matchScore}%
+                      {
+                        scheme.match
+                      }%
                     </span>
 
                   </button>
@@ -1957,11 +2836,37 @@ function ResultsView({
 }
 
 
-/* ============================================================
-   MAIN APP
-   ============================================================ */
+// ============================================================
+// MAIN APP
+// ============================================================
 
 export default function App() {
+
+  useEffect(() => {
+    const id =
+      "scheme-saathi-fonts";
+
+    if (
+      !document.getElementById(
+        id
+      )
+    ) {
+      const link =
+        document.createElement(
+          "link"
+        );
+
+      link.id = id;
+      link.rel = "stylesheet";
+      link.href =
+        "https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap";
+
+      document.head.appendChild(
+        link
+      );
+    }
+  }, []);
+
 
   const [lang, setLang] =
     useState("en");
@@ -1971,42 +2876,60 @@ export default function App() {
     useState("home");
 
 
+  const [results, setResults] =
+    useState([]);
+
+
+  const [
+    activeResultId,
+    setActiveResultId,
+  ] = useState(null);
+
+
   const [formData, setFormData] =
     useState({
       purpose: "",
       category: "",
-      projectType: "",
       occupation: "",
+      projectType: "",
 
       age: "",
       income: "",
       projectCost: "",
       education: "",
 
-      isStudent: false,
-      percentile: "",
+      isNewEnterprise: "",
+      previousGovernmentSubsidy: "",
+      previousTarunLoanRepaid: "",
 
-      ownsLand: false,
+      gender: "",
+
+      artisanTrade: "",
+      similarGovernmentLoanLast5Years:
+        "",
+      governmentEmployee: "",
+
+      streetVendorProof: "",
+
+      farmerStatus: "",
+      landAvailable: "",
+      existingAgriculturalPump:
+        "",
+
+      isStudent: false,
 
       state: "",
       district: "",
     });
 
 
-  const [results, setResults] =
-    useState([]);
+  // ==========================================================
+  // CHANGE
+  // ==========================================================
 
-
-  const [activeResultId, setActiveResultId] =
-    useState(null);
-
-
-  /* ==========================================================
-     FORM CHANGE
-     ========================================================== */
-
-  const handleChange = (event) => {
-
+  const handleChange = (
+    event
+  ) => {
     const {
       name,
       value,
@@ -2015,119 +2938,164 @@ export default function App() {
     } = event.target;
 
 
-    setFormData((previous) => {
+    setFormData(
+      (previous) => {
 
-      const next = {
-        ...previous,
+        const next = {
+          ...previous,
 
-        [name]:
-          type === "checkbox"
-            ? checked
-            : value,
-      };
+          [name]:
+            type ===
+            "checkbox"
+              ? checked
+              : value,
+        };
 
 
-      /* Reset district whenever state changes */
+        // ----------------------------------------------------
+        // AGE ↔ OCCUPATION
+        // ----------------------------------------------------
 
-      if (name === "state") {
-        next.district = "";
+        if (
+          name === "age" &&
+          Number(value) <
+            18
+        ) {
+          next.occupation =
+            "";
+        }
+
+
+        // ----------------------------------------------------
+        // STATE ↔ DISTRICT
+        // ----------------------------------------------------
+
+        if (
+          name === "state"
+        ) {
+          next.district =
+            "";
+        }
+
+
+        return next;
       }
-
-
-      return next;
-    });
+    );
   };
 
 
-  /* ==========================================================
-     SUBMIT
-     ========================================================== */
+  // ==========================================================
+  // SUBMIT
+  // ==========================================================
 
-  const handleSubmit = (event) => {
-
+  const handleSubmit = (
+    event
+  ) => {
     event.preventDefault();
 
 
-    const matched =
-      getMatchedSchemes(
-        formData
+    try {
+
+      const matched =
+        getMatchedSchemes(
+          formData
+        );
+
+
+      const safeResults =
+        Array.isArray(
+          matched
+        )
+          ? matched
+          : [];
+
+
+      setResults(
+        safeResults
       );
 
-
-    setResults(
-      Array.isArray(matched)
-        ? matched
-        : []
-    );
-
-
-    if (
-      Array.isArray(matched) &&
-      matched.length > 0
-    ) {
 
       setActiveResultId(
-        matched[0].id
+        safeResults[0]
+          ?.id ?? null
       );
 
-      setView("results");
 
-    } else {
+      setView(
+        "results"
+      );
 
-      setActiveResultId(null);
 
-      setView("results");
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+
+    } catch (error) {
+
+      console.error(
+        "SCHEME MATCHING ERROR:",
+        error
+      );
+
+      alert(
+        "Something went wrong while matching schemes. Please check the browser console."
+      );
     }
   };
 
 
-  /* ==========================================================
-     ACTIVE RESULT
-     ========================================================== */
+  // ==========================================================
+  // ACTIVE RESULT
+  // ==========================================================
 
-  const activeScheme = useMemo(
-    () =>
-      results.find(
-        (scheme) =>
-          scheme.id ===
-          activeResultId
-      ) ||
-      results[0] ||
-      null,
-    [
-      results,
-      activeResultId,
-    ]
-  );
+  const activeScheme =
+    useMemo(
+      () =>
+        results.find(
+          (scheme) =>
+            scheme.id ===
+            activeResultId
+        ) ||
+        results[0] ||
+        null,
+
+      [
+        results,
+        activeResultId,
+      ]
+    );
 
 
   return (
     <div className="ss-app">
 
-      {/* ======================================================
-          HOME
-          ====================================================== */}
-
-      {view === "home" && (
+      {view ===
+        "home" && (
         <HomeView
           lang={lang}
-          setLang={setLang}
+          setLang={
+            setLang
+          }
           onStart={() =>
-            setView("form")
+            setView(
+              "form"
+            )
           }
         />
       )}
 
 
-      {/* ======================================================
-          FORM
-          ====================================================== */}
-
-      {view === "form" && (
+      {view ===
+        "form" && (
         <FormView
           lang={lang}
-          setLang={setLang}
-          formData={formData}
+          setLang={
+            setLang
+          }
+          formData={
+            formData
+          }
           handleChange={
             handleChange
           }
@@ -2135,23 +3103,28 @@ export default function App() {
             handleSubmit
           }
           onBack={() =>
-            setView("home")
+            setView(
+              "home"
+            )
           }
         />
       )}
 
 
-      {/* ======================================================
-          RESULTS
-          ====================================================== */}
-
-      {view === "results" &&
+      {view ===
+        "results" &&
         activeScheme && (
           <ResultsView
             lang={lang}
-            setLang={setLang}
-            formData={formData}
-            results={results}
+            setLang={
+              setLang
+            }
+            formData={
+              formData
+            }
+            results={
+              results
+            }
             activeScheme={
               activeScheme
             }
@@ -2159,71 +3132,74 @@ export default function App() {
               setActiveResultId
             }
             onBack={() =>
-              setView("form")
+              setView(
+                "form"
+              )
             }
           />
         )}
 
 
-      {/* ======================================================
-          NO RESULTS
-          ====================================================== */}
-
-      {view === "results" &&
+      {view ===
+        "results" &&
         !activeScheme && (
-          <div className="ss-shell">
+        <div className="ss-shell">
 
-            <NavBar
-              lang={lang}
-              setLang={setLang}
-            />
+          <NavBar
+            lang={lang}
+            setLang={
+              setLang
+            }
+          />
 
-            <div className="ss-page">
+          <div className="ss-page">
 
-              <button
-                className="ss-back-btn"
-                type="button"
-                onClick={() =>
-                  setView("form")
-                }
-              >
-                <ChevronLeft
-                  size={16}
-                />
+            <button
+              type="button"
+              className="ss-back-btn"
+              onClick={() =>
+                setView(
+                  "form"
+                )
+              }
+            >
+              <ChevronLeft
+                size={16}
+              />
 
+              {t(
+                "resultsBack",
+                lang
+              )}
+            </button>
+
+
+            <div className="ss-page-header">
+
+              <div className="ss-badge">
+                ℹ️
+              </div>
+
+              <h1>
                 {t(
-                  "resultsBack",
+                  "noMatch",
                   lang
                 )}
-              </button>
+              </h1>
 
-
-              <div className="ss-page-header">
-
-                <div className="ss-badge">
-                  ⚠️
-                </div>
-
-                <h1>
-                  {t(
-                    "noMatch",
-                    lang
-                  )}
-                </h1>
-
-                <p>
-                  {t(
-                    "disclaimer",
-                    lang
-                  )}
-                </p>
-
-              </div>
+              <p>
+                {t(
+                  "disclaimer",
+                  lang
+                )}
+              </p>
 
             </div>
 
           </div>
-        )}
+
+        </div>
+      )}
 
     </div>
   );
