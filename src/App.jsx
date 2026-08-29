@@ -38,6 +38,10 @@ import {
 } from "./schemes";
 
 import { districts } from "./districts";
+import {
+  getPartnerChannels,
+  getMapSearchUrl,
+} from "./partners";
 
 import "./App.css";
 
@@ -685,8 +689,8 @@ function FinancialCalculator({
       typeof config.defaultLoan ===
         "number"
         ? String(
-            config.defaultLoan
-          )
+          config.defaultLoan
+        )
         : ""
     );
 
@@ -694,8 +698,8 @@ function FinancialCalculator({
       typeof config.defaultInterest ===
         "number"
         ? String(
-            config.defaultInterest
-          )
+          config.defaultInterest
+        )
         : ""
     );
 
@@ -703,8 +707,8 @@ function FinancialCalculator({
       typeof config.defaultTenure ===
         "number"
         ? String(
-            config.defaultTenure
-          )
+          config.defaultTenure
+        )
         : "5"
     );
   }, [scheme]);
@@ -799,7 +803,7 @@ function FinancialCalculator({
     Math.max(
       0,
       totalPayment -
-        principal
+      principal
     );
 
   const formatMoney =
@@ -939,12 +943,12 @@ function FinancialCalculator({
 
         {scheme.id ===
           "pmegp" && (
-          <p className="ss-helper-text">
-            {lang === "en"
-              ? "PMEGP repayment is generally 3–7 years."
-              : "PMEGP में पुनर्भुगतान अवधि सामान्यतः 3–7 वर्ष होती है।"}
-          </p>
-        )}
+            <p className="ss-helper-text">
+              {lang === "en"
+                ? "PMEGP repayment is generally 3–7 years."
+                : "PMEGP में पुनर्भुगतान अवधि सामान्यतः 3–7 वर्ष होती है।"}
+            </p>
+          )}
 
       </div>
 
@@ -961,8 +965,8 @@ function FinancialCalculator({
           <strong>
             {resultText
               ? formatMoney(
-                  emi
-                )
+                emi
+              )
               : "Enter rate"}
           </strong>
 
@@ -979,8 +983,8 @@ function FinancialCalculator({
           <strong>
             {resultText
               ? formatMoney(
-                  totalInterest
-                )
+                totalInterest
+              )
               : "Enter rate"}
           </strong>
 
@@ -997,8 +1001,8 @@ function FinancialCalculator({
           <strong>
             {resultText
               ? formatMoney(
-                  totalPayment
-                )
+                totalPayment
+              )
               : "Enter rate"}
           </strong>
 
@@ -1315,23 +1319,23 @@ function FormView({
 
   const isKusum =
     formData.purpose ===
-      "solar" ||
+    "solar" ||
     formData.purpose ===
-      "agriculture";
+    "agriculture";
 
   const progress = [
     formData.purpose &&
-      formData.category,
+    formData.category,
 
     formData.age &&
-      formData.income &&
-      formData.projectCost &&
-      formData.education,
+    formData.income &&
+    formData.projectCost &&
+    formData.education,
 
     true,
 
     formData.state &&
-      formData.district,
+    formData.district,
   ];
 
   return (
@@ -1391,11 +1395,10 @@ function FormView({
             (done, index) => (
               <div
                 key={index}
-                className={`ss-progress-dot ${
-                  done
-                    ? "ss-progress-dot-on"
-                    : ""
-                }`}
+                className={`ss-progress-dot ${done
+                  ? "ss-progress-dot-on"
+                  : ""
+                  }`}
               />
             )
           )}
@@ -1444,12 +1447,11 @@ function FormView({
                         key={
                           option.value
                         }
-                        className={`ss-purpose-card ${
-                          formData.purpose ===
+                        className={`ss-purpose-card ${formData.purpose ===
                           option.value
-                            ? "ss-purpose-card-on"
-                            : ""
-                        }`}
+                          ? "ss-purpose-card-on"
+                          : ""
+                          }`}
                       >
 
                         <input
@@ -2153,65 +2155,26 @@ function FormView({
 
             {(
               formData.purpose ===
-                "agriculture" ||
+              "agriculture" ||
               formData.purpose ===
-                "livestock" ||
+              "livestock" ||
               isKusum
             ) && (
-              <div className="ss-form-row">
+                <div className="ss-form-row">
 
-                <div className="ss-form-group">
-
-                  <label>
-                    {t(
-                      "farmerStatus",
-                      lang
-                    )}
-                  </label>
-
-                  <select
-                    name="farmerStatus"
-                    value={
-                      formData.farmerStatus
-                    }
-                    onChange={
-                      handleChange
-                    }
-                  >
-
-                    <option value="">
-                      {t(
-                        "optional",
-                        lang
-                      )}
-                    </option>
-
-                    <option value="yes">
-                      Yes
-                    </option>
-
-                    <option value="no">
-                      No
-                    </option>
-
-                  </select>
-
-                </div>
-
-                {isKusum && (
                   <div className="ss-form-group">
 
                     <label>
                       {t(
-                        "agriculturalPump",
+                        "farmerStatus",
                         lang
                       )}
                     </label>
 
                     <select
-                      name="existingAgriculturalPump"
+                      name="farmerStatus"
                       value={
-                        formData.existingAgriculturalPump
+                        formData.farmerStatus
                       }
                       onChange={
                         handleChange
@@ -2236,10 +2199,49 @@ function FormView({
                     </select>
 
                   </div>
-                )}
 
-              </div>
-            )}
+                  {isKusum && (
+                    <div className="ss-form-group">
+
+                      <label>
+                        {t(
+                          "agriculturalPump",
+                          lang
+                        )}
+                      </label>
+
+                      <select
+                        name="existingAgriculturalPump"
+                        value={
+                          formData.existingAgriculturalPump
+                        }
+                        onChange={
+                          handleChange
+                        }
+                      >
+
+                        <option value="">
+                          {t(
+                            "optional",
+                            lang
+                          )}
+                        </option>
+
+                        <option value="yes">
+                          Yes
+                        </option>
+
+                        <option value="no">
+                          No
+                        </option>
+
+                      </select>
+
+                    </div>
+                  )}
+
+                </div>
+              )}
 
             {isKusum && (
               <div className="ss-form-group">
@@ -2287,21 +2289,101 @@ function FormView({
 
             {formData.kusumComponent ===
               "component-a" && (
-              <div className="ss-form-row">
+                <div className="ss-form-row">
 
+                  <div className="ss-form-group">
+
+                    <label>
+                      {t(
+                        "beneficiaryType",
+                        lang
+                      )}
+                    </label>
+
+                    <select
+                      name="beneficiaryType"
+                      value={
+                        formData.beneficiaryType
+                      }
+                      onChange={
+                        handleChange
+                      }
+                    >
+
+                      <option value="">
+                        {t(
+                          "optional",
+                          lang
+                        )}
+                      </option>
+
+                      <option value="farmer-group">
+                        Farmer group
+                      </option>
+
+                      <option value="cooperative">
+                        Cooperative
+                      </option>
+
+                      <option value="panchayat">
+                        Panchayat
+                      </option>
+
+                      <option value="fpo">
+                        FPO
+                      </option>
+
+                      <option value="wua">
+                        Water User Association
+                      </option>
+
+                    </select>
+
+                  </div>
+
+                  <div className="ss-form-group">
+
+                    <label>
+                      {t(
+                        "kusumCapacity",
+                        lang
+                      )}
+                    </label>
+
+                    <input
+                      type="number"
+                      min="500"
+                      max="2000"
+                      step="1"
+                      name="kusumCapacity"
+                      value={
+                        formData.kusumCapacity
+                      }
+                      onChange={
+                        handleChange
+                      }
+                    />
+
+                  </div>
+
+                </div>
+              )}
+
+            {formData.kusumComponent ===
+              "component-b" && (
                 <div className="ss-form-group">
 
                   <label>
                     {t(
-                      "beneficiaryType",
+                      "gridAvailability",
                       lang
                     )}
                   </label>
 
                   <select
-                    name="beneficiaryType"
+                    name="gridAvailability"
                     value={
-                      formData.beneficiaryType
+                      formData.gridAvailability
                     }
                     onChange={
                       handleChange
@@ -2315,98 +2397,18 @@ function FormView({
                       )}
                     </option>
 
-                    <option value="farmer-group">
-                      Farmer group
+                    <option value="yes">
+                      Yes
                     </option>
 
-                    <option value="cooperative">
-                      Cooperative
-                    </option>
-
-                    <option value="panchayat">
-                      Panchayat
-                    </option>
-
-                    <option value="fpo">
-                      FPO
-                    </option>
-
-                    <option value="wua">
-                      Water User Association
+                    <option value="no">
+                      No
                     </option>
 
                   </select>
 
                 </div>
-
-                <div className="ss-form-group">
-
-                  <label>
-                    {t(
-                      "kusumCapacity",
-                      lang
-                    )}
-                  </label>
-
-                  <input
-                    type="number"
-                    min="500"
-                    max="2000"
-                    step="1"
-                    name="kusumCapacity"
-                    value={
-                      formData.kusumCapacity
-                    }
-                    onChange={
-                      handleChange
-                    }
-                  />
-
-                </div>
-
-              </div>
-            )}
-
-            {formData.kusumComponent ===
-              "component-b" && (
-              <div className="ss-form-group">
-
-                <label>
-                  {t(
-                    "gridAvailability",
-                    lang
-                  )}
-                </label>
-
-                <select
-                  name="gridAvailability"
-                  value={
-                    formData.gridAvailability
-                  }
-                  onChange={
-                    handleChange
-                  }
-                >
-
-                  <option value="">
-                    {t(
-                      "optional",
-                      lang
-                    )}
-                  </option>
-
-                  <option value="yes">
-                    Yes
-                  </option>
-
-                  <option value="no">
-                    No
-                  </option>
-
-                </select>
-
-              </div>
-            )}
+              )}
 
             <label className="ss-checkbox-row">
 
@@ -2512,18 +2514,18 @@ function FormView({
                   <option value="">
                     {formData.state
                       ? t(
-                          "selectDistrict",
-                          lang
-                        )
+                        "selectDistrict",
+                        lang
+                      )
                       : t(
-                          "selectState",
-                          lang
-                        )}
+                        "selectState",
+                        lang
+                      )}
                   </option>
 
                   {Array.isArray(
                     districts[
-                      formData.state
+                    formData.state
                     ]
                   ) &&
                     districts[
@@ -2572,7 +2574,187 @@ function FormView({
     </div>
   );
 }
+// ============================================================
+// PARTNER LOCATOR
+// ============================================================
 
+function PartnerLocator({
+  scheme,
+  formData,
+  lang,
+}) {
+  const channels =
+    getPartnerChannels(
+      scheme?.id
+    );
+
+  if (
+    channels.length === 0
+  ) {
+    return null;
+  }
+
+  const district =
+    formData?.district ||
+    "";
+
+  const state =
+    formData?.state ||
+    "";
+
+  return (
+    <div className="ss-result-section">
+
+      <h3>
+        <MapPin
+          size={16}
+        />
+
+        {lang === "en"
+          ? "Where to apply"
+          : "कहाँ आवेदन करें"}
+      </h3>
+
+
+      <p className="ss-helper-text">
+        {lang === "en"
+          ? "Application channels relevant to your selected location and scheme."
+          : "आपके चुने हुए स्थान और योजना के लिए संबंधित आवेदन माध्यम।"}
+      </p>
+
+
+      <div className="ss-location-card">
+
+        <div className="ss-location-main">
+
+          <MapPin
+            size={18}
+          />
+
+          <div>
+
+            <strong>
+              {district
+                ? district
+                : "Selected district"}
+            </strong>
+
+            <span>
+              {state}
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div className="ss-partner-list">
+
+        {channels.map(
+          (
+            partner
+          ) => {
+
+            const mapUrl =
+              getMapSearchUrl(
+                partner.name,
+                district,
+                state
+              );
+
+            return (
+              <div
+                className="ss-partner-card"
+                key={
+                  partner.name
+                }
+              >
+
+                <div
+                  style={{
+                    flex: 1,
+                  }}
+                >
+
+                  <div
+                    style={{
+                      display:
+                        "flex",
+                      alignItems:
+                        "center",
+                      gap:
+                        "0.45rem",
+                    }}
+                  >
+
+                    <Building2
+                      size={15}
+                    />
+
+                    <strong>
+                      {
+                        partner.name
+                      }
+                    </strong>
+
+                  </div>
+
+                  <p
+                    className="ss-text-muted"
+                    style={{
+                      margin:
+                        "0.25rem 0 0",
+                      fontSize:
+                        "0.78rem",
+                    }}
+                  >
+                    {
+                      partner.description
+                    }
+                  </p>
+
+                </div>
+
+
+                <a
+                  className="ss-official-link"
+                  href={
+                    mapUrl
+                  }
+                  target="_blank"
+                  rel="noreferrer"
+                >
+
+                  {lang === "en"
+                    ? "Find nearby"
+                    : "पास में खोजें"}
+
+                  <ExternalLink
+                    size={13}
+                  />
+
+                </a>
+
+              </div>
+            );
+          }
+        )}
+
+      </div>
+
+
+      <p className="ss-prototype-note">
+        ℹ️{" "}
+        {lang === "en"
+          ? "The locator currently shows official application channels. Branch-level availability should be confirmed locally."
+          : "लोकेटर वर्तमान में आधिकारिक आवेदन माध्यम दिखाता है। स्थानीय शाखा की उपलब्धता की पुष्टि करें।"}
+      </p>
+
+    </div>
+  );
+}
 // ============================================================
 // RESULTS
 // ============================================================
@@ -2597,7 +2779,7 @@ function ResultsView({
 
   const kusumComponentLabel =
     formData.kusumComponent ===
-    "component-a"
+      "component-a"
       ? "Component A — Grid-connected renewable-energy power plant"
       : formData.kusumComponent ===
         "component-b"
@@ -2798,7 +2980,7 @@ function ResultsView({
                     >
                       {
                         check.label[
-                          lang
+                        lang
                         ]
                       }
                     </CheckRow>
@@ -2813,90 +2995,90 @@ function ResultsView({
 
           {activeScheme.reasons?.length >
             0 && (
-            <div className="ss-result-section">
+              <div className="ss-result-section">
 
-              <h3>
-                ✨{" "}
-                {t(
-                  "whyMatch",
-                  lang
-                )}
-              </h3>
+                <h3>
+                  ✨{" "}
+                  {t(
+                    "whyMatch",
+                    lang
+                  )}
+                </h3>
 
-              <ul className="ss-reasons-list">
+                <ul className="ss-reasons-list">
 
-                {activeScheme.reasons.map(
-                  (
-                    reason,
-                    index
-                  ) => (
-                    <li
-                      key={
-                        index
-                      }
-                    >
+                  {activeScheme.reasons.map(
+                    (
+                      reason,
+                      index
+                    ) => (
+                      <li
+                        key={
+                          index
+                        }
+                      >
 
-                      <CheckCircle2
-                        size={15}
-                      />
+                        <CheckCircle2
+                          size={15}
+                        />
 
-                      {
-                        reason[
+                        {
+                          reason[
                           lang
-                        ]
-                      }
+                          ]
+                        }
 
-                    </li>
-                  )
-                )}
+                      </li>
+                    )
+                  )}
 
-              </ul>
+                </ul>
 
-            </div>
-          )}
+              </div>
+            )}
 
           {/* FAILED CONDITIONS */}
 
           {activeScheme.warnings?.length >
             0 && (
-            <div className="ss-result-section">
+              <div className="ss-result-section">
 
-              <h3>
-                <XCircle
-                  size={16}
-                />
+                <h3>
+                  <XCircle
+                    size={16}
+                  />
 
-                {t(
-                  "conditionsMissing",
-                  lang
-                )}
-              </h3>
+                  {t(
+                    "conditionsMissing",
+                    lang
+                  )}
+                </h3>
 
-              <ul className="ss-list">
+                <ul className="ss-list">
 
-                {activeScheme.warnings.map(
-                  (
-                    warning,
-                    index
-                  ) => (
-                    <li
-                      key={
-                        index
-                      }
-                    >
-                      {
-                        warning[
+                  {activeScheme.warnings.map(
+                    (
+                      warning,
+                      index
+                    ) => (
+                      <li
+                        key={
+                          index
+                        }
+                      >
+                        {
+                          warning[
                           lang
-                        ]
-                      }
-                    </li>
-                  )
-                )}
+                          ]
+                        }
+                      </li>
+                    )
+                  )}
 
-              </ul>
+                </ul>
 
-            </div>
-          )}
+              </div>
+            )}
 
           {/* MONEY */}
 
@@ -3058,96 +3240,52 @@ function ResultsView({
 
           {/* APPLY */}
 
-          <div className="ss-result-section">
+          <PartnerLocator
+            scheme={
+              activeScheme
+            }
+            formData={
+              formData
+            }
+            lang={
+              lang
+            }
+          />
 
-            <h3>
-
-              <MapPin
-                size={16}
-              />
+          {activeScheme.officialUrl && (
+            <a
+              className="ss-official-link"
+              href={
+                activeScheme.officialUrl
+              }
+              target="_blank"
+              rel="noreferrer"
+            >
 
               {t(
-                "partnersH",
+                "officialLink",
                 lang
               )}
 
-            </h3>
+              {" — "}
 
-            <p
-              className="ss-text-muted"
-              style={{
-                marginBottom:
-                  "0.75rem",
-              }}
-            >
-              {formData.district
-                ? `${formData.district}, ${formData.state}`
-                : formData.state}
-            </p>
+              {
+                activeScheme.officialSource
+              }
 
-            <div className="ss-partner-list">
+              <ExternalLink
+                size={14}
+              />
 
-              {(
-                activeScheme.implementingAgency ??
-                []
-              ).map(
-                (
-                  agency,
-                  index
-                ) => (
-                  <div
-                    className="ss-partner-card"
-                    key={
-                      index
-                    }
-                  >
-
-                    <Users
-                      size={15}
-                    />
-
-                    {agency}
-
-                  </div>
-                )
-              )}
-
-            </div>
-
-            {activeScheme.officialUrl && (
-              <a
-                className="ss-official-link"
-                href={
-                  activeScheme.officialUrl
-                }
-                target="_blank"
-                rel="noreferrer"
-              >
-
-                {t(
-                  "officialLink",
-                  lang
-                )}
-
-                {" — "}
-
-                {
-                  activeScheme.officialSource
-                }
-
-                <ExternalLink
-                  size={14}
-                />
-
-              </a>
-            )}
-
-          </div>
+            </a>
+          )}
 
         </div>
 
-        {alternates.length >
-          0 && (
+      </div>
+
+      {alternates.length >
+        0 && (
           <div className="ss-alternates">
 
             <h3>
@@ -3222,20 +3360,19 @@ function ResultsView({
           </div>
         )}
 
-        <footer className="ss-footer">
+      <footer className="ss-footer">
 
-          <p>
-            {t(
-              "disclaimer",
-              lang
-            )}
-          </p>
+        <p>
+          {t(
+            "disclaimer",
+            lang
+          )}
+        </p>
 
-        </footer>
-
-      </div>
+      </footer>
 
     </div>
+
   );
 }
 
@@ -3363,7 +3500,7 @@ export default function App() {
 
           [name]:
             type ===
-            "checkbox"
+              "checkbox"
               ? checked
               : value,
         };
@@ -3374,7 +3511,7 @@ export default function App() {
         if (
           name === "age" &&
           Number(value) <
-            18
+          18
         ) {
           next.occupation =
             "";
@@ -3395,9 +3532,9 @@ export default function App() {
         if (
           name === "purpose" &&
           value !==
-            "solar" &&
+          "solar" &&
           value !==
-            "agriculture"
+          "agriculture"
         ) {
           next.kusumComponent =
             "";
