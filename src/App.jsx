@@ -1,1628 +1,1331 @@
-import {
-  useEffect,
-  useId,
-  useMemo,
-  useState,
-} from "react";
-
-import {
-  ArrowRight,
-  Banknote,
-  Building2,
-  CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
-  ExternalLink,
-  FileText,
-  Globe,
-  Hammer,
-  Landmark,
-  MapPin,
-  Sparkles,
-  Store,
-  Users,
-  Wallet,
-  Wheat,
-  XCircle,
-} from "lucide-react";
-
-import {
-  ALL_STATES,
-  CATEGORY_OPTIONS,
-  EDUCATION_LEVELS,
-  OCCUPATION_OPTIONS,
-  PROJECT_TYPE_OPTIONS,
-  PURPOSE_OPTIONS,
-  VISHWAKARMA_TRADES,
-  getMatchedSchemes,
-} from "./schemes";
-
+import { useMemo, useState } from "react";
+import "./App.css";
 import { districts } from "./districts";
 import {
-  getPartnerChannels,
-  getMapSearchUrl,
-} from "./partners";
+  AVAILABLE_LANGUAGES,
+  getTranslations,
+} from "./translations";
+
 import {
-  DEMO_PROFILES,
-} from "./demoProfiles";
-
-import "./App.css";
+  schemes,
+  getMatchedSchemes,
+  PURPOSE_OPTIONS,
+  CATEGORY_OPTIONS,
+  OCCUPATION_OPTIONS,
+  PROJECT_TYPE_OPTIONS,
+  EDUCATION_LEVELS,
+  SCHEME_OPTIONS_BY_PURPOSE,
+} from "./schemes";
 
 // ============================================================
-// TRANSLATION
+// STATE COORDINATES
 // ============================================================
 
-const STR = {
-  navTag: {
-    en: "Your path to the right scheme",
-    hi: "सही योजना तक आपका रास्ता",
-  },
-
-  langBtn: {
-    en: "हिन्दी",
-    hi: "English",
-  },
-
-  heroKicker: {
-    en: "Government Scheme Assistance",
-    hi: "सरकारी योजना सहायता",
-  },
-
-  heroTitle1: {
-    en: "Find the right",
-    hi: "अपने लिए सही",
-  },
-
-  heroTitle2: {
-    en: "government scheme",
-    hi: "सरकारी योजना",
-  },
-
-  heroTitle3: {
-    en: "for you",
-    hi: "खोजें",
-  },
-
-  heroText: {
-    en:
-      "Tell us what you need and we'll compare relevant government schemes, eligibility conditions, benefits and application information.",
-    hi:
-      "हमें बताएं कि आपको किस सहायता की आवश्यकता है और हम संबंधित सरकारी योजनाओं, पात्रता शर्तों, लाभ और आवेदन जानकारी की तुलना करेंगे।",
-  },
-
-  ctaStart: {
-    en: "Find my scheme",
-    hi: "मेरी योजना खोजें",
-  },
-
-  smallTag: {
-    en: "Independent guide · Not an official portal",
-    hi: "स्वतंत्र मार्गदर्शक · आधिकारिक पोर्टल नहीं",
-  },
-
-  feat1h: {
-    en: "Purpose-first matching",
-    hi: "उद्देश्य के आधार पर मिलान",
-  },
-
-  feat1t: {
-    en:
-      "Your actual requirement is compared with activities supported by each scheme.",
-    hi:
-      "आपकी वास्तविक आवश्यकता की तुलना प्रत्येक योजना की समर्थित गतिविधियों से की जाती है।",
-  },
-
-  feat2h: {
-    en: "Eligibility separately checked",
-    hi: "पात्रता अलग से जांची जाती है",
-  },
-
-  feat2t: {
-    en:
-      "A high match score does not automatically mean government eligibility.",
-    hi:
-      "उच्च मिलान स्कोर का अर्थ स्वतः सरकारी पात्रता नहीं है।",
-  },
-
-  feat3h: {
-    en: "Documents & official source",
-    hi: "दस्तावेज़ और आधिकारिक स्रोत",
-  },
-
-  feat3t: {
-    en:
-      "See documents, implementing agencies and the official scheme page.",
-    hi:
-      "दस्तावेज़, कार्यान्वयन एजेंसी और आधिकारिक योजना पृष्ठ देखें।",
-  },
-
-  formBack: {
-    en: "Back",
-    hi: "वापस",
-  },
-
-  formBadge: {
-    en: "Government-aligned scheme matching",
-    hi: "सरकारी नियम आधारित योजना मिलान",
-  },
-
-  formTitle: {
-    en: "Tell us about yourself",
-    hi: "अपने बारे में बताएं",
-  },
-
-  formSub: {
-    en:
-      "Only information relevant to scheme matching is requested.",
-    hi:
-      "केवल योजना मिलान के लिए आवश्यक जानकारी मांगी जाती है।",
-  },
-
-  partA: {
-    en: "Part A — Your requirement",
-    hi: "भाग A — आपकी आवश्यकता",
-  },
-
-  partB: {
-    en: "Part B — Your profile",
-    hi: "भाग B — आपकी प्रोफ़ाइल",
-  },
-
-  partC: {
-    en: "Part C — Eligibility details",
-    hi: "भाग C — पात्रता विवरण",
-  },
-
-  partD: {
-    en: "Part D — Location",
-    hi: "भाग D — स्थान",
-  },
-
-  purposeQ: {
-    en: "What do you need help with?",
-    hi: "आपको किस चीज़ में मदद चाहिए?",
-  },
-
-  category: {
-    en: "Social category",
-    hi: "सामाजिक श्रेणी",
-  },
-
-  occupation: {
-    en: "Occupation",
-    hi: "व्यवसाय",
-  },
-
-  projectType: {
-    en: "Project type",
-    hi: "परियोजना का प्रकार",
-  },
-
-  age: {
-    en: "Age",
-    hi: "आयु",
-  },
-
-  income: {
-    en: "Annual family income",
-    hi: "वार्षिक पारिवारिक आय",
-  },
-
-  projectCost: {
-    en: "Estimated project / activity cost",
-    hi: "अनुमानित परियोजना / गतिविधि लागत",
-  },
-
-  education: {
-    en: "Highest education completed",
-    hi: "उच्चतम शिक्षा",
-  },
-
-  newEnterprise: {
-    en: "Is this a new enterprise / project?",
-    hi: "क्या यह नया उद्यम / परियोजना है?",
-  },
-
-  previousSubsidy: {
-    en: "Has this unit/project already received government subsidy?",
-    hi: "क्या इस इकाई/परियोजना को पहले सरकारी सब्सिडी मिली है?",
-  },
-
-  gender: {
-    en: "Gender",
-    hi: "लिंग",
-  },
-
-  artisanTrade: {
-    en: "Traditional artisan trade",
-    hi: "पारंपरिक शिल्प ट्रेड",
-  },
-
-  previousGovernmentLoan: {
-    en: "Previous similar government loan status",
-    hi: "पिछले समान सरकारी ऋण की स्थिति",
-  },
-
-  governmentEmployee: {
-    en: "Are you a government employee?",
-    hi: "क्या आप सरकारी कर्मचारी हैं?",
-  },
-
-  streetVendorProof: {
-    en: "Do you have applicable street-vendor proof?",
-    hi: "क्या आपके पास लागू स्ट्रीट वेंडर प्रमाण है?",
-  },
-
-  streetVendingBefore2020: {
-    en: "Were you vending on or before 24 March 2020?",
-    hi: "क्या आप 24 मार्च 2020 को या उससे पहले वेंडिंग कर रहे थे?",
-  },
-
-  farmerStatus: {
-    en: "Are you currently a farmer?",
-    hi: "क्या आप वर्तमान में किसान हैं?",
-  },
-
-  agriculturalPump: {
-    en: "Do you have an existing agricultural pump?",
-    hi: "क्या आपके पास मौजूदा कृषि पंप है?",
-  },
-
-  gridAvailability: {
-    en: "Is grid electricity available at the proposed pump location?",
-    hi: "क्या प्रस्तावित पंप स्थान पर ग्रिड बिजली उपलब्ध है?",
-  },
-
-  beneficiaryType: {
-    en: "Beneficiary type",
-    hi: "लाभार्थी प्रकार",
-  },
-
-  kusumCapacity: {
-    en: "Proposed solar plant capacity (kW)",
-    hi: "प्रस्तावित सौर संयंत्र क्षमता (kW)",
-  },
-
-  kusumComponent: {
-    en: "What do you need?",
-    hi: "आपको किस प्रकार की सहायता चाहिए?",
-  },
-
-  landAvailable: {
-    en: "Is land available?",
-    hi: "क्या भूमि उपलब्ध है?",
-  },
-
-  student: {
-    en: "I am currently a student",
-    hi: "मैं वर्तमान में छात्र/छात्रा हूँ",
-  },
-
-  state: {
-    en: "State / UT",
-    hi: "राज्य / केंद्र शासित प्रदेश",
-  },
-
-  district: {
-    en: "District",
-    hi: "जिला",
-  },
-
-  selectState: {
-    en: "Select state first",
-    hi: "पहले राज्य चुनें",
-  },
-
-  selectDistrict: {
-    en: "Select district",
-    hi: "जिला चुनें",
-  },
-
-  optional: {
-    en: "Optional",
-    hi: "वैकल्पिक",
-  },
-
-  submit: {
-    en: "Find my scheme",
-    hi: "मेरी योजना खोजें",
-  },
-
-  resultsBack: {
-    en: "Back to form",
-    hi: "फ़ॉर्म पर वापस जाएं",
-  },
-
-  resultsTitle: {
-    en: "Your matched schemes",
-    hi: "आपके लिए मिली योजनाएं",
-  },
-
-  resultsSub: {
-    en:
-      "Match score shows relevance. Eligibility is checked separately.",
-    hi:
-      "मिलान स्कोर प्रासंगिकता बताता है। पात्रता अलग से जांची जाती है।",
-  },
-
-  bestMatch: {
-    en: "Best match",
-    hi: "सर्वश्रेष्ठ मिलान",
-  },
-
-  matchScore: {
-    en: "Match score",
-    hi: "मिलान स्कोर",
-  },
-
-  eligibility: {
-    en: "Eligibility",
-    hi: "पात्रता",
-  },
-
-  likelyEligible: {
-    en: "Likely eligible",
-    hi: "संभावित रूप से पात्र",
-  },
-
-  conditionsMissing: {
-    en: "Conditions not met",
-    hi: "कुछ शर्तें पूरी नहीं हुईं",
-  },
-
-  eligibilityBreakdown: {
-    en: "Government eligibility checks",
-    hi: "सरकारी पात्रता जांच",
-  },
-
-  whyMatch: {
-    en: "Why this scheme matched",
-    hi: "यह योजना क्यों मिली",
-  },
-
-  benefitsH: {
-    en: "Benefits",
-    hi: "लाभ",
-  },
-
-  documentsH: {
-    en: "Documents you may need",
-    hi: "संभावित ज़रूरी दस्तावेज़",
-  },
-
-  partnersH: {
-    en: "Where to apply",
-    hi: "कहाँ आवेदन करें",
-  },
-
-  loanAmount: {
-    en: "Loan / financial support",
-    hi: "ऋण / वित्तीय सहायता",
-  },
-
-  interest: {
-    en: "Interest / rate",
-    hi: "ब्याज / दर",
-  },
-
-  repayment: {
-    en: "Repayment",
-    hi: "भुगतान",
-  },
-
-  officialLink: {
-    en: "Open official page",
-    hi: "आधिकारिक पृष्ठ खोलें",
-  },
-
-  otherMatches: {
-    en: "Other relevant schemes",
-    hi: "अन्य संबंधित योजनाएं",
-  },
-
-  noMatch: {
-    en: "No directly relevant scheme was found.",
-    hi: "कोई सीधे संबंधित योजना नहीं मिली।",
-  },
-
-  disclaimer: {
-    en:
-      "Scheme Saathi is an independent guide, not a government website. Match scores are indicative. Final eligibility is determined by the relevant implementing agency and current scheme guidelines.",
-    hi:
-      "स्कीम साथी एक स्वतंत्र मार्गदर्शक है, कोई सरकारी वेबसाइट नहीं। मिलान स्कोर संकेतात्मक हैं। अंतिम पात्रता संबंधित कार्यान्वयन एजेंसी और वर्तमान योजना दिशानिर्देशों द्वारा निर्धारित होती है।",
+const stateCapitals = {
+  "Andhra Pradesh": { lat: 16.5062, lng: 80.648 },
+  "Arunachal Pradesh": { lat: 27.0844, lng: 93.6053 },
+  Assam: { lat: 26.1445, lng: 91.7362 },
+  Bihar: { lat: 25.5941, lng: 85.1376 },
+  Chhattisgarh: { lat: 21.2514, lng: 81.6296 },
+  Goa: { lat: 15.4909, lng: 73.8278 },
+  Gujarat: { lat: 23.2156, lng: 72.6369 },
+  Haryana: { lat: 30.7333, lng: 76.7794 },
+  "Himachal Pradesh": { lat: 31.1048, lng: 77.1734 },
+  Jharkhand: { lat: 23.3441, lng: 85.3096 },
+  Karnataka: { lat: 12.9716, lng: 77.5946 },
+  Kerala: { lat: 8.5241, lng: 76.9366 },
+  "Madhya Pradesh": { lat: 23.2599, lng: 77.4126 },
+  Maharashtra: { lat: 19.076, lng: 72.8777 },
+  Manipur: { lat: 24.817, lng: 93.9368 },
+  Meghalaya: { lat: 25.5788, lng: 91.8933 },
+  Mizoram: { lat: 23.7271, lng: 92.7176 },
+  Nagaland: { lat: 25.6751, lng: 94.1086 },
+  Odisha: { lat: 20.2961, lng: 85.8245 },
+  Punjab: { lat: 30.7333, lng: 76.7794 },
+  Rajasthan: { lat: 26.9124, lng: 75.7873 },
+  Sikkim: { lat: 27.3389, lng: 88.6065 },
+  "Tamil Nadu": { lat: 13.0827, lng: 80.2707 },
+  Telangana: { lat: 17.4065, lng: 78.4772 },
+  Tripura: { lat: 23.8315, lng: 91.2868 },
+  "Uttar Pradesh": { lat: 26.8467, lng: 80.9462 },
+  Uttarakhand: { lat: 30.3165, lng: 78.0322 },
+  "West Bengal": { lat: 22.5726, lng: 88.3639 },
+  "Andaman and Nicobar Islands": {
+    lat: 11.7401,
+    lng: 92.6586,
+  },
+  Chandigarh: {
+    lat: 30.7333,
+    lng: 76.7794,
+  },
+  "Dadra and Nagar Haveli and Daman and Diu": {
+    lat: 20.3974,
+    lng: 72.8328,
+  },
+  Delhi: {
+    lat: 28.6139,
+    lng: 77.209,
+  },
+  "Jammu and Kashmir": {
+    lat: 34.0837,
+    lng: 74.7973,
+  },
+  Ladakh: {
+    lat: 34.1526,
+    lng: 77.5771,
+  },
+  Lakshadweep: {
+    lat: 10.8505,
+    lng: 72.1833,
+  },
+  Puducherry: {
+    lat: 11.9416,
+    lng: 79.8083,
   },
 };
 
-function t(
-  key,
-  lang
-) {
-  return (
-    STR[key]?.[lang] ??
-    key
-  );
-}
+// ============================================================
+// PARTNERS
+//
+// IMPORTANT:
+// These IDs must match the scheme IDs in schemes.js.
+// ============================================================
 
-function labelOf(
-  option,
-  lang
-) {
-  if (!option) return "";
+const mockPartners = [
+  {
+    id: 1,
+    name: "Rural Development Agency",
+    type: "State Channel Agency",
+    lat: 26.8467,
+    lng: 80.9462,
+    location: "Lucknow, Uttar Pradesh",
+    supportedSchemes: [
+      "nsfdc-mfs",
+      "nsfdc-amy",
+      "nsfdc-term-loan",
+      "nsfdc-uny",
+    ],
+    fundUtilization: 68,
+    npaStatus: "Active",
+  },
+  {
+    id: 2,
+    name: "Regional Rural Bank",
+    type: "RRB",
+    lat: 25.5941,
+    lng: 85.1376,
+    location: "Patna, Bihar",
+    supportedSchemes: [
+      "nsfdc-mfs",
+      "nsfdc-amy",
+      "nsfdc-term-loan",
+    ],
+    fundUtilization: 74,
+    npaStatus: "Active",
+  },
+  {
+    id: 3,
+    name: "District Cooperative Bank",
+    type: "Bank",
+    lat: 19.076,
+    lng: 72.8777,
+    location: "Mumbai, Maharashtra",
+    supportedSchemes: [
+      "nsfdc-term-loan",
+      "nsfdc-uny",
+    ],
+    fundUtilization: 92,
+    npaStatus: "Active",
+  },
+  {
+    id: 4,
+    name: "State MSME Finance Corporation",
+    type: "State Channel Agency",
+    lat: 22.5726,
+    lng: 88.3639,
+    location: "Kolkata, West Bengal",
+    supportedSchemes: [
+      "nsfdc-mfs",
+      "nsfdc-amy",
+      "nsfdc-uny",
+    ],
+    fundUtilization: 78,
+    npaStatus: "Active",
+  },
+  {
+    id: 5,
+    name: "Partner NBFC-MFI",
+    type: "NBFC-MFI",
+    lat: 12.9716,
+    lng: 77.5946,
+    location: "Bengaluru, Karnataka",
+    supportedSchemes: [
+      "nsfdc-mfs",
+      "nsfdc-amy",
+      "nsfdc-uny",
+    ],
+    fundUtilization: 61,
+    npaStatus: "Active",
+  },
+  {
+    id: 6,
+    name: "Education Finance Bank",
+    type: "PSB",
+    lat: 28.6139,
+    lng: 77.209,
+    location: "New Delhi",
+    supportedSchemes: ["nsfdc-els"],
+    fundUtilization: 70,
+    npaStatus: "Active",
+  },
+  {
+    id: 7,
+    name: "Regional Credit Agency",
+    type: "RRB",
+    lat: 17.4065,
+    lng: 78.4772,
+    location: "Hyderabad, Telangana",
+    supportedSchemes: [
+      "nsfdc-els",
+      "nsfdc-uny",
+    ],
+    fundUtilization: 55,
+    npaStatus: "NPA",
+  },
+  {
+    id: 8,
+    name: "District Rural Finance Office",
+    type: "State Channel Agency",
+    lat: 26.9124,
+    lng: 75.7873,
+    location: "Jaipur, Rajasthan",
+    supportedSchemes: [
+      "nsfdc-mfs",
+      "nsfdc-amy",
+      "nsfdc-term-loan",
+    ],
+    fundUtilization: 81,
+    npaStatus: "Active",
+  },
+  {
+    id: 9,
+    name: "Participating Commercial Bank",
+    type: "Bank",
+    lat: 28.6139,
+    lng: 77.209,
+    location: "New Delhi",
+    supportedSchemes: [
+      "pmegp",
+      "mudra",
+      "pm-svanidhi",
+      "kcc",
+    ],
+    fundUtilization: 64,
+    npaStatus: "Active",
+  },
+];
 
-  if (
-    typeof option.label ===
-    "object"
-  ) {
-    return (
-      option.label?.[lang] ??
-      option.label?.en ??
-      ""
+// ============================================================
+// HELPERS
+// ============================================================
+
+function haversineDistance(
+  lat1,
+  lng1,
+  lat2,
+  lng2
+) {
+  const earthRadius = 6371;
+
+  const dLat =
+    ((lat2 - lat1) * Math.PI) / 180;
+
+  const dLng =
+    ((lng2 - lng1) * Math.PI) / 180;
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(
+      (lat1 * Math.PI) / 180
+    ) *
+      Math.cos(
+        (lat2 * Math.PI) / 180
+      ) *
+      Math.sin(dLng / 2) ** 2;
+
+  const c =
+    2 *
+    Math.atan2(
+      Math.sqrt(a),
+      Math.sqrt(1 - a)
     );
-  }
 
-  return option.label ?? "";
-}
-
-function iconForPurpose(
-  value
-) {
-  switch (value) {
-    case "business":
-      return Store;
-
-    case "street-vending":
-      return Landmark;
-
-    case "artisan":
-      return Hammer;
-
-    case "agriculture":
-      return Wheat;
-
-    case "solar":
-      return Sparkles;
-
-    case "livestock":
-      return Wheat;
-
-    default:
-      return Store;
-  }
-}
-
-// ============================================================
-// STAMP
-// ============================================================
-
-function circlePath(
-  cx,
-  cy,
-  r
-) {
-  return `
-    M ${cx + r},${cy}
-    A ${r},${r} 0 1,1 ${cx - r},${cy}
-    A ${r},${r} 0 1,1 ${cx + r},${cy}
-  `;
-}
-
-function StampSeal({
-  percent,
-  size = 116,
-}) {
-  const rawId = useId();
-
-  const pathId =
-    `seal-${rawId.replace(
-      /:/g,
-      ""
-    )}`;
-
-  const cx =
-    size / 2;
-
-  const cy =
-    size / 2;
-
-  const r =
-    size / 2 -
-    size * 0.16;
-
-  return (
-    <svg
-      viewBox={`0 0 ${size} ${size}`}
-      width={size}
-      height={size}
-      className="ss-stamp"
-      role="img"
-      aria-label={`${percent}% match`}
-    >
-      <defs>
-        <path
-          id={pathId}
-          d={circlePath(
-            cx,
-            cy,
-            r
-          )}
-          fill="none"
-        />
-      </defs>
-
-      <circle
-        cx={cx}
-        cy={cy}
-        r={r}
-        fill="none"
-        stroke="var(--stamp)"
-        strokeWidth={
-          size * 0.028
-        }
-      />
-
-      <circle
-        cx={cx}
-        cy={cy}
-        r={
-          r -
-          size * 0.075
-        }
-        fill="none"
-        stroke="var(--stamp)"
-        strokeWidth={
-          size * 0.012
-        }
-        strokeDasharray={`${size * 0.02} ${size * 0.028}`}
-      />
-
-      <text
-        x={cx}
-        y={
-          cy +
-          size * 0.07
-        }
-        textAnchor="middle"
-        fill="var(--stamp)"
-        fontFamily="var(--font-display)"
-        fontWeight="700"
-        fontSize={
-          size * 0.25
-        }
-      >
-        {percent}%
-      </text>
-
-      <text
-        x={cx}
-        y={
-          cy +
-          size * 0.23
-        }
-        textAnchor="middle"
-        fill="var(--stamp)"
-        fontFamily="var(--font-mono)"
-        fontSize={
-          size * 0.065
-        }
-        letterSpacing="2"
-      >
-        MATCH
-      </text>
-    </svg>
+  return Number(
+    (earthRadius * c).toFixed(2)
   );
 }
 
-// ============================================================
-// CHECK ROW
-// ============================================================
-
-function CheckRow({
-  ok,
-  children,
-}) {
-  return (
-    <div className="ss-check-row">
-      {ok ? (
-        <CheckCircle2
-          size={17}
-          className="ss-icon-ok"
-        />
-      ) : (
-        <XCircle
-          size={17}
-          className="ss-icon-no"
-        />
-      )}
-
-      <span
-        className={
-          ok
-            ? ""
-            : "ss-text-muted"
-        }
-      >
-        {children}
-      </span>
-    </div>
-  );
-}
-
-// ============================================================
-// PERFORATION
-// ============================================================
-
-function Perforation() {
-  return (
-    <div
-      className="ss-perforation"
-      aria-hidden="true"
-    />
-  );
-}
-
-// ============================================================
-// FINANCIAL CALCULATOR
-// ============================================================
-
-function FinancialCalculator({
+function findNearestEligiblePartner(
   scheme,
-  lang,
-}) {
-  const config =
-    scheme?.calculator;
-
-  const [loanAmount, setLoanAmount] =
-    useState("");
-
-  const [interestRate, setInterestRate] =
-    useState("");
-
-  const [tenureYears, setTenureYears] =
-    useState("5");
-
-  useEffect(() => {
-    if (!config?.enabled) {
-      setLoanAmount("");
-      setInterestRate("");
-      setTenureYears("5");
-      return;
-    }
-
-    setLoanAmount(
-      typeof config.defaultLoan ===
-        "number"
-        ? String(
-          config.defaultLoan
-        )
-        : ""
-    );
-
-    setInterestRate(
-      typeof config.defaultInterest ===
-        "number"
-        ? String(
-          config.defaultInterest
-        )
-        : ""
-    );
-
-    setTenureYears(
-      typeof config.defaultTenure ===
-        "number"
-        ? String(
-          config.defaultTenure
-        )
-        : "5"
-    );
-  }, [scheme]);
-
-  if (!config?.enabled) {
+  userLat,
+  userLng
+) {
+  if (
+    !scheme ||
+    userLat == null ||
+    userLng == null
+  ) {
     return null;
   }
 
-  const principal =
-    Number.parseFloat(
-      String(loanAmount)
-        .replace(/,/g, "")
-    );
+  const eligiblePartners =
+    mockPartners.filter(
+      (partner) => {
+        const schemeEligible =
+          partner.supportedSchemes.includes(
+            scheme.id
+          );
 
-  const annualRate =
-    Number.parseFloat(
-      String(interestRate)
-        .replace(/,/g, "")
-    );
-
-  const years =
-    Number.parseFloat(
-      String(tenureYears)
-        .replace(/,/g, "")
-    );
-
-  const hasPrincipal =
-    Number.isFinite(
-      principal
-    ) &&
-    principal > 0;
-
-  const hasRate =
-    Number.isFinite(
-      annualRate
-    ) &&
-    annualRate >= 0 &&
-    String(
-      interestRate
-    ).trim() !== "";
-
-  const hasTenure =
-    Number.isFinite(
-      years
-    ) &&
-    years > 0;
-
-  const months =
-    hasTenure
-      ? years * 12
-      : 0;
-
-  let emi = 0;
-
-  if (
-    hasPrincipal &&
-    hasRate &&
-    hasTenure
-  ) {
-    if (
-      annualRate === 0
-    ) {
-      emi =
-        principal /
-        months;
-    } else {
-      const monthlyRate =
-        annualRate /
-        12 /
-        100;
-
-      const factor =
-        Math.pow(
-          1 + monthlyRate,
-          months
+        const validType = [
+          "State Channel Agency",
+          "PSB",
+          "RRB",
+          "NBFC-MFI",
+          "Bank",
+        ].includes(
+          partner.type
         );
 
-      emi =
-        (
-          principal *
-          monthlyRate *
-          factor
-        ) /
-        (factor - 1);
+        const operational =
+          partner.npaStatus !==
+            "NPA" &&
+          partner.npaStatus !==
+            "Overdue";
+
+        const fundEligible =
+          partner.fundUtilization <
+          90;
+
+        return (
+          schemeEligible &&
+          validType &&
+          operational &&
+          fundEligible
+        );
+      }
+    );
+
+  if (
+    !eligiblePartners.length
+  ) {
+    return null;
+  }
+
+  return eligiblePartners
+    .map((partner) => ({
+      ...partner,
+      distance:
+        haversineDistance(
+          userLat,
+          userLng,
+          partner.lat,
+          partner.lng
+        ),
+    }))
+    .sort(
+      (a, b) =>
+        a.distance - b.distance
+    )[0];
+}
+
+function calculateEMI(
+  principal,
+  annualRate,
+  months
+) {
+  if (!principal || !months) {
+    return 0;
+  }
+
+  if (!annualRate) {
+    return Math.round(
+      principal / months
+    );
+  }
+
+  const r =
+    annualRate / 12 / 100;
+
+  const emi =
+    (principal *
+      r *
+      (1 + r) ** months) /
+    ((1 + r) ** months - 1);
+
+  return Math.round(emi);
+}
+
+/*
+ * Get a numeric rate only when the scheme has an explicit rate.
+ * Variable/lender-determined schemes fall back to 8 for the editable
+ * EMI calculator so the UI remains functional. The displayed scheme
+ * interest always uses the scheme's actual text field.
+ */
+function getEMIRate(scheme) {
+  if (
+    typeof scheme?.interestRate ===
+    "number"
+  ) {
+    return scheme.interestRate;
+  }
+
+  const rateMap = {
+    "nsfdc-mfs": 6.5,
+    "nsfdc-amy": 15,
+    "nsfdc-term-loan": 8,
+    "nsfdc-uny": 13,
+    "nsfdc-els": 6.5,
+    "pm-vishwakarma": 5,
+    "pm-svanidhi": 7,
+    kcc: 7,
+  };
+
+  return (
+    rateMap[scheme?.id] ?? 8
+  );
+}
+
+function getSchemeDisplayLoan(
+  scheme
+) {
+  if (
+    typeof scheme?.maxLoan ===
+    "number"
+  ) {
+    return `₹${scheme.maxLoan.toLocaleString(
+      "en-IN"
+    )}`;
+  }
+
+  return (
+    scheme?.loanAmount ||
+    "As applicable"
+  );
+}
+
+function getPurposeIcon(
+  purpose
+) {
+  const icons = {
+    business: "🏪",
+    "street-vending": "🏛️",
+    artisan: "🔨",
+    agriculture: "🌾",
+    solar: "☀️",
+    livestock: "🐄",
+    education: "🎓",
+  };
+
+  return icons[purpose] || "📋";
+}
+
+// ============================================================
+// APP
+// ============================================================
+
+function App() {
+  const [page, setPage] =
+    useState("home");
+
+  const [showLogin, setShowLogin] =
+    useState(false);
+
+  const [name, setName] =
+    useState("");
+
+  const [phone, setPhone] =
+    useState("");
+
+  const [email, setEmail] =
+    useState("");
+
+  const [otp, setOtp] =
+    useState("");
+
+  const [otpSent, setOtpSent] =
+    useState(false);
+
+  const [loggedIn, setLoggedIn] =
+    useState(false);
+
+  const [language, setLanguage] =
+    useState("English");
+
+  const t = useMemo(
+    () =>
+      getTranslations(language),
+    [language]
+  );
+
+  const [
+    formData,
+    setFormData,
+  ] = useState({
+    purpose: "",
+    category: "SC",
+    occupation: "",
+    projectType: "",
+    age: "",
+    education: "",
+    income: "",
+    projectCost: "",
+    state: "",
+    district: "",
+    pincode: "",
+    artisanTrade: "",
+    farmerStatus: "",
+    streetVendorProof: "",
+    landAvailable: "",
+    existingAgriculturalPump: "",
+    isNewEnterprise: "",
+    previousGovernmentSubsidy: "",
+    previousTarunLoanRepaid: "",
+    similarGovernmentLoanLast5Years: "",
+    governmentEmployee: "",
+    gender: "",
+  });
+
+  const [
+    recommendedScheme,
+    setRecommendedScheme,
+  ] = useState(null);
+
+  const [emiLoan, setEmiLoan] =
+    useState("");
+
+  const [emiRate, setEmiRate] =
+    useState(8);
+
+  const [emiTenure, setEmiTenure] =
+    useState(60);
+
+  // ==========================================================
+  // LOCATION
+  // ==========================================================
+
+  const userCoordinates = useMemo(
+    () =>
+      stateCapitals[
+        formData.state
+      ] || null,
+    [formData.state]
+  );
+
+  const districtOptions = useMemo(
+    () =>
+      districts[
+        formData.state
+      ] || null,
+    [formData.state]
+  );
+
+  // ==========================================================
+  // RELEVANT VERIFIED SCHEMES
+  // ==========================================================
+
+  const relevantSchemes =
+    useMemo(() => {
+      if (!formData.purpose) {
+        return [];
+      }
+
+      return (
+        SCHEME_OPTIONS_BY_PURPOSE[
+          formData.purpose
+        ] || []
+      );
+    }, [formData.purpose]);
+
+  // ==========================================================
+  // NEAREST PARTNER
+  // ==========================================================
+
+  const nearestPartner =
+    useMemo(() => {
+      if (
+        !recommendedScheme ||
+        !userCoordinates
+      ) {
+        return null;
+      }
+
+      return findNearestEligiblePartner(
+        recommendedScheme,
+        userCoordinates.lat,
+        userCoordinates.lng
+      );
+    }, [
+      recommendedScheme,
+      userCoordinates,
+    ]);
+
+  const emi =
+    calculateEMI(
+      Number(emiLoan),
+      Number(emiRate),
+      Number(emiTenure)
+    );
+
+  // ==========================================================
+  // LOGIN
+  // ==========================================================
+
+  function handleSendOtp(e) {
+    e.preventDefault();
+
+    if (!name.trim()) {
+      alert(
+        "Please enter your name."
+      );
+      return;
+    }
+
+    if (
+      !/^[6-9]\d{9}$/.test(
+        phone
+      )
+    ) {
+      alert(
+        "Please enter a valid 10-digit Indian mobile number."
+      );
+      return;
+    }
+
+    setOtpSent(true);
+  }
+
+  function handleVerifyOtp(e) {
+    e.preventDefault();
+
+    if (otp !== "123456") {
+      alert(
+        "Invalid OTP. Use 123456 for this demo."
+      );
+      return;
+    }
+
+    setLoggedIn(true);
+    setShowLogin(false);
+    setOtpSent(false);
+    setOtp("");
+    setPage("form");
+  }
+
+  function logout() {
+    setLoggedIn(false);
+    setName("");
+    setPhone("");
+    setEmail("");
+    setOtp("");
+    setOtpSent(false);
+    setRecommendedScheme(null);
+    setPage("home");
+  }
+
+  function goToForm() {
+    if (loggedIn) {
+      setPage("form");
+    } else {
+      setShowLogin(true);
     }
   }
 
-  const totalPayment =
-    emi * months;
+  // ==========================================================
+  // FORM
+  // ==========================================================
 
-  const totalInterest =
-    Math.max(
-      0,
-      totalPayment -
-      principal
+  function handleChange(e) {
+    const {
+      name: fieldName,
+      value,
+    } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: value,
+      ...(fieldName === "state"
+        ? { district: "" }
+        : {}),
+    }));
+  }
+
+  function selectPurpose(
+    purpose
+  ) {
+    setFormData((prev) => ({
+      ...prev,
+      purpose,
+      projectType:
+        purpose === "education"
+          ? "education"
+          : purpose === "agriculture"
+          ? "agriculture"
+          : purpose === "solar"
+          ? "solar"
+          : purpose === "livestock"
+          ? "livestock"
+          : purpose === "artisan"
+          ? "manufacturing"
+          : purpose ===
+            "street-vending"
+          ? "trading"
+          : "",
+    }));
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    if (
+      !/^\d{6}$/.test(
+        formData.pincode
+      )
+    ) {
+      alert(
+        "Please enter a valid 6-digit PIN code."
+      );
+      return;
+    }
+
+    // --------------------------------------------------------
+    // REAL SCHEME ENGINE
+    // --------------------------------------------------------
+
+    const matchedSchemes =
+      getMatchedSchemes(
+        formData
+      );
+
+    if (
+      !matchedSchemes.length
+    ) {
+      setRecommendedScheme(null);
+
+      alert(
+        "No eligible scheme was found for the information provided. Please review your age, category, income, purpose, project type and other details."
+      );
+
+      return;
+    }
+
+    const best =
+      matchedSchemes[0];
+
+    setRecommendedScheme(best);
+
+    // --------------------------------------------------------
+    // EMI
+    // --------------------------------------------------------
+
+    const requestedCost =
+      Number(
+        formData.projectCost
+      );
+
+    const numericMaxLoan =
+      typeof best.maxLoan ===
+      "number"
+        ? best.maxLoan
+        : null;
+
+    const estimatedLoan =
+      numericMaxLoan != null
+        ? Math.min(
+            numericMaxLoan,
+            Math.round(
+              requestedCost * 0.9
+            )
+          )
+        : Math.round(
+            requestedCost * 0.9
+          );
+
+    setEmiLoan(
+      String(
+        estimatedLoan ||
+          requestedCost ||
+          0
+      )
     );
 
-  const formatMoney =
-    (value) => {
-      if (
-        !Number.isFinite(
-          value
-        ) ||
-        value <= 0
-      ) {
-        return "₹0";
-      }
+    setEmiRate(
+      getEMIRate(best)
+    );
 
-      return `₹${Math.round(
-        value
-      ).toLocaleString(
-        "en-IN"
-      )}`;
-    };
+    setPage("result");
+  }
 
-  const resultText =
-    hasRate &&
-    hasPrincipal &&
-    hasTenure;
+  // ==========================================================
+  // LOGIN MODAL
+  // ==========================================================
 
-  return (
-    <div className="ss-result-section">
-
-      <h3>
-        💰{" "}
-        {lang === "en"
-          ? "Financial Calculator"
-          : "वित्तीय कैलकुलेटर"}
-      </h3>
-
-      <p className="ss-helper-text">
-        {lang === "en"
-          ? "Enter a loan amount, interest rate and tenure to estimate your EMI. Actual terms depend on the lender and sanctioned amount."
-          : "अनुमानित EMI देखने के लिए ऋण राशि, ब्याज दर और अवधि भरें। वास्तविक शर्तें ऋणदाता और स्वीकृत राशि पर निर्भर करती हैं।"}
-      </p>
-
-      <div className="ss-form-row">
-
-        <div className="ss-form-group">
-
-          <label>
-            {lang === "en"
-              ? "Loan amount"
-              : "ऋण राशि"}
-          </label>
-
-          <div className="ss-input-wrapper">
-
-            <span>₹</span>
-
-            <input
-              type="number"
-              min="0"
-              step="1000"
-              value={
-                loanAmount
-              }
-              onChange={(event) =>
-                setLoanAmount(
-                  event.target.value
-                )
-              }
-              placeholder="500000"
-            />
-
-          </div>
-
-        </div>
-
-        <div className="ss-form-group">
-
-          <label>
-            {lang === "en"
-              ? "Annual interest rate (%)"
-              : "वार्षिक ब्याज दर (%)"}
-          </label>
-
-          <input
-            type="number"
-            min="0"
-            max="100"
-            step="0.01"
-            value={
-              interestRate
-            }
-            onChange={(event) =>
-              setInterestRate(
-                event.target.value
-              )
-            }
-            placeholder="Enter lender rate"
-          />
-
-          <p className="ss-helper-text">
-            {lang === "en"
-              ? "Use the rate offered by your lender unless the scheme specifies a fixed rate."
-              : "जब तक योजना निश्चित दर न बताए, अपने ऋणदाता द्वारा दी गई दर दर्ज करें।"}
-          </p>
-
-        </div>
-
-      </div>
-
-      <div className="ss-form-group">
-
-        <label>
-          {lang === "en"
-            ? "Tenure (years)"
-            : "अवधि (वर्ष)"}
-        </label>
-
-        <input
-          type="number"
-          min={
-            config.minTenure ??
-            1
-          }
-          max={
-            config.maxTenure ??
-            30
-          }
-          step="1"
-          value={
-            tenureYears
-          }
-          onChange={(event) =>
-            setTenureYears(
-              event.target.value
-            )
-          }
-        />
-
-        {scheme.id ===
-          "pmegp" && (
-            <p className="ss-helper-text">
-              {lang === "en"
-                ? "PMEGP repayment is generally 3–7 years."
-                : "PMEGP में पुनर्भुगतान अवधि सामान्यतः 3–7 वर्ष होती है।"}
-            </p>
-          )}
-
-      </div>
-
-      <div className="ss-scheme-details">
-
-        <div className="ss-detail-box">
-
-          <small>
-            {lang === "en"
-              ? "Monthly EMI"
-              : "मासिक EMI"}
-          </small>
-
-          <strong>
-            {resultText
-              ? formatMoney(
-                emi
-              )
-              : "Enter rate"}
-          </strong>
-
-        </div>
-
-        <div className="ss-detail-box">
-
-          <small>
-            {lang === "en"
-              ? "Total interest"
-              : "कुल ब्याज"}
-          </small>
-
-          <strong>
-            {resultText
-              ? formatMoney(
-                totalInterest
-              )
-              : "Enter rate"}
-          </strong>
-
-        </div>
-
-        <div className="ss-detail-box">
-
-          <small>
-            {lang === "en"
-              ? "Total repayment"
-              : "कुल भुगतान"}
-          </small>
-
-          <strong>
-            {resultText
-              ? formatMoney(
-                totalPayment
-              )
-              : "Enter rate"}
-          </strong>
-
-        </div>
-
-      </div>
-
-      <p className="ss-prototype-note">
-        ℹ️{" "}
-        {lang === "en"
-          ? "Estimated only. Final interest, tenure, sanctioned amount and repayment schedule are determined by the lender and applicable scheme rules."
-          : "यह केवल अनुमान है। अंतिम ब्याज, अवधि, स्वीकृत राशि और भुगतान अनुसूची ऋणदाता तथा लागू योजना नियमों के अनुसार तय होती है।"}
-      </p>
-
-    </div>
-  );
-}
-
-// ============================================================
-// NAVBAR
-// ============================================================
-
-function NavBar({
-  lang,
-  setLang,
-}) {
-  return (
-    <nav className="ss-nav">
-
-      <div className="ss-nav-inner">
-
-        <div className="ss-logo">
-
-          <div className="ss-logo-mark">
-            SS
-          </div>
-
-          <div>
-            <h2>
-              Scheme Saathi
-            </h2>
-
-            <p>
-              {t(
-                "navTag",
-                lang
-              )}
-            </p>
-          </div>
-
-        </div>
-
-        <button
-          type="button"
-          className="ss-lang-btn"
-          onClick={() =>
-            setLang(
-              lang ===
-                "en"
-                ? "hi"
-                : "en"
-            )
+  const loginModal =
+    showLogin ? (
+      <div
+        className="login-overlay"
+        onClick={() =>
+          setShowLogin(false)
+        }
+      >
+        <div
+          className="login-modal"
+          onClick={(e) =>
+            e.stopPropagation()
           }
         >
-          <Globe
-            size={15}
-          />
-
-          {t(
-            "langBtn",
-            lang
-          )}
-        </button>
-
-      </div>
-
-    </nav>
-  );
-}
-
-// ============================================================
-// HOME
-// ============================================================
-
-function HomeView({
-  lang,
-  setLang,
-  onStart,
-}) {
-  const features = [
-    {
-      Icon: Sparkles,
-      h: "feat1h",
-      p: "feat1t",
-    },
-    {
-      Icon: CheckCircle2,
-      h: "feat2h",
-      p: "feat2t",
-    },
-    {
-      Icon: FileText,
-      h: "feat3h",
-      p: "feat3t",
-    },
-  ];
-
-  return (
-    <div className="ss-shell">
-
-      <NavBar
-        lang={lang}
-        setLang={setLang}
-      />
-
-      <header className="ss-hero">
-
-        <div className="ss-hero-copy">
-
-          <div className="ss-kicker">
-            🇮🇳{" "}
-            {t(
-              "heroKicker",
-              lang
-            )}
-          </div>
-
-          <h1 className="ss-hero-title">
-
-            {t(
-              "heroTitle1",
-              lang
-            )}{" "}
-
-            <span className="ss-hero-accent">
-              {t(
-                "heroTitle2",
-                lang
-              )}
-            </span>{" "}
-
-            {t(
-              "heroTitle3",
-              lang
-            )}
-
-          </h1>
-
-          <p className="ss-hero-text">
-            {t(
-              "heroText",
-              lang
-            )}
-          </p>
-
           <button
-            type="button"
-            className="ss-btn-primary"
-            onClick={
-              onStart
+            className="modal-close"
+            onClick={() =>
+              setShowLogin(false)
             }
           >
-            {t(
-              "ctaStart",
-              lang
-            )}
-
-            <ArrowRight
-              size={18}
-            />
+            ×
           </button>
 
-          <p className="ss-small-tag">
-            {t(
-              "smallTag",
-              lang
-            )}
+          <div className="login-modal-badge">
+            {t.login_modal_badge}
+          </div>
+
+          <h2>
+            {t.login_modal_title}
+          </h2>
+
+          <p className="login-subtitle">
+            {t.login_modal_subtitle}
           </p>
 
-        </div>
-
-        <div
-          className="ss-hero-doc"
-          aria-hidden="true"
-        >
-
-          <div className="ss-doc-header">
-
-            <FileText
-              size={16}
-            />
-
-            <span>
-              Scheme Saathi
-            </span>
-
-          </div>
-
-          <div
-            className="ss-doc-line"
-            style={{
-              width: "78%",
-            }}
-          />
-
-          <div
-            className="ss-doc-line"
-            style={{
-              width: "54%",
-            }}
-          />
-
-          <div
-            className="ss-doc-line"
-            style={{
-              width: "66%",
-            }}
-          />
-
-          <Perforation />
-
-          <div className="ss-doc-stamp-wrap">
-
-            <StampSeal
-              percent={94}
-              size={104}
-            />
-
-            <div>
-              <strong>
-                Verified-style match
-              </strong>
-
-              <span
-                className="ss-text-muted"
-                style={{
-                  display:
-                    "block",
-                  fontSize:
-                    "0.8rem",
-                }}
-              >
-                Illustrative only
-              </span>
-            </div>
-
-          </div>
-
-        </div>
-
-      </header>
-
-      <section className="ss-features">
-
-        {features.map(
-          ({
-            Icon,
-            h,
-            p,
-          }) => (
-            <div
-              className="ss-feature"
-              key={h}
+          {!otpSent ? (
+            <form
+              onSubmit={
+                handleSendOtp
+              }
             >
+              <div className="login-field">
+                <label>
+                  {t.name_label}
+                </label>
 
-              <div className="ss-feature-icon">
-                <Icon
-                  size={20}
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) =>
+                    setName(
+                      e.target.value
+                    )
+                  }
+                  placeholder={
+                    t.name_placeholder
+                  }
+                  required
                 />
               </div>
 
+              <div className="login-field">
+                <label>
+                  {t.mobile_label}
+                </label>
+
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) =>
+                    setPhone(
+                      e.target.value.replace(
+                        /\D/g,
+                        ""
+                      )
+                    )
+                  }
+                  placeholder={
+                    t.mobile_placeholder
+                  }
+                  maxLength={10}
+                  required
+                />
+              </div>
+
+              <div className="login-field">
+                <label>
+                  {t.email_label}{" "}
+                  <span className="optional-text">
+                    {t.optional}
+                  </span>
+                </label>
+
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) =>
+                    setEmail(
+                      e.target.value
+                    )
+                  }
+                  placeholder={
+                    t.email_placeholder
+                  }
+                />
+              </div>
+
+              <button
+                className="login-submit"
+                type="submit"
+              >
+                {t.send_otp}
+              </button>
+            </form>
+          ) : (
+            <form
+              onSubmit={
+                handleVerifyOtp
+              }
+            >
+              <div className="otp-sent-box">
+                {t.otp_sent_prefix}{" "}
+                {phone}
+              </div>
+
+              <div className="login-field">
+                <label>
+                  {t.enter_otp_label}
+                </label>
+
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={otp}
+                  onChange={(e) =>
+                    setOtp(
+                      e.target.value.replace(
+                        /\D/g,
+                        ""
+                      )
+                    )
+                  }
+                  placeholder={
+                    t.otp_placeholder
+                  }
+                  maxLength={6}
+                  required
+                />
+              </div>
+
+              <button
+                className="login-submit"
+                type="submit"
+              >
+                {t.verify_continue}
+              </button>
+
+              <button
+                type="button"
+                className="resend-btn"
+                onClick={() => {
+                  setOtp("");
+                  setOtpSent(
+                    false
+                  );
+                }}
+              >
+                {t.change_mobile}
+              </button>
+
+              <p className="demo-otp">
+                {t.demo_otp_label}{" "}
+                <strong>
+                  123456
+                </strong>
+              </p>
+            </form>
+          )}
+        </div>
+      </div>
+    ) : null;
+
+  // ==========================================================
+  // HOME
+  // ==========================================================
+
+  if (page === "home") {
+    return (
+      <>
+        <div className="app home-app">
+          <nav className="navbar">
+            <div className="logo">
+              <span>🤝</span>
+
+              <div>
+                <h2>
+                  Scheme Saathi
+                </h2>
+
+                <p>
+                  {t.nav_tagline}
+                </p>
+              </div>
+            </div>
+
+            <div className="nav-right">
+              <select
+                className="language-select"
+                value={language}
+                onChange={(e) =>
+                  setLanguage(
+                    e.target.value
+                  )
+                }
+              >
+                {AVAILABLE_LANGUAGES.map(
+                  (lang) => (
+                    <option
+                      key={lang}
+                      value={lang}
+                    >
+                      {lang}
+                    </option>
+                  )
+                )}
+              </select>
+
+              {loggedIn ? (
+                <button
+                  className="login-btn"
+                  onClick={
+                    logout
+                  }
+                >
+                  {t.logout}
+                </button>
+              ) : (
+                <button
+                  className="login-btn"
+                  onClick={() =>
+                    setShowLogin(
+                      true
+                    )
+                  }
+                >
+                  {t.login}
+                </button>
+              )}
+            </div>
+          </nav>
+
+          <main className="hero">
+            <div className="hero-content">
+              <div className="badge">
+                {t.hero_badge}
+              </div>
+
+              <h1>
+                {t.hero_title_1}{" "}
+                <span>
+                  {
+                    t.hero_title_highlight
+                  }
+                </span>{" "}
+                {t.hero_title_2}
+              </h1>
+
+              <p className="hero-text">
+                {t.hero_text}
+              </p>
+
+              <button
+                className="primary-btn"
+                onClick={
+                  goToForm
+                }
+              >
+                {t.hero_cta}{" "}
+                <span>→</span>
+              </button>
+
+              <p className="small-text">
+                {t.hero_disclaimer}
+              </p>
+            </div>
+
+            <div className="hero-card">
+              <div className="card-header">
+                <div className="card-icon">
+                  📄
+                </div>
+
+                <div>
+                  <h3>
+                    SCHEME MATCH
+                  </h3>
+
+                  <p>
+                    Personalized
+                    recommendation
+                    preview
+                  </p>
+                </div>
+              </div>
+
+              <div className="match-box">
+                <div className="match-preview-lines">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+
+                <div className="preview-result">
+                  <div className="preview-badge">
+                    94%
+                  </div>
+
+                  <div>
+                    <small>
+                      {
+                        t.match_preview_label
+                      }
+                    </small>
+
+                    <h3>
+                      {
+                        t.match_preview_title
+                      }
+                    </h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+
+          <section className="features">
+            <div className="feature">
+              <div className="feature-icon">
+                🎯
+              </div>
+
               <h3>
-                {t(h, lang)}
+                {t.feature1_title}
               </h3>
 
               <p>
-                {t(p, lang)}
+                {t.feature1_text}
               </p>
-
             </div>
-          )
-        )}
 
-      </section>
+            <div className="feature">
+              <div className="feature-icon">
+                💰
+              </div>
 
-      <footer className="ss-footer ss-footer-dark">
-        <p>
-          {t(
-            "disclaimer",
-            lang
-          )}
-        </p>
-      </footer>
+              <h3>
+                {t.feature2_title}
+              </h3>
 
-    </div>
-  );
-}
+              <p>
+                {t.feature2_text}
+              </p>
+            </div>
 
-// ============================================================
-// FORM
-// ============================================================
-// ============================================================
-// DEMO PROFILES
-// ============================================================
+            <div className="feature">
+              <div className="feature-icon">
+                📋
+              </div>
 
-function DemoProfiles({
-  onSelect,
-  lang,
-}) {
-  return (
-    <div className="ss-demo-box">
+              <h3>
+                {t.feature3_title}
+              </h3>
 
-      <div className="ss-demo-header">
+              <p>
+                {t.feature3_text}
+              </p>
+            </div>
 
-        <div>
-          <strong>
-            {lang === "en"
-              ? "Demo / Test Profiles"
-              : "डेमो / टेस्ट प्रोफ़ाइल"}
-          </strong>
+            <div className="feature">
+              <div className="feature-icon">
+                🌐
+              </div>
 
-          <p>
-            {lang === "en"
-              ? "Use a ready-made profile to demonstrate the matcher quickly."
-              : "मैचर को जल्दी दिखाने के लिए तैयार प्रोफ़ाइल चुनें।"}
-          </p>
+              <h3>
+                {t.feature4_title}
+              </h3>
+
+              <p>
+                {t.feature4_text}
+              </p>
+            </div>
+          </section>
         </div>
 
-        <Sparkles
-          size={19}
-        />
+        {loginModal}
+      </>
+    );
+  }
 
-      </div>
+  // ==========================================================
+  // FORM
+  // ==========================================================
 
+  if (page === "form") {
+    return (
+      <div className="form-page">
+        <div className="form-container">
+          <button
+            className="back-btn"
+            onClick={() =>
+              setPage("home")
+            }
+          >
+            {t.back}
+          </button>
 
-      <div className="ss-demo-grid">
+          <div className="form-header">
+            <div className="form-badge">
+              {t.form_badge}
+            </div>
 
-        {DEMO_PROFILES.map(
-          (profile) => (
-            <button
-              type="button"
-              className="ss-demo-card"
-              key={profile.id}
-              onClick={() =>
-                onSelect(
-                  profile.data
-                )
-              }
-            >
+            <h1>
+              {t.form_title}
+            </h1>
 
-              <strong>
-                {profile.name}
-              </strong>
-
-              <span>
-                {
-                  profile.description
-                }
-              </span>
-
-            </button>
-          )
-        )}
-
-      </div>
-
-    </div>
-  );
-}
-
-function FormView({
-  lang,
-  setLang,
-  formData,
-  handleChange,
-  handleSubmit,
-  onBack,
-  onDemoSelect,
-}) {
-  const adult =
-    Number(formData.age) >=
-    18;
-
-  const isKusum =
-    formData.purpose ===
-    "solar" ||
-    formData.purpose ===
-    "agriculture";
-
-  const progress = [
-    formData.purpose &&
-    formData.category,
-
-    formData.age &&
-    formData.income &&
-    formData.projectCost &&
-    formData.education,
-
-    true,
-
-    formData.state &&
-    formData.district,
-  ];
-
-  return (
-    <div className="ss-shell">
-
-      <NavBar
-        lang={lang}
-        setLang={setLang}
-      />
-
-      <div className="ss-page">
-
-        <button
-          type="button"
-          className="ss-back-btn"
-          onClick={onBack}
-        >
-          <ChevronLeft
-            size={16}
-          />
-
-          {t(
-            "formBack",
-            lang
-          )}
-        </button>
-
-        <div className="ss-page-header">
-
-          <div className="ss-badge">
-            🎯{" "}
-            {t(
-              "formBadge",
-              lang
-            )}
+            <p>
+              {t.form_subtitle}
+            </p>
           </div>
 
-          <h1>
-            {t(
-              "formTitle",
-              lang
-            )}
-          </h1>
+          <form
+            onSubmit={
+              handleSubmit
+            }
+          >
+            {/* ==================================================
+                PURPOSE
+            ================================================== */}
 
-          <p>
-            {t(
-              "formSub",
-              lang
-            )}
-          </p>
-
-        </div>
-        <DemoProfiles
-          lang={lang}
-          onSelect={
-            onDemoSelect
-          }
-        />
-
-        <div className="ss-progress">
-
-          {progress.map(
-            (done, index) => (
-              <div
-                key={index}
-                className={`ss-progress-dot ${done
-                  ? "ss-progress-dot-on"
-                  : ""
-                  }`}
-              />
-            )
-          )}
-
-        </div>
-
-        <form
-          className="ss-form"
-          onSubmit={
-            handleSubmit
-          }
-        >
-
-          {/* PART A */}
-
-          <fieldset className="ss-part">
-
-            <legend>
-              {t(
-                "partA",
-                lang
-              )}
-            </legend>
-
-            <div className="ss-form-group">
-
+            <section className="form-section">
               <label>
-                {t(
-                  "purposeQ",
-                  lang
-                )}
+                {t.need_question}
               </label>
 
-              <div className="ss-purpose-grid">
-
+              <div className="choice-grid">
                 {PURPOSE_OPTIONS.map(
-                  (option) => {
+                  (purpose) => (
+                    <button
+                      key={
+                        purpose.value
+                      }
+                      type="button"
+                      className={
+                        formData.purpose ===
+                        purpose.value
+                          ? "choice active"
+                          : "choice"
+                      }
+                      onClick={() =>
+                        selectPurpose(
+                          purpose.value
+                        )
+                      }
+                    >
+                      <span>
+                        {getPurposeIcon(
+                          purpose.value
+                        )}
+                      </span>
 
-                    const Icon =
-                      iconForPurpose(
-                        option.value
-                      );
-
-                    return (
-                      <label
-                        key={
-                          option.value
+                      <span>
+                        {
+                          purpose
+                            .label
+                            .en
                         }
-                        className={`ss-purpose-card ${formData.purpose ===
-                          option.value
-                          ? "ss-purpose-card-on"
-                          : ""
-                          }`}
-                      >
+                      </span>
+                    </button>
+                  )
+                )}
+              </div>
 
-                        <input
-                          type="radio"
-                          name="purpose"
-                          value={
-                            option.value
-                          }
-                          checked={
-                            formData.purpose ===
-                            option.value
-                          }
-                          onChange={
-                            handleChange
-                          }
-                          required
-                        />
+              {/* VERIFIED SCHEME NAMES */}
 
-                        <Icon
-                          size={18}
-                        />
+              {formData.purpose &&
+                relevantSchemes.length >
+                  0 && (
+                  <div className="scheme-options-preview">
+                    <label>
+                      Relevant Government
+                      Schemes
+                    </label>
 
-                        <span>
-                          {labelOf(
-                            option,
-                            lang
-                          )}
-                        </span>
-
-                      </label>
-                    );
-                  }
+                    <div className="scheme-name-list">
+                      {relevantSchemes.map(
+                        (scheme) => (
+                          <div
+                            key={
+                              scheme.value
+                            }
+                            className="scheme-option-item"
+                          >
+                            ✓{" "}
+                            {
+                              scheme.label
+                            }
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
                 )}
 
-              </div>
-
-            </div>
-
-            <div className="ss-form-row">
-
-              <div className="ss-form-group">
-
-                <label>
-                  {t(
-                    "category",
-                    lang
-                  )}
-                </label>
-
-                <select
-                  name="category"
-                  value={
-                    formData.category
-                  }
-                  onChange={
-                    handleChange
-                  }
-                  required
-                >
-
-                  <option value="">
-                    —
-                  </option>
-
-                  {CATEGORY_OPTIONS.map(
-                    (option) => (
-                      <option
-                        key={
-                          option.value
-                        }
-                        value={
-                          option.value
-                        }
-                      >
-                        {
-                          option.label
-                        }
-                      </option>
-                    )
-                  )}
-
-                </select>
-
-              </div>
-
-              {adult && (
-                <div className="ss-form-group">
-
+              <div className="form-two-column">
+                <div>
                   <label>
-                    {t(
-                      "occupation",
-                      lang
+                    {t.label_category}
+                  </label>
+
+                  <select
+                    name="category"
+                    value={
+                      formData.category
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    required
+                  >
+                    <option value="">
+                      Select category
+                    </option>
+
+                    {CATEGORY_OPTIONS.map(
+                      (
+                        category
+                      ) => (
+                        <option
+                          key={
+                            category.value
+                          }
+                          value={
+                            category.value
+                          }
+                        >
+                          {
+                            category.label
+                          }
+                        </option>
+                      )
                     )}
+                  </select>
+                </div>
+
+                <div>
+                  <label>
+                    {t.label_occupation}
                   </label>
 
                   <select
@@ -1635,43 +1338,36 @@ function FormView({
                     }
                     required
                   >
-
                     <option value="">
-                      —
+                      {t.select_occupation}
                     </option>
 
                     {OCCUPATION_OPTIONS.map(
-                      (option) => (
+                      (
+                        occupation
+                      ) => (
                         <option
                           key={
-                            option.value
+                            occupation.value
                           }
                           value={
-                            option.value
+                            occupation.value
                           }
                         >
-                          {labelOf(
-                            option,
-                            lang
-                          )}
+                          {
+                            occupation
+                              .label
+                              .en
+                          }
                         </option>
                       )
                     )}
-
                   </select>
-
                 </div>
-              )}
-
-            </div>
-
-            <div className="ss-form-group">
+              </div>
 
               <label>
-                {t(
-                  "projectType",
-                  lang
-                )}
+                {t.label_project_type}
               </label>
 
               <select
@@ -1684,569 +1380,217 @@ function FormView({
                 }
                 required
               >
-
                 <option value="">
-                  —
+                  {t.select_project_type}
                 </option>
 
                 {PROJECT_TYPE_OPTIONS.map(
-                  (option) => (
+                  (type) => (
                     <option
                       key={
-                        option.value
+                        type.value
                       }
                       value={
-                        option.value
+                        type.value
                       }
                     >
-                      {labelOf(
-                        option,
-                        lang
-                      )}
+                      {
+                        type.label
+                          .en
+                      }
                     </option>
                   )
                 )}
-
               </select>
+            </section>
 
-            </div>
+            {/* ==================================================
+                PERSONAL / FINANCIAL
+            ================================================== */}
 
-          </fieldset>
-
-          <Perforation />
-
-          {/* PART B */}
-
-          <fieldset className="ss-part">
-
-            <legend>
-              {t(
-                "partB",
-                lang
-              )}
-            </legend>
-
-            <div className="ss-form-row">
-
-              <div className="ss-form-group">
-
-                <label>
-                  {t(
-                    "age",
-                    lang
-                  )}
-                </label>
-
-                <input
-                  type="number"
-                  name="age"
-                  min="1"
-                  max="100"
-                  value={
-                    formData.age
-                  }
-                  onChange={
-                    handleChange
-                  }
-                  required
-                />
-
-              </div>
-
-              <div className="ss-form-group">
-
-                <label>
-                  {t(
-                    "education",
-                    lang
-                  )}
-                </label>
-
-                <select
-                  name="education"
-                  value={
-                    formData.education
-                  }
-                  onChange={
-                    handleChange
-                  }
-                  required
-                >
-
-                  <option value="">
-                    —
-                  </option>
-
-                  {EDUCATION_LEVELS.map(
-                    (option) => (
-                      <option
-                        key={
-                          option.value
-                        }
-                        value={
-                          option.value
-                        }
-                      >
-                        {labelOf(
-                          option,
-                          lang
-                        )}
-                      </option>
-                    )
-                  )}
-
-                </select>
-
-              </div>
-
-            </div>
-
-            <div className="ss-form-row">
-
-              <div className="ss-form-group">
-
-                <label>
-                  {t(
-                    "income",
-                    lang
-                  )}
-                </label>
-
-                <div className="ss-input-wrapper">
-
-                  <span>
-                    ₹
-                  </span>
+            <section className="form-section">
+              <div className="form-two-column">
+                <div>
+                  <label>
+                    {t.label_age}
+                  </label>
 
                   <input
                     type="number"
-                    name="income"
-                    min="0"
+                    name="age"
                     value={
-                      formData.income
+                      formData.age
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    min="1"
+                    max="100"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label>
+                    {
+                      t.label_education_level
+                    }
+                  </label>
+
+                  <select
+                    name="education"
+                    value={
+                      formData.education
                     }
                     onChange={
                       handleChange
                     }
                     required
-                  />
-
-                </div>
-
-              </div>
-
-              <div className="ss-form-group">
-
-                <label>
-                  {t(
-                    "projectCost",
-                    lang
-                  )}
-                </label>
-
-                <div className="ss-input-wrapper">
-
-                  <span>
-                    ₹
-                  </span>
-
-                  <input
-                    type="number"
-                    name="projectCost"
-                    min="0"
-                    value={
-                      formData.projectCost
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    required
-                  />
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </fieldset>
-
-          <Perforation />
-
-          {/* PART C */}
-
-          <fieldset className="ss-part">
-
-            <legend>
-              {t(
-                "partC",
-                lang
-              )}
-            </legend>
-
-            <div className="ss-form-row">
-
-              <div className="ss-form-group">
-
-                <label>
-                  {t(
-                    "newEnterprise",
-                    lang
-                  )}
-                </label>
-
-                <select
-                  name="isNewEnterprise"
-                  value={
-                    formData.isNewEnterprise
-                  }
-                  onChange={
-                    handleChange
-                  }
-                >
-
-                  <option value="">
-                    {t(
-                      "optional",
-                      lang
-                    )}
-                  </option>
-
-                  <option value="yes">
-                    Yes
-                  </option>
-
-                  <option value="no">
-                    No
-                  </option>
-
-                </select>
-
-              </div>
-
-              <div className="ss-form-group">
-
-                <label>
-                  {t(
-                    "previousSubsidy",
-                    lang
-                  )}
-                </label>
-
-                <select
-                  name="previousGovernmentSubsidy"
-                  value={
-                    formData.previousGovernmentSubsidy
-                  }
-                  onChange={
-                    handleChange
-                  }
-                >
-
-                  <option value="">
-                    {t(
-                      "optional",
-                      lang
-                    )}
-                  </option>
-
-                  <option value="yes">
-                    Yes
-                  </option>
-
-                  <option value="no">
-                    No
-                  </option>
-
-                </select>
-
-              </div>
-
-            </div>
-
-            {adult && (
-              <div className="ss-form-row">
-
-                <div className="ss-form-group">
-
-                  <label>
-                    {t(
-                      "gender",
-                      lang
-                    )}
-                  </label>
-
-                  <select
-                    name="gender"
-                    value={
-                      formData.gender
-                    }
-                    onChange={
-                      handleChange
-                    }
                   >
-
                     <option value="">
-                      {t(
-                        "optional",
-                        lang
-                      )}
+                      {
+                        t.select_education_level
+                      }
                     </option>
 
-                    <option value="female">
-                      Female
-                    </option>
-
-                    <option value="male">
-                      Male
-                    </option>
-
-                    <option value="other">
-                      Other
-                    </option>
-
-                  </select>
-
-                </div>
-
-                <div className="ss-form-group">
-
-                  <label>
-                    {t(
-                      "previousGovernmentLoan",
-                      lang
-                    )}
-                  </label>
-
-                  <select
-                    name="previousGovernmentLoanStatus"
-                    value={
-                      formData.previousGovernmentLoanStatus
-                    }
-                    onChange={
-                      handleChange
-                    }
-                  >
-
-                    <option value="">
-                      {t(
-                        "optional",
-                        lang
-                      )}
-                    </option>
-
-                    <option value="no">
-                      No
-                    </option>
-
-                    <option value="mudra-repaid">
-                      MUDRA — fully repaid
-                    </option>
-
-                    <option value="svanidhi-repaid">
-                      PM SVANidhi — fully repaid
-                    </option>
-
-                    <option value="other">
-                      Other / not fully repaid
-                    </option>
-
-                  </select>
-
-                </div>
-
-              </div>
-            )}
-
-            {formData.purpose ===
-              "artisan" &&
-              adult && (
-                <div className="ss-form-group">
-
-                  <label>
-                    {t(
-                      "artisanTrade",
-                      lang
-                    )}
-                  </label>
-
-                  <select
-                    name="artisanTrade"
-                    value={
-                      formData.artisanTrade
-                    }
-                    onChange={
-                      handleChange
-                    }
-                  >
-
-                    <option value="">
-                      {t(
-                        "optional",
-                        lang
-                      )}
-                    </option>
-
-                    {VISHWAKARMA_TRADES.map(
-                      (trade) => (
+                    {EDUCATION_LEVELS.map(
+                      (level) => (
                         <option
                           key={
-                            trade
+                            level.value
                           }
                           value={
-                            trade
+                            level.value
                           }
                         >
-                          {trade}
+                          {
+                            level.label
+                              .en
+                          }
                         </option>
                       )
                     )}
-
                   </select>
-
                 </div>
-              )}
 
-            {formData.purpose ===
-              "artisan" &&
-              adult && (
-                <div className="ss-form-group">
-
+                <div>
                   <label>
-                    {t(
-                      "governmentEmployee",
-                      lang
-                    )}
+                    {t.label_income}
                   </label>
 
-                  <select
-                    name="governmentEmployee"
-                    value={
-                      formData.governmentEmployee
-                    }
-                    onChange={
-                      handleChange
-                    }
-                  >
+                  <div className="money-input">
+                    <span>₹</span>
 
-                    <option value="">
-                      {t(
-                        "optional",
-                        lang
-                      )}
-                    </option>
-
-                    <option value="yes">
-                      Yes
-                    </option>
-
-                    <option value="no">
-                      No
-                    </option>
-
-                  </select>
-
+                    <input
+                      type="number"
+                      name="income"
+                      value={
+                        formData.income
+                      }
+                      onChange={
+                        handleChange
+                      }
+                      min="0"
+                      required
+                    />
+                  </div>
                 </div>
-              )}
+
+                <div>
+                  <label>
+                    {
+                      t.label_project_cost
+                    }
+                  </label>
+
+                  <div className="money-input">
+                    <span>₹</span>
+
+                    <input
+                      type="number"
+                      name="projectCost"
+                      value={
+                        formData.projectCost
+                      }
+                      onChange={
+                        handleChange
+                      }
+                      min="0"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* ==================================================
+                ADDITIONAL SCHEME-SPECIFIC DATA
+            ================================================== */}
 
             {formData.purpose ===
-              "street-vending" &&
-              adult && (
-                <>
-                  <div className="ss-form-group">
+              "artisan" && (
+              <section className="form-section">
+                <label>
+                  PM Vishwakarma
+                  Trade
+                </label>
 
-                    <label>
-                      {t(
-                        "streetVendorProof",
-                        lang
-                      )}
-                    </label>
+                <input
+                  type="text"
+                  name="artisanTrade"
+                  value={
+                    formData.artisanTrade
+                  }
+                  onChange={
+                    handleChange
+                  }
+                  placeholder="Enter your traditional trade"
+                />
+              </section>
+            )}
 
-                    <select
-                      name="streetVendorProof"
-                      value={
-                        formData.streetVendorProof
-                      }
-                      onChange={
-                        handleChange
-                      }
-                    >
+            {formData.purpose ===
+              "street-vending" && (
+              <section className="form-section">
+                <label>
+                  Street Vendor
+                  Identification /
+                  Proof
+                </label>
 
-                      <option value="">
-                        {t(
-                          "optional",
-                          lang
-                        )}
-                      </option>
+                <select
+                  name="streetVendorProof"
+                  value={
+                    formData.streetVendorProof
+                  }
+                  onChange={
+                    handleChange
+                  }
+                >
+                  <option value="">
+                    Select
+                  </option>
+                  <option value="yes">
+                    Yes
+                  </option>
+                  <option value="no">
+                    No
+                  </option>
+                </select>
+              </section>
+            )}
 
-                      <option value="yes">
-                        Yes
-                      </option>
-
-                      <option value="no">
-                        No
-                      </option>
-
-                    </select>
-
-                  </div>
-
-                  <div className="ss-form-group">
-
-                    <label>
-                      {t(
-                        "streetVendingBefore2020",
-                        lang
-                      )}
-                    </label>
-
-                    <select
-                      name="streetVendingBefore2020"
-                      value={
-                        formData.streetVendingBefore2020
-                      }
-                      onChange={
-                        handleChange
-                      }
-                    >
-
-                      <option value="">
-                        {t(
-                          "optional",
-                          lang
-                        )}
-                      </option>
-
-                      <option value="yes">
-                        Yes
-                      </option>
-
-                      <option value="no">
-                        No
-                      </option>
-
-                    </select>
-
-                  </div>
-                </>
-              )}
-
-            {(
-              formData.purpose ===
+            {(formData.purpose ===
               "agriculture" ||
               formData.purpose ===
-              "livestock" ||
-              isKusum
-            ) && (
-                <div className="ss-form-row">
-
-                  <div className="ss-form-group">
-
+                "solar" ||
+              formData.purpose ===
+                "livestock") && (
+              <section className="form-section">
+                <div className="form-two-column">
+                  <div>
                     <label>
-                      {t(
-                        "farmerStatus",
-                        lang
-                      )}
+                      Farmer status
                     </label>
 
                     <select
@@ -2258,34 +1602,25 @@ function FormView({
                         handleChange
                       }
                     >
-
                       <option value="">
-                        {t(
-                          "optional",
-                          lang
-                        )}
+                        Select
                       </option>
-
                       <option value="yes">
                         Yes
                       </option>
-
                       <option value="no">
                         No
                       </option>
-
                     </select>
-
                   </div>
 
-                  {isKusum && (
-                    <div className="ss-form-group">
-
+                  {formData.purpose ===
+                    "solar" && (
+                    <div>
                       <label>
-                        {t(
-                          "agriculturalPump",
-                          lang
-                        )}
+                        Existing
+                        agricultural
+                        pump
                       </label>
 
                       <select
@@ -2297,1597 +1632,867 @@ function FormView({
                           handleChange
                         }
                       >
-
                         <option value="">
-                          {t(
-                            "optional",
-                            lang
-                          )}
+                          Select
                         </option>
-
                         <option value="yes">
                           Yes
                         </option>
-
                         <option value="no">
                           No
                         </option>
-
                       </select>
-
                     </div>
                   )}
 
-                </div>
-              )}
+                  {formData.purpose ===
+                    "livestock" && (
+                    <div>
+                      <label>
+                        Land
+                        arrangement
+                      </label>
 
-            {isKusum && (
-              <div className="ss-form-group">
-
-                <label>
-                  {t(
-                    "kusumComponent",
-                    lang
+                      <select
+                        name="landAvailable"
+                        value={
+                          formData.landAvailable
+                        }
+                        onChange={
+                          handleChange
+                        }
+                      >
+                        <option value="">
+                          Select
+                        </option>
+                        <option value="yes">
+                          Yes
+                        </option>
+                        <option value="no">
+                          No
+                        </option>
+                      </select>
+                    </div>
                   )}
-                </label>
-
-                <select
-                  name="kusumComponent"
-                  value={
-                    formData.kusumComponent
-                  }
-                  onChange={
-                    handleChange
-                  }
-                >
-
-                  <option value="">
-                    {t(
-                      "optional",
-                      lang
-                    )}
-                  </option>
-
-                  <option value="component-b">
-                    Standalone solar agricultural pump
-                  </option>
-
-                  <option value="component-c-ips">
-                    Solarise existing grid-connected agricultural pump
-                  </option>
-
-                  <option value="component-a">
-                    Set up a solar power plant
-                  </option>
-
-                </select>
-
-              </div>
+                </div>
+              </section>
             )}
 
-            {formData.kusumComponent ===
-              "component-a" && (
-                <div className="ss-form-row">
-
-                  <div className="ss-form-group">
-
+            {formData.purpose ===
+              "business" && (
+              <section className="form-section">
+                <div className="form-two-column">
+                  <div>
                     <label>
-                      {t(
-                        "beneficiaryType",
-                        lang
-                      )}
+                      Is this a new
+                      enterprise?
                     </label>
 
                     <select
-                      name="beneficiaryType"
+                      name="isNewEnterprise"
                       value={
-                        formData.beneficiaryType
+                        formData.isNewEnterprise
                       }
                       onChange={
                         handleChange
                       }
                     >
-
                       <option value="">
-                        {t(
-                          "optional",
-                          lang
-                        )}
+                        Select
                       </option>
-
-                      <option value="farmer-group">
-                        Farmer group
+                      <option value="yes">
+                        Yes
                       </option>
-
-                      <option value="cooperative">
-                        Cooperative
+                      <option value="no">
+                        No
                       </option>
-
-                      <option value="panchayat">
-                        Panchayat
-                      </option>
-
-                      <option value="fpo">
-                        FPO
-                      </option>
-
-                      <option value="wua">
-                        Water User Association
-                      </option>
-
                     </select>
-
                   </div>
 
-                  <div className="ss-form-group">
-
+                  <div>
                     <label>
-                      {t(
-                        "kusumCapacity",
-                        lang
-                      )}
+                      Previous
+                      government
+                      subsidy for
+                      this unit?
                     </label>
 
-                    <input
-                      type="number"
-                      min="500"
-                      max="2000"
-                      step="1"
-                      name="kusumCapacity"
+                    <select
+                      name="previousGovernmentSubsidy"
                       value={
-                        formData.kusumCapacity
+                        formData.previousGovernmentSubsidy
                       }
                       onChange={
                         handleChange
                       }
-                    />
-
+                    >
+                      <option value="">
+                        Select
+                      </option>
+                      <option value="yes">
+                        Yes
+                      </option>
+                      <option value="no">
+                        No
+                      </option>
+                    </select>
                   </div>
-
                 </div>
-              )}
+              </section>
+            )}
 
-            {formData.kusumComponent ===
-              "component-b" && (
-                <div className="ss-form-group">
+            {/* ==================================================
+                LOCATION
+            ================================================== */}
 
+            <section className="form-section">
+              <div className="form-three-column">
+                <div>
                   <label>
-                    {t(
-                      "gridAvailability",
-                      lang
-                    )}
+                    {t.label_state}
                   </label>
 
                   <select
-                    name="gridAvailability"
+                    name="state"
                     value={
-                      formData.gridAvailability
+                      formData.state
                     }
                     onChange={
                       handleChange
                     }
+                    required
                   >
-
                     <option value="">
-                      {t(
-                        "optional",
-                        lang
-                      )}
+                      {t.select_state}
                     </option>
 
-                    <option value="yes">
-                      Yes
-                    </option>
-
-                    <option value="no">
-                      No
-                    </option>
-
-                  </select>
-
-                </div>
-              )}
-
-            <label className="ss-checkbox-row">
-
-              <input
-                type="checkbox"
-                name="isStudent"
-                checked={
-                  formData.isStudent
-                }
-                onChange={
-                  handleChange
-                }
-              />
-
-              {t(
-                "student",
-                lang
-              )}
-
-            </label>
-
-          </fieldset>
-
-          <Perforation />
-
-          {/* PART D */}
-
-          <fieldset className="ss-part">
-
-            <legend>
-              {t(
-                "partD",
-                lang
-              )}
-            </legend>
-
-            <div className="ss-form-row">
-
-              <div className="ss-form-group">
-
-                <label>
-                  {t(
-                    "state",
-                    lang
-                  )}
-                </label>
-
-                <select
-                  name="state"
-                  value={
-                    formData.state
-                  }
-                  onChange={
-                    handleChange
-                  }
-                  required
-                >
-
-                  <option value="">
-                    —
-                  </option>
-
-                  {ALL_STATES.map(
-                    (state) => (
-                      <option
-                        key={state}
-                        value={
-                          state
-                        }
-                      >
-                        {state}
-                      </option>
-                    )
-                  )}
-
-                </select>
-
-              </div>
-
-              <div className="ss-form-group">
-
-                <label>
-                  {t(
-                    "district",
-                    lang
-                  )}
-                </label>
-
-                <select
-                  name="district"
-                  value={
-                    formData.district
-                  }
-                  onChange={
-                    handleChange
-                  }
-                  required
-                  disabled={
-                    !formData.state
-                  }
-                >
-
-                  <option value="">
-                    {formData.state
-                      ? t(
-                        "selectDistrict",
-                        lang
-                      )
-                      : t(
-                        "selectState",
-                        lang
-                      )}
-                  </option>
-
-                  {Array.isArray(
-                    districts[
-                    formData.state
-                    ]
-                  ) &&
-                    districts[
-                      formData.state
-                    ].map(
-                      (district) => (
+                    {Object.keys(
+                      stateCapitals
+                    ).map(
+                      (state) => (
                         <option
-                          key={
-                            district
-                          }
-                          value={
-                            district
-                          }
+                          key={state}
+                          value={state}
                         >
-                          {district}
+                          {state}
                         </option>
                       )
                     )}
-
-                </select>
-
-              </div>
-
-            </div>
-
-          </fieldset>
-
-          <button
-            type="submit"
-            className="ss-btn-primary ss-btn-full"
-          >
-            {t(
-              "submit",
-              lang
-            )}
-
-            <ArrowRight
-              size={18}
-            />
-          </button>
-
-        </form>
-
-      </div>
-
-    </div>
-  );
-}
-// ============================================================
-// PARTNER LOCATOR
-// ============================================================
-
-function PartnerLocator({
-  scheme,
-  formData,
-  lang,
-}) {
-  const channels =
-    getPartnerChannels(
-      scheme?.id
-    );
-
-  if (
-    channels.length === 0
-  ) {
-    return null;
-  }
-
-  const district =
-    formData?.district ||
-    "";
-
-  const state =
-    formData?.state ||
-    "";
-
-  return (
-    <div className="ss-result-section">
-
-      <h3>
-        <MapPin
-          size={16}
-        />
-
-        {lang === "en"
-          ? "Where to apply"
-          : "कहाँ आवेदन करें"}
-      </h3>
-
-
-      <p className="ss-helper-text">
-        {lang === "en"
-          ? "Application channels relevant to your selected location and scheme."
-          : "आपके चुने हुए स्थान और योजना के लिए संबंधित आवेदन माध्यम।"}
-      </p>
-
-
-      <div className="ss-location-card">
-
-        <div className="ss-location-main">
-
-          <MapPin
-            size={18}
-          />
-
-          <div>
-
-            <strong>
-              {district
-                ? district
-                : "Selected district"}
-            </strong>
-
-            <span>
-              {state}
-            </span>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div className="ss-partner-list">
-
-        {channels.map(
-          (
-            partner
-          ) => {
-
-            const mapUrl =
-              getMapSearchUrl(
-                partner.name,
-                district,
-                state
-              );
-
-            return (
-              <div
-                className="ss-partner-card"
-                key={
-                  partner.name
-                }
-              >
-
-                <div
-                  style={{
-                    flex: 1,
-                  }}
-                >
-
-                  <div
-                    style={{
-                      display:
-                        "flex",
-                      alignItems:
-                        "center",
-                      gap:
-                        "0.45rem",
-                    }}
-                  >
-
-                    <Building2
-                      size={15}
-                    />
-
-                    <strong>
-                      {
-                        partner.name
-                      }
-                    </strong>
-
-                  </div>
-
-                  <p
-                    className="ss-text-muted"
-                    style={{
-                      margin:
-                        "0.25rem 0 0",
-                      fontSize:
-                        "0.78rem",
-                    }}
-                  >
-                    {
-                      partner.description
-                    }
-                  </p>
-
+                  </select>
                 </div>
 
+                <div>
+                  <label>
+                    {t.label_district}
+                  </label>
 
-                <a
-                  className="ss-official-link"
-                  href={
-                    mapUrl
-                  }
-                  target="_blank"
-                  rel="noreferrer"
-                >
+                  {districtOptions ? (
+                    <select
+                      name="district"
+                      value={
+                        formData.district
+                      }
+                      onChange={
+                        handleChange
+                      }
+                      required
+                    >
+                      <option value="">
+                        {
+                          t.select_district
+                        }
+                      </option>
 
-                  {lang === "en"
-                    ? "Find nearby"
-                    : "पास में खोजें"}
+                      {districtOptions.map(
+                        (
+                          district
+                        ) => (
+                          <option
+                            key={
+                              district
+                            }
+                            value={
+                              district
+                            }
+                          >
+                            {
+                              district
+                            }
+                          </option>
+                        )
+                      )}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      name="district"
+                      value={
+                        formData.district
+                      }
+                      onChange={
+                        handleChange
+                      }
+                      placeholder={
+                        t.enter_district
+                      }
+                      required
+                    />
+                  )}
+                </div>
 
-                  <ExternalLink
-                    size={13}
+                <div>
+                  <label>
+                    {t.label_pincode}
+                  </label>
+
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    name="pincode"
+                    value={
+                      formData.pincode
+                    }
+                    onChange={(e) =>
+                      setFormData(
+                        (prev) => ({
+                          ...prev,
+                          pincode:
+                            e.target.value.replace(
+                              /\D/g,
+                              ""
+                            ),
+                        })
+                      )
+                    }
+                    placeholder={
+                      t.pincode_placeholder
+                    }
+                    maxLength={6}
+                    required
                   />
-
-                </a>
-
+                </div>
               </div>
-            );
-          }
-        )}
 
+              <p className="location-note">
+                {t.location_note}
+              </p>
+            </section>
+
+            <button
+              className="submit-btn"
+              type="submit"
+            >
+              {t.submit_cta}
+            </button>
+          </form>
+        </div>
       </div>
+    );
+  }
 
+  // ==========================================================
+  // RESULT
+  // ==========================================================
 
-      <p className="ss-prototype-note">
-        ℹ️{" "}
-        {lang === "en"
-          ? "The locator currently shows official application channels. Branch-level availability should be confirmed locally."
-          : "लोकेटर वर्तमान में आधिकारिक आवेदन माध्यम दिखाता है। स्थानीय शाखा की उपलब्धता की पुष्टि करें।"}
-      </p>
+  if (
+    page === "result" &&
+    recommendedScheme
+  ) {
+    const mapUrl =
+      userCoordinates
+        ? `https://www.openstreetmap.org/export/embed.html?bbox=${
+            userCoordinates.lng -
+            4
+          }%2C${
+            userCoordinates.lat -
+            3
+          }%2C${
+            userCoordinates.lng +
+            4
+          }%2C${
+            userCoordinates.lat +
+            3
+          }&layer=mapnik&marker=${
+            userCoordinates.lat
+          }%2C${
+            userCoordinates.lng
+          }`
+        : null;
 
-    </div>
-  );
-}
-// ============================================================
-// RESULTS
-// ============================================================
-
-function ResultsView({
-  lang,
-  setLang,
-  formData,
-  results,
-  activeScheme,
-  setActiveResultId,
-  onBack,
-}) {
-  const alternates =
-    results
-      .filter(
-        (scheme) =>
-          scheme.id !==
-          activeScheme.id
+    const checks =
+      Array.isArray(
+        recommendedScheme.checks
       )
-      .slice(0, 3);
+        ? recommendedScheme.checks
+        : [];
 
-  const kusumComponentLabel =
-    formData.kusumComponent ===
-      "component-a"
-      ? "Component A — Grid-connected renewable-energy power plant"
-      : formData.kusumComponent ===
-        "component-b"
-        ? "Component B — Standalone solar agricultural pump"
-        : formData.kusumComponent ===
-          "component-c-ips"
-          ? "Component C (IPS) — Solarisation of existing grid-connected pump"
-          : "";
+    const isStrongMatch =
+      recommendedScheme.match >=
+      70;
 
-  return (
-    <div className="ss-shell">
+    return (
+      <div className="form-page">
+        <div className="result-container">
+          <button
+            className="back-btn"
+            onClick={() =>
+              setPage("form")
+            }
+          >
+            {t.back}
+          </button>
 
-      <NavBar
-        lang={lang}
-        setLang={setLang}
-      />
+          <div className="form-header">
+            <div className="form-badge">
+              {t.form_badge}
+            </div>
 
-      <div className="ss-page">
+            <h1>
+              {t.result_title}
+            </h1>
 
-        <button
-          type="button"
-          className="ss-back-btn"
-          onClick={onBack}
-        >
-          <ChevronLeft
-            size={16}
-          />
-
-          {t(
-            "resultsBack",
-            lang
-          )}
-        </button>
-
-        <div className="ss-page-header">
-
-          <div className="ss-badge">
-            🎯{" "}
-            {t(
-              "bestMatch",
-              lang
-            )}
+            <p>
+              {t.result_subtitle}
+            </p>
           </div>
 
-          <h1>
-            {t(
-              "resultsTitle",
-              lang
-            )}
-          </h1>
+          {!isStrongMatch && (
+            <div className="match-warning">
+              {t.low_match_warning}
+            </div>
+          )}
 
-          <p>
-            {t(
-              "resultsSub",
-              lang
-            )}
-          </p>
+          <div className="scheme-result-card">
+            <div className="result-top">
+              <div>
+                <span
+                  className={
+                    isStrongMatch
+                      ? "best-match"
+                      : "best-match partial"
+                  }
+                >
+                  {isStrongMatch
+                    ? t.best_match
+                    : t.partial_match}
+                </span>
 
-        </div>
+                <h2>
+                  {
+                    recommendedScheme.name
+                  }
+                </h2>
 
-        <div className="ss-result-card">
+                <p>
+                  {
+                    recommendedScheme.description
+                  }
+                </p>
+              </div>
 
-          <div className="ss-result-top">
+              <div className="match-score">
+                <strong>
+                  {
+                    recommendedScheme.match
+                  }
+                  %
+                </strong>
 
-            <div>
+                <span>
+                  {
+                    t.result_match_label
+                  }
+                </span>
+              </div>
+            </div>
 
-              <span className="ss-best-tag">
-                {t(
-                  "bestMatch",
-                  lang
+            {/* =================================================
+                ELIGIBILITY
+            ================================================= */}
+
+            <div className="result-section">
+              <h3>
+                {t.eligibility_title}
+              </h3>
+
+              <div className="eligibility-list">
+                {checks.length >
+                0 ? (
+                  checks.map(
+                    (check) => (
+                      <div
+                        key={
+                          check.key
+                        }
+                        className={
+                          check.ok
+                            ? "check-pass"
+                            : "check-fail"
+                        }
+                      >
+                        {check.ok
+                          ? "✓"
+                          : "✗"}{" "}
+                        {
+                          check.label
+                            .en
+                        }
+                      </div>
+                    )
+                  )
+                ) : (
+                  <div className="check-pass">
+                    ✓ Scheme
+                    eligibility
+                    requirements
+                    satisfied.
+                  </div>
                 )}
-              </span>
+              </div>
+            </div>
 
-              <h2>
-                {
-                  activeScheme.name
-                }
-              </h2>
+            {/* =================================================
+                SCHEME DETAILS
+            ================================================= */}
 
-              <p className="ss-text-muted">
+            <div className="scheme-details">
+              <div className="detail-box">
+                <span>💰</span>
+
+                <small>
+                  {t.max_loan}
+                </small>
+
+                <strong>
+                  {getSchemeDisplayLoan(
+                    recommendedScheme
+                  )}
+                </strong>
+              </div>
+
+              <div className="detail-box">
+                <span>📊</span>
+
+                <small>
+                  {t.interest_rate}
+                </small>
+
+                <strong>
+                  {
+                    recommendedScheme.interest
+                  }
+                </strong>
+              </div>
+
+              <div className="detail-box">
+                <span>⏳</span>
+
+                <small>
+                  {t.moratorium}
+                </small>
+
+                <strong>
+                  {
+                    recommendedScheme
+                      .repayment ||
+                    "As applicable"
+                  }
+                </strong>
+              </div>
+            </div>
+
+            {/* =================================================
+                DOCUMENTS
+            ================================================= */}
+
+            <div className="result-section">
+              <h3>
+                {t.documents_title}
+              </h3>
+
+              <ul className="documents-list">
+                {(
+                  recommendedScheme.documents ||
+                  []
+                ).map((doc) => (
+                  <li key={doc}>
+                    {doc}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* =================================================
+                BENEFITS
+            ================================================= */}
+
+            {recommendedScheme
+              .benefits?.length >
+              0 && (
+              <div className="result-section">
+                <h3>
+                  Benefits
+                </h3>
+
+                <ul className="documents-list">
+                  {recommendedScheme.benefits.map(
+                    (benefit) => (
+                      <li key={benefit}>
+                        {benefit}
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
+            )}
+
+            {/* =================================================
+                EMI
+            ================================================= */}
+
+            <div className="result-section">
+              <h3>
+                {t.calculator_title}
+              </h3>
+
+              <div className="emi-controls">
+                <div>
+                  <label>
+                    {t.loan_amount}
+                  </label>
+
+                  <input
+                    type="number"
+                    value={emiLoan}
+                    onChange={(e) =>
+                      setEmiLoan(
+                        e.target.value
+                      )
+                    }
+                    min="0"
+                  />
+                </div>
+
+                <div>
+                  <label>
+                    {
+                      t.interest_rate_pct
+                    }
+                  </label>
+
+                  <input
+                    type="number"
+                    value={emiRate}
+                    step="0.1"
+                    min="0"
+                    onChange={(e) =>
+                      setEmiRate(
+                        e.target.value
+                      )
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label>
+                    {
+                      t.tenure_months
+                    }
+                  </label>
+
+                  <input
+                    type="number"
+                    value={emiTenure}
+                    min="1"
+                    onChange={(e) =>
+                      setEmiTenure(
+                        e.target.value
+                      )
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="emi-result">
+                <span>
+                  {
+                    t.estimated_emi
+                  }
+                </span>
+
+                <strong>
+                  ₹
+                  {emi.toLocaleString(
+                    "en-IN"
+                  )}
+                </strong>
+              </div>
+            </div>
+
+            {/* =================================================
+                GEO-SPATIAL
+            ================================================= */}
+
+            <div className="result-section">
+              <h3>
+                {t.partner_title}
+              </h3>
+
+              <p>
                 {
-                  activeScheme.description
+                  t.partner_desc_prefix
+                }{" "}
+                <strong>
+                  {
+                    recommendedScheme.name
+                  }
+                </strong>{" "}
+                {
+                  t.partner_desc_suffix
                 }
               </p>
 
-              {activeScheme.id ===
-                "pm-kusum" &&
-                kusumComponentLabel && (
-                  <div className="ss-status ss-status-good">
-                    <CheckCircle2
-                      size={15}
-                    />
+              {nearestPartner ? (
+                <>
+                  <div className="partner-card">
+                    <div className="partner-card-header">
+                      <div>
+                        <div className="partner-card-name">
+                          {
+                            nearestPartner.name
+                          }
+                        </div>
 
+                        <div className="partner-card-type">
+                          {
+                            nearestPartner.type
+                          }
+                        </div>
+                      </div>
+
+                      <div className="partner-distance">
+                        {
+                          nearestPartner.distance
+                        }{" "}
+                        km
+                      </div>
+                    </div>
+
+                    <div className="partner-info-grid">
+                      <div className="partner-info-item">
+                        <span className="partner-info-label">
+                          Location
+                        </span>
+
+                        <span className="partner-info-value">
+                          {
+                            nearestPartner.location
+                          }
+                        </span>
+                      </div>
+
+                      <div className="partner-info-item">
+                        <span className="partner-info-label">
+                          Fund
+                          Utilization
+                        </span>
+
+                        <span className="partner-info-value">
+                          {
+                            nearestPartner.fundUtilization
+                          }
+                          %
+                        </span>
+                      </div>
+
+                      <div className="partner-info-item">
+                        <span className="partner-info-label">
+                          NPA Status
+                        </span>
+
+                        <span className="partner-info-value partner-status-active">
+                          {
+                            nearestPartner.npaStatus
+                          }
+                        </span>
+                      </div>
+
+                      <div className="partner-info-item">
+                        <span className="partner-info-label">
+                          Distance
+                        </span>
+
+                        <span className="partner-info-value">
+                          {
+                            nearestPartner.distance
+                          }{" "}
+                          km
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="partner-schemes">
+                      <strong>
+                        Supported Scheme:
+                      </strong>{" "}
+                      {
+                        nearestPartner.supportedSchemes
+                          .map(
+                            (id) =>
+                              schemes.find(
+                                (scheme) =>
+                                  scheme.id ===
+                                  id
+                              )?.name ||
+                              id
+                          )
+                          .join(", ")
+                      }
+                    </div>
+                  </div>
+
+                  <div className="map-section">
+                    <h4>
+                      {t.map_title}
+                    </h4>
+
+                    {mapUrl ? (
+                      <div className="partner-map">
+                        <iframe
+                          title="Nearest channel partner map"
+                          src={
+                            mapUrl
+                          }
+                          loading="lazy"
+                        />
+                      </div>
+                    ) : (
+                      <div className="partner-empty">
+                        {
+                          t.map_unavailable
+                        }
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="partner-empty">
+                  <strong>
                     {
-                      kusumComponentLabel
+                      t.no_partner_title
                     }
+                  </strong>
+
+                  <p>
+                    {
+                      t.no_partner_desc
+                    }
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* =================================================
+                APPLICATION TRACKING
+            ================================================= */}
+
+            {loggedIn && (
+              <div className="tracking-card">
+                <h3>
+                  {
+                    t.tracking_title
+                  }
+                </h3>
+
+                <div className="tracking-row">
+                  <span>
+                    {
+                      t.tracking_name
+                    }
+                  </span>
+
+                  <strong>
+                    {name}
+                  </strong>
+                </div>
+
+                <div className="tracking-row">
+                  <span>
+                    {
+                      t.tracking_mobile
+                    }
+                  </span>
+
+                  <strong>
+                    +91 {phone}
+                  </strong>
+                </div>
+
+                {email && (
+                  <div className="tracking-row">
+                    <span>
+                      {
+                        t.tracking_email
+                      }
+                    </span>
+
+                    <strong>
+                      {email}
+                    </strong>
                   </div>
                 )}
 
-              <div
-                className={
-                  activeScheme.eligible
-                    ? "ss-status ss-status-good"
-                    : "ss-status ss-status-warning"
-                }
-              >
-
-                {activeScheme.eligible ? (
-                  <>
-                    <CheckCircle2
-                      size={15}
-                    />
-                    {t(
-                      "likelyEligible",
-                      lang
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <XCircle
-                      size={15}
-                    />
-                    {t(
-                      "conditionsMissing",
-                      lang
-                    )}
-                  </>
-                )}
-
-              </div>
-
-            </div>
-
-            <StampSeal
-              percent={
-                activeScheme.match
-              }
-              size={116}
-            />
-
-          </div>
-
-          <Perforation />
-
-          {/* MATCH SCORE */}
-
-          <div className="ss-result-section">
-
-            <h3>
-              <Sparkles
-                size={16}
-              />
-
-              {t(
-                "matchScore",
-                lang
-              )}
-
-              :{" "}
-
-              {
-                activeScheme.match
-              }%
-
-            </h3>
-
-          </div>
-
-          {/* ELIGIBILITY */}
-
-          <div className="ss-result-section">
-
-            <h3>
-              <CheckCircle2
-                size={16}
-              />
-
-              {t(
-                "eligibilityBreakdown",
-                lang
-              )}
-            </h3>
-
-            <div className="ss-eligibility-grid">
-
-              {Array.isArray(
-                activeScheme.checks
-              ) &&
-                activeScheme.checks.map(
-                  (check) => (
-                    <CheckRow
-                      key={
-                        check.key
-                      }
-                      ok={
-                        check.ok
-                      }
-                    >
-                      {
-                        check.label[
-                        lang
-                        ]
-                      }
-                    </CheckRow>
-                  )
-                )}
-
-            </div>
-
-          </div>
-
-          {/* WHY MATCH */}
-
-          {activeScheme.reasons?.length >
-            0 && (
-              <div className="ss-result-section">
-
-                <h3>
-                  ✨{" "}
-                  {t(
-                    "whyMatch",
-                    lang
-                  )}
-                </h3>
-
-                <ul className="ss-reasons-list">
-
-                  {activeScheme.reasons.map(
-                    (
-                      reason,
-                      index
-                    ) => (
-                      <li
-                        key={
-                          index
-                        }
-                      >
-
-                        <CheckCircle2
-                          size={15}
-                        />
-
-                        {
-                          reason[
-                          lang
-                          ]
-                        }
-
-                      </li>
-                    )
-                  )}
-
-                </ul>
-
-              </div>
-            )}
-
-          {/* FAILED CONDITIONS */}
-
-          {activeScheme.warnings?.length >
-            0 && (
-              <div className="ss-result-section">
-
-                <h3>
-                  <XCircle
-                    size={16}
-                  />
-
-                  {t(
-                    "conditionsMissing",
-                    lang
-                  )}
-                </h3>
-
-                <ul className="ss-list">
-
-                  {activeScheme.warnings.map(
-                    (
-                      warning,
-                      index
-                    ) => (
-                      <li
-                        key={
-                          index
-                        }
-                      >
-                        {
-                          warning[
-                          lang
-                          ]
-                        }
-                      </li>
-                    )
-                  )}
-
-                </ul>
-
-              </div>
-            )}
-
-          {/* MONEY */}
-
-          <div className="ss-scheme-details">
-
-            <div className="ss-detail-box">
-
-              <Wallet
-                size={18}
-              />
-
-              <small>
-                {t(
-                  "loanAmount",
-                  lang
-                )}
-              </small>
-
-              <strong>
-                {
-                  activeScheme.loanAmount ??
-                  "—"
-                }
-              </strong>
-
-            </div>
-
-            <div className="ss-detail-box">
-
-              <Banknote
-                size={18}
-              />
-
-              <small>
-                {t(
-                  "interest",
-                  lang
-                )}
-              </small>
-
-              <strong>
-                {
-                  activeScheme.interest ??
-                  "—"
-                }
-              </strong>
-
-            </div>
-
-            <div className="ss-detail-box">
-
-              <Building2
-                size={18}
-              />
-
-              <small>
-                {t(
-                  "repayment",
-                  lang
-                )}
-              </small>
-
-              <strong>
-                {
-                  activeScheme.emi ??
-                  "—"
-                }
-              </strong>
-
-            </div>
-
-          </div>
-
-          {/* CALCULATOR */}
-
-          <FinancialCalculator
-            scheme={
-              activeScheme
-            }
-            lang={lang}
-          />
-
-          {/* BENEFITS */}
-
-          <div className="ss-result-section">
-
-            <h3>
-              💰{" "}
-              {t(
-                "benefitsH",
-                lang
-              )}
-            </h3>
-
-            <ul className="ss-list">
-
-              {(
-                activeScheme.benefits ??
-                []
-              ).map(
-                (
-                  benefit,
-                  index
-                ) => (
-                  <li
-                    key={
-                      index
+                <div className="tracking-row">
+                  <span>
+                    {
+                      t.tracking_scheme
                     }
-                  >
-                    {benefit}
-                  </li>
-                )
-              )}
+                  </span>
 
-            </ul>
-
-          </div>
-
-          {/* DOCUMENTS */}
-
-          <div className="ss-result-section">
-
-            <h3>
-
-              <FileText
-                size={16}
-              />
-
-              {t(
-                "documentsH",
-                lang
-              )}
-
-            </h3>
-
-            <ul className="ss-doc-checklist">
-
-              {(
-                activeScheme.documents ??
-                []
-              ).map(
-                (
-                  document,
-                  index
-                ) => (
-                  <li
-                    key={
-                      index
+                  <strong>
+                    {
+                      recommendedScheme.name
                     }
-                  >
-                    {document}
-                  </li>
-                )
-              )}
-
-            </ul>
-
-          </div>
-
-          {/* APPLY */}
-
-          <PartnerLocator
-            scheme={
-              activeScheme
-            }
-            formData={
-              formData
-            }
-            lang={
-              lang
-            }
-          />
-
-          {activeScheme.officialUrl && (
-            <a
-              className="ss-official-link"
-              href={
-                activeScheme.officialUrl
-              }
-              target="_blank"
-              rel="noreferrer"
-            >
-
-              {t(
-                "officialLink",
-                lang
-              )}
-
-              {" — "}
-
-              {
-                activeScheme.officialSource
-              }
-
-              <ExternalLink
-                size={14}
-              />
-
-            </a>
-          )}
-
-        </div>
-
-      </div>
-
-      {alternates.length >
-        0 && (
-          <div className="ss-alternates">
-
-            <h3>
-              {t(
-                "otherMatches",
-                lang
-              )}
-            </h3>
-
-            <div className="ss-alternates-grid">
-
-              {alternates.map(
-                (
-                  scheme
-                ) => (
-                  <button
-                    type="button"
-                    key={
-                      scheme.id
-                    }
-                    className="ss-alt-card"
-                    onClick={() =>
-                      setActiveResultId(
-                        scheme.id
-                      )
-                    }
-                  >
-
-                    <div>
-
-                      <strong>
-                        {
-                          scheme.name
-                        }
-                      </strong>
-
-                      <span className="ss-text-muted">
-
-                        {
-                          scheme.match
-                        }%
-
-                        {" "}
-
-                        {t(
-                          "matchScore",
-                          lang
-                        )}
-
-                        <ChevronRight
-                          size={13}
-                        />
-
-                      </span>
-
-                    </div>
-
-                    <span className="ss-alt-score">
-
-                      {
-                        scheme.match
-                      }%
-
-                    </span>
-
-                  </button>
-                )
-              )}
-
-            </div>
-
-          </div>
-        )}
-
-      <footer className="ss-footer">
-
-        <p>
-          {t(
-            "disclaimer",
-            lang
-          )}
-        </p>
-
-      </footer>
-
-    </div>
-
-  );
-}
-
-// ============================================================
-// MAIN APP
-// ============================================================
-
-export default function App() {
-
-  useEffect(() => {
-
-    const id =
-      "scheme-saathi-fonts";
-
-    if (
-      !document.getElementById(
-        id
-      )
-    ) {
-
-      const link =
-        document.createElement(
-          "link"
-        );
-
-      link.id = id;
-      link.rel = "stylesheet";
-
-      link.href =
-        "https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap";
-
-      document.head.appendChild(
-        link
-      );
-    }
-
-  }, []);
-
-
-  const [lang, setLang] =
-    useState("en");
-
-  const [view, setView] =
-    useState("home");
-
-  const [results, setResults] =
-    useState([]);
-
-  const [
-    activeResultId,
-    setActiveResultId,
-  ] = useState(null);
-
-  const [formData, setFormData] =
-    useState({
-      purpose: "",
-      category: "",
-      occupation: "",
-      projectType: "",
-
-      age: "",
-      income: "",
-      projectCost: "",
-      education: "",
-
-      isNewEnterprise: "",
-      previousGovernmentSubsidy:
-        "",
-
-      gender: "",
-
-      artisanTrade: "",
-
-      previousGovernmentLoanStatus:
-        "",
-
-      governmentEmployee: "",
-
-      streetVendorProof: "",
-      streetVendingBefore2020:
-        "",
-
-      farmerStatus: "",
-
-      existingAgriculturalPump:
-        "",
-
-      gridAvailability: "",
-
-      beneficiaryType: "",
-
-      kusumCapacity: "",
-
-      kusumComponent: "",
-
-      landAvailable: "",
-
-      isStudent: false,
-
-      state: "",
-      district: "",
-    });
-
-
-  // ==========================================================
-  // HANDLE CHANGE
-  // ==========================================================
-
-  const handleChange = (
-    event
-  ) => {
-
-    const {
-      name,
-      value,
-      type,
-      checked,
-    } = event.target;
-
-    setFormData(
-      (previous) => {
-
-        const next = {
-          ...previous,
-
-          [name]:
-            type ===
-              "checkbox"
-              ? checked
-              : value,
-        };
-
-
-        // Age < 18:
-        // occupation is not applicable in our UI.
-        if (
-          name === "age" &&
-          Number(value) <
-          18
-        ) {
-          next.occupation =
-            "";
-        }
-
-
-        // State → reset district
-        if (
-          name === "state"
-        ) {
-          next.district =
-            "";
-        }
-
-
-        // Non-agriculture/solar →
-        // clear PM-KUSUM fields.
-        if (
-          name === "purpose" &&
-          value !==
-          "solar" &&
-          value !==
-          "agriculture"
-        ) {
-          next.kusumComponent =
-            "";
-
-          next.beneficiaryType =
-            "";
-
-          next.kusumCapacity =
-            "";
-
-          next.gridAvailability =
-            "";
-
-          next.existingAgriculturalPump =
-            "";
-        }
-
-
-        // Component A/B/C-specific cleanup.
-        if (
-          name ===
-          "kusumComponent"
-        ) {
-
-          if (
-            value !==
-            "component-a"
-          ) {
-            next.beneficiaryType =
-              "";
-
-            next.kusumCapacity =
-              "";
-          }
-
-          if (
-            value !==
-            "component-b"
-          ) {
-            next.gridAvailability =
-              "";
-          }
-        }
-
-
-        return next;
-      }
-    );
-  };
-  // ==========================================================
-  // DEMO PROFILE
-  // ==========================================================
-
-  const handleDemoSelect = (
-    profile
-  ) => {
-    setFormData({
-      ...profile,
-    });
-
-    setView(
-      "form"
-    );
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
-
-  // ==========================================================
-  // SUBMIT
-  // ==========================================================
-
-  const handleSubmit = (
-    event
-  ) => {
-
-    event.preventDefault();
-
-    try {
-
-      const matched =
-        getMatchedSchemes(
-          formData
-        );
-
-      const safeResults =
-        Array.isArray(
-          matched
-        )
-          ? matched
-          : [];
-
-      setResults(
-        safeResults
-      );
-
-      setActiveResultId(
-        safeResults[0]?.id ??
-        null
-      );
-
-      setView(
-        "results"
-      );
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-
-    } catch (error) {
-
-      console.error(
-        "SCHEME MATCHING ERROR:",
-        error
-      );
-
-      alert(
-        "Something went wrong while matching schemes. Please check the browser console."
-      );
-    }
-  };
-
-
-  // ==========================================================
-  // ACTIVE RESULT
-  // ==========================================================
-
-  const activeScheme =
-    useMemo(
-      () =>
-        results.find(
-          (scheme) =>
-            scheme.id ===
-            activeResultId
-        ) ||
-        results[0] ||
-        null,
-      [
-        results,
-        activeResultId,
-      ]
-    );
-
-
-  return (
-    <div className="ss-app">
-
-      {view === "home" && (
-        <HomeView
-          lang={lang}
-          setLang={
-            setLang
-          }
-          onStart={() =>
-            setView("form")
-          }
-        />
-      )}
-
-
-      {view === "form" && (
-        <FormView
-          lang={lang}
-          setLang={
-            setLang
-          }
-          formData={
-            formData
-          }
-          handleChange={
-            handleChange
-          }
-          handleSubmit={
-            handleSubmit
-          }
-          onBack={() =>
-            setView("home")
-          }
-          onDemoSelect={
-            handleDemoSelect
-          }
-        />
-      )}
-
-
-      {view ===
-        "results" &&
-        activeScheme && (
-          <ResultsView
-            lang={lang}
-            setLang={
-              setLang
-            }
-            formData={
-              formData
-            }
-            results={
-              results
-            }
-            activeScheme={
-              activeScheme
-            }
-            setActiveResultId={
-              setActiveResultId
-            }
-            onBack={() =>
-              setView("form")
-            }
-          />
-        )}
-
-
-      {view ===
-        "results" &&
-        !activeScheme && (
-          <div className="ss-shell">
-
-            <NavBar
-              lang={lang}
-              setLang={
-                setLang
-              }
-            />
-
-            <div className="ss-page">
-
-              <button
-                type="button"
-                className="ss-back-btn"
-                onClick={() =>
-                  setView(
-                    "form"
-                  )
-                }
-              >
-                <ChevronLeft
-                  size={16}
-                />
-
-                {t(
-                  "resultsBack",
-                  lang
-                )}
-              </button>
-
-              <div className="ss-page-header">
-
-                <div className="ss-badge">
-                  ℹ️
+                  </strong>
                 </div>
 
-                <h1>
-                  {t(
-                    "noMatch",
-                    lang
-                  )}
-                </h1>
+                <div className="tracking-row">
+                  <span>
+                    {
+                      t.tracking_location
+                    }
+                  </span>
 
-                <p>
-                  {t(
-                    "disclaimer",
-                    lang
-                  )}
-                </p>
-
+                  <strong>
+                    {formData.district
+                      ? `${formData.district}, `
+                      : ""}
+                    {
+                      formData.state
+                    }{" "}
+                    {formData.pincode
+                      ? `- ${formData.pincode}`
+                      : ""}
+                  </strong>
+                </div>
               </div>
+            )}
 
-            </div>
-
+            <button
+              className="submit-btn result-home-btn"
+              onClick={() =>
+                setPage("home")
+              }
+            >
+              {t.back_home}
+            </button>
           </div>
-        )}
+        </div>
+      </div>
+    );
+  }
 
-    </div>
-  );
+  return null;
 }
+
+export default App;
