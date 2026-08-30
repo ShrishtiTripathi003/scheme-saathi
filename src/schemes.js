@@ -1,6 +1,20 @@
 // ============================================================
 // SCHEME SAATHI
 // schemes.js
+//
+// Verified / government-source-aligned scheme data
+// + eligibility + relevance matching engine.
+//
+// IMPORTANT:
+// Match score = relevance of the user's need.
+// Eligibility = mandatory scheme conditions.
+//
+// These are NOT government-certified eligibility decisions.
+// Final verification must happen with the implementing agency.
+// ============================================================
+
+// ============================================================
+// HELPERS
 // ============================================================
 
 const normalize = (value) =>
@@ -25,8 +39,8 @@ export const PURPOSE_OPTIONS = [
   {
     value: "business",
     label: {
-      en: "Start / expand a micro business",
-      hi: "सूक्ष्म व्यवसाय शुरू / बढ़ाएं",
+      en: "Start / expand a business",
+      hi: "व्यवसाय शुरू / बढ़ाएं",
     },
   },
   {
@@ -46,8 +60,8 @@ export const PURPOSE_OPTIONS = [
   {
     value: "agriculture",
     label: {
-      en: "Crop cultivation / farm credit",
-      hi: "फसल / कृषि ऋण",
+      en: "Agriculture / farm credit",
+      hi: "कृषि / कृषि ऋण",
     },
   },
   {
@@ -64,15 +78,40 @@ export const PURPOSE_OPTIONS = [
       hi: "पशुधन / पोल्ट्री / डेयरी",
     },
   },
+  {
+    value: "education",
+    label: {
+      en: "Professional / technical education",
+      hi: "व्यावसायिक / तकनीकी शिक्षा",
+    },
+  },
 ];
 
 export const CATEGORY_OPTIONS = [
-  { value: "General", label: "General" },
-  { value: "OBC", label: "OBC" },
-  { value: "SC", label: "SC" },
-  { value: "ST", label: "ST" },
-  { value: "EWS", label: "EWS" },
-  { value: "Other", label: "Other" },
+  {
+    value: "General",
+    label: "General",
+  },
+  {
+    value: "OBC",
+    label: "OBC",
+  },
+  {
+    value: "SC",
+    label: "SC",
+  },
+  {
+    value: "ST",
+    label: "ST",
+  },
+  {
+    value: "EWS",
+    label: "EWS",
+  },
+  {
+    value: "Other",
+    label: "Other",
+  },
 ];
 
 export const OCCUPATION_OPTIONS = [
@@ -109,6 +148,13 @@ export const OCCUPATION_OPTIONS = [
     label: {
       en: "Artisan / craftsperson",
       hi: "शिल्पकार",
+    },
+  },
+  {
+    value: "student",
+    label: {
+      en: "Student",
+      hi: "छात्र",
     },
   },
   {
@@ -159,8 +205,15 @@ export const PROJECT_TYPE_OPTIONS = [
   {
     value: "livestock",
     label: {
-      en: "Livestock / poultry",
-      hi: "पशुधन / पोल्ट्री",
+      en: "Livestock / poultry / dairy",
+      hi: "पशुधन / पोल्ट्री / डेयरी",
+    },
+  },
+  {
+    value: "education",
+    label: {
+      en: "Professional / technical education",
+      hi: "व्यावसायिक / तकनीकी शिक्षा",
     },
   },
 ];
@@ -216,6 +269,10 @@ export const EDUCATION_LEVELS = [
   },
 ];
 
+// ============================================================
+// ALL STATES / UTs
+// ============================================================
+
 export const ALL_STATES = [
   "Andhra Pradesh",
   "Arunachal Pradesh",
@@ -256,24 +313,23 @@ export const ALL_STATES = [
 ];
 
 // ============================================================
-// PM VISHWAKARMA
-// Officially 18 family-based trades.
+// PM VISHWAKARMA — 18 OFFICIAL TRADES
 // ============================================================
 
-export const VISHWAKARMA_TRADES = [
+const VISHWAKARMA_TRADES = [
   "Carpenter",
   "Boat Maker",
   "Armourer",
-  "Blacksmith",
-  "Hammer and Tool Kit Maker",
+  "Metal Artisan",
+  "Tool Kit Maker",
   "Locksmith",
   "Goldsmith",
   "Potter",
-  "Sculptor / Stone Carver",
+  "Sculptor / Stone Worker",
   "Cobbler / Footwear Artisan",
   "Mason",
-  "Basket / Mat / Broom / Coir Maker",
-  "Doll / Toy Maker",
+  "Basket / Mat / Broom Maker",
+  "Toy Maker (Traditional)",
   "Barber",
   "Garland Maker",
   "Washerman",
@@ -282,13 +338,414 @@ export const VISHWAKARMA_TRADES = [
 ];
 
 // ============================================================
-// SCHEME DATA
+// SCHEMES
 // ============================================================
 
 export const schemes = [
 
   // ==========================================================
-  // 1. PMEGP
+  // 1. NSFDC — MICRO FINANCE SCHEME
+  // ==========================================================
+
+  {
+    id: "nsfdc-mfs",
+
+    name: "NSFDC Micro Finance Scheme (MFS)",
+
+    description:
+      "Micro-credit support for eligible Scheduled Caste beneficiaries for viable small income-generating activities.",
+
+    category: "business",
+
+    beneficiaryCategory: "SC",
+
+    purposes: [
+      "business",
+    ],
+
+    projectTypes: [
+      "manufacturing",
+      "service",
+      "trading",
+    ],
+
+    occupations: [
+      "business",
+      "self-employed",
+      "other",
+    ],
+
+    states: "all",
+
+    age: {
+      min: 18,
+      max: Infinity,
+    },
+
+    incomeLimit: 500000,
+
+    maxProjectCost: 140000,
+
+    loanAmount:
+      "Up to ₹1.25 lakh",
+
+    interest:
+      "6.5% p.a. beneficiary rate",
+
+    repayment:
+      "Up to 3 years including 3-month moratorium",
+
+    benefits: [
+      "Up to 90% of project cost can be financed under applicable NSFDC provisions.",
+      "Maximum project cost: ₹1.40 lakh.",
+      "Maximum loan: ₹1.25 lakh.",
+      "Beneficiary interest rate: 6.5% p.a.",
+    ],
+
+    documents: [
+      "Valid SC / Caste Certificate",
+      "Income Certificate",
+      "Aadhaar / KYC",
+      "Bank Account Details",
+      "Project / Activity Details",
+    ],
+
+    implementingAgency: [
+      "State Channelizing Agencies (SCAs)",
+      "Other authorized Channelizing Agencies (CAs)",
+    ],
+
+    officialSource:
+      "National Scheduled Castes Finance and Development Corporation (NSFDC)",
+
+    officialUrl:
+      "https://nsfdc.nic.in/faqs",
+  },
+
+
+  // ==========================================================
+  // 2. NSFDC — AAJEEVIKA MICRO-FINANCE YOJANA
+  // ==========================================================
+
+  {
+    id: "nsfdc-amy",
+
+    name: "NSFDC Aajeevika Micro-Finance Yojana (AMY)",
+
+    description:
+      "Need-based micro-finance support for eligible SC beneficiaries through selected NBFC-MFIs.",
+
+    category: "business",
+
+    beneficiaryCategory: "SC",
+
+    purposes: [
+      "business",
+    ],
+
+    projectTypes: [
+      "manufacturing",
+      "service",
+      "trading",
+    ],
+
+    occupations: [
+      "business",
+      "self-employed",
+      "other",
+    ],
+
+    states: "all",
+
+    age: {
+      min: 18,
+      max: Infinity,
+    },
+
+    incomeLimit: 500000,
+
+    maxProjectCost: 140000,
+
+    loanAmount:
+      "Up to ₹1.25 lakh",
+
+    interest:
+      "15% p.a. beneficiary rate",
+
+    repayment:
+      "Up to 3 years including 3-month moratorium",
+
+    benefits: [
+      "Micro-finance for viable small income-generating activities.",
+      "Project cost up to ₹1.40 lakh.",
+      "Maximum loan up to ₹1.25 lakh.",
+      "Implemented through selected NBFC-MFIs.",
+    ],
+
+    documents: [
+      "Valid SC / Caste Certificate",
+      "Income Certificate",
+      "Aadhaar / KYC",
+      "Bank Account Details",
+      "Project / Activity Details",
+    ],
+
+    implementingAgency: [
+      "Authorized NBFC-MFIs",
+      "Other authorized Channelizing Agencies",
+    ],
+
+    officialSource:
+      "National Scheduled Castes Finance and Development Corporation (NSFDC)",
+
+    officialUrl:
+      "https://nsfdc.nic.in/faqs",
+  },
+
+
+  // ==========================================================
+  // 3. NSFDC — TERM LOAN
+  // ==========================================================
+
+  {
+    id: "nsfdc-term-loan",
+
+    name: "NSFDC Term Loan",
+
+    description:
+      "Concessional term finance for larger viable income-generating projects of eligible SC beneficiaries.",
+
+    category: "business",
+
+    beneficiaryCategory: "SC",
+
+    purposes: [
+      "business",
+    ],
+
+    projectTypes: [
+      "manufacturing",
+      "service",
+      "trading",
+    ],
+
+    occupations: [
+      "business",
+      "self-employed",
+      "other",
+    ],
+
+    states: "all",
+
+    age: {
+      min: 18,
+      max: Infinity,
+    },
+
+    incomeLimit: 500000,
+
+    projectRange: {
+      min: 140001,
+      max: 5000000,
+    },
+
+    loanAmount:
+      "Up to ₹45 lakh",
+
+    interest:
+      "8% p.a. beneficiary rate",
+
+    repayment:
+      "Up to 7 years including 6-month moratorium; longer moratorium may apply for specified activities",
+
+    benefits: [
+      "For viable income-generating projects above ₹1.40 lakh and up to ₹50 lakh.",
+      "Maximum loan up to ₹45 lakh.",
+      "Beneficiary interest rate of 8% p.a.",
+      "Up to 90% of project cost may be financed under applicable provisions.",
+    ],
+
+    documents: [
+      "Valid SC / Caste Certificate",
+      "Income Certificate",
+      "Aadhaar / KYC",
+      "Project Report",
+      "Bank Account Details",
+    ],
+
+    implementingAgency: [
+      "State Channelizing Agencies (SCAs)",
+      "Other authorized Channelizing Agencies",
+    ],
+
+    officialSource:
+      "National Scheduled Castes Finance and Development Corporation (NSFDC)",
+
+    officialUrl:
+      "https://nsfdc.nic.in/faqs",
+  },
+
+
+  // ==========================================================
+  // 4. NSFDC — UDYAM NIDHI YOJANA
+  // ==========================================================
+
+  {
+    id: "nsfdc-uny",
+
+    name: "NSFDC Udyam Nidhi Yojana (UNY)",
+
+    description:
+      "Finance for eligible SC beneficiaries pursuing small and micro income-generating activities.",
+
+    category: "business",
+
+    beneficiaryCategory: "SC",
+
+    purposes: [
+      "business",
+    ],
+
+    projectTypes: [
+      "manufacturing",
+      "service",
+      "trading",
+    ],
+
+    occupations: [
+      "business",
+      "self-employed",
+      "other",
+    ],
+
+    states: "all",
+
+    age: {
+      min: 18,
+      max: Infinity,
+    },
+
+    incomeLimit: 500000,
+
+    maxProjectCost: 500000,
+
+    loanAmount:
+      "Up to ₹4.50 lakh",
+
+    interest:
+      "13%–15% p.a. depending on implementing channel",
+
+    repayment:
+      "Up to 5 years including 3-month moratorium",
+
+    benefits: [
+      "Project cost up to ₹5 lakh.",
+      "Maximum loan up to ₹4.50 lakh.",
+      "13% beneficiary rate through applicable cooperative channels and 15% through applicable SFB channels.",
+    ],
+
+    documents: [
+      "Valid SC / Caste Certificate",
+      "Income Certificate",
+      "Aadhaar / KYC",
+      "Bank Account Details",
+      "Project / Activity Details",
+    ],
+
+    implementingAgency: [
+      "Cooperative Societies",
+      "Cooperative Banks",
+      "Small Finance Banks",
+      "Other authorized Channelizing Agencies",
+    ],
+
+    officialSource:
+      "National Scheduled Castes Finance and Development Corporation (NSFDC)",
+
+    officialUrl:
+      "https://nsfdc.nic.in/faqs",
+  },
+
+
+  // ==========================================================
+  // 5. NSFDC — EDUCATIONAL LOAN SCHEME
+  // ==========================================================
+
+  {
+    id: "nsfdc-els",
+
+    name: "NSFDC Educational Loan Scheme (ELS)",
+
+    description:
+      "Educational loans for eligible SC students pursuing recognized full-time professional or technical courses in India or abroad.",
+
+    category: "education",
+
+    beneficiaryCategory: "SC",
+
+    purposes: [
+      "education",
+    ],
+
+    projectTypes: [
+      "education",
+    ],
+
+    occupations: [
+      "student",
+    ],
+
+    states: "all",
+
+    age: {
+      min: 16,
+      max: Infinity,
+    },
+
+    incomeLimit: 500000,
+
+    minimumEducationRank: 3,
+
+    loanAmount:
+      "Up to ₹40 lakh or 90% of course fee, whichever is lower",
+
+    interest:
+      "6.5% p.a.",
+
+    repayment:
+      "Up to 10–12 years depending on applicable loan/disbursement provisions",
+
+    benefits: [
+      "For regular full-time professional / technical recognized courses.",
+      "Courses may be pursued in India or abroad.",
+      "Up to ₹40 lakh or 90% of course fee, whichever is lower.",
+      "Concessional beneficiary interest rate.",
+    ],
+
+    documents: [
+      "Valid SC / Caste Certificate",
+      "Income Certificate",
+      "Aadhaar / KYC",
+      "Admission / Offer Letter",
+      "Course Fee Details",
+      "Bank Account Details",
+    ],
+
+    implementingAgency: [
+      "State Channelizing Agencies (SCAs)",
+      "Other authorized Channelizing Agencies",
+    ],
+
+    officialSource:
+      "National Scheduled Castes Finance and Development Corporation (NSFDC)",
+
+    officialUrl:
+      "https://nsfdc.nic.in/faqs",
+  },
+
+
+  // ==========================================================
+  // 6. PMEGP
   // ==========================================================
 
   {
@@ -298,11 +755,13 @@ export const schemes = [
       "Prime Minister's Employment Generation Programme (PMEGP)",
 
     description:
-      "Credit-linked margin-money subsidy support for eligible new micro enterprises.",
+      "Credit-linked margin money subsidy support for eligible new micro enterprises.",
 
     category: "business",
 
-    purposes: ["business"],
+    purposes: [
+      "business",
+    ],
 
     projectTypes: [
       "manufacturing",
@@ -331,29 +790,23 @@ export const schemes = [
 
     benefits: [
       "Credit-linked margin money subsidy.",
-      "Subsidy generally ranges from 15% to 35% depending on applicable category and location.",
-      "Maximum project cost of ₹50 lakh for manufacturing.",
-      "Maximum project cost of ₹20 lakh for business/service.",
-      "Primarily for new viable micro enterprises.",
+      "Margin money subsidy generally ranges from 15% to 35% depending on applicable category and location.",
+      "Maximum project cost for subsidy: ₹50 lakh for manufacturing and ₹20 lakh for business/service.",
+      "No income ceiling for new PMEGP units.",
+      "Projects above the subsidy ceiling may receive additional bank finance without Government subsidy subject to applicable rules.",
     ],
 
     loanAmount:
-      "Up to ₹50 lakh manufacturing / ₹20 lakh business or service",
+      "Project finance through participating banks; subsidy-eligible ceiling ₹50 lakh manufacturing / ₹20 lakh business-service",
 
     interest:
       "Normal bank rate as applicable",
 
     emi:
-      "As per bank loan",
+      "As per approved bank loan",
 
-    calculator: {
-      enabled: true,
-      defaultLoan: 500000,
-      defaultInterest: null,
-      defaultTenure: 5,
-      minTenure: 3,
-      maxTenure: 7,
-    },
+    repayment:
+      "Generally 3–7 years after applicable initial moratorium",
 
     documents: [
       "Aadhaar Card",
@@ -361,14 +814,13 @@ export const schemes = [
       "Photograph",
       "Project Report",
       "Bank Account Details",
-      "Education Certificate where applicable",
       "Category Certificate where applicable",
     ],
 
     implementingAgency: [
       "Khadi and Village Industries Commission (KVIC)",
-      "KVIB",
-      "District Industries Centre (DIC)",
+      "Khadi and Village Industries Boards (KVIBs)",
+      "District Industries Centres (DICs)",
       "Participating Banks",
     ],
 
@@ -379,8 +831,9 @@ export const schemes = [
       "https://kviconline.gov.in/pmegpeportal/pmegphome/",
   },
 
+
   // ==========================================================
-  // 2. MUDRA
+  // 7. PM MUDRA YOJANA
   // ==========================================================
 
   {
@@ -390,11 +843,13 @@ export const schemes = [
       "Pradhan Mantri MUDRA Yojana (PMMY)",
 
     description:
-      "Institutional collateral-free credit for eligible micro enterprises and specified allied activities.",
+      "Collateral-free institutional credit for non-corporate, non-farm micro and small enterprises and eligible allied agricultural activities.",
 
     category: "business",
 
-    purposes: ["business"],
+    purposes: [
+      "business",
+    ],
 
     projectTypes: [
       "manufacturing",
@@ -417,39 +872,32 @@ export const schemes = [
       max: Infinity,
     },
 
-    benefits: [
-      "Shishu: up to ₹50,000.",
-      "Kishor: above ₹50,000 up to ₹5 lakh.",
-      "Tarun: above ₹5 lakh up to ₹10 lakh.",
-      "Tarun Plus: above ₹10 lakh up to ₹20 lakh for eligible previous Tarun borrowers.",
-      "Collateral is not required under PMMY.",
+    loanCategories: [
+      "Shishu: up to ₹50,000",
+      "Kishore: above ₹50,000 to ₹5 lakh",
+      "Tarun: above ₹5 lakh to ₹10 lakh",
+      "Tarun Plus: above ₹10 lakh to ₹20 lakh for eligible previous Tarun borrowers who successfully repaid",
     ],
 
     loanAmount:
-      "Up to ₹20 lakh under applicable PMMY category",
+      "Up to ₹20 lakh under applicable MUDRA category",
 
     interest:
-      "As applicable by lending institution",
+      "As per lending institution / applicable lending policy",
 
-    emi:
-      "As per lender",
-
-    calculator: {
-      enabled: true,
-      defaultLoan: 500000,
-      defaultInterest: null,
-      defaultTenure: 5,
-      minTenure: 1,
-      maxTenure: 10,
-    },
+    benefits: [
+      "Collateral-free institutional credit.",
+      "Shishu, Kishore, Tarun and Tarun Plus categories.",
+      "Term loan and working capital requirements can be met.",
+      "Applicable allied activities include poultry, dairy and beekeeping among others.",
+    ],
 
     documents: [
-      "Aadhaar Card",
-      "PAN Card",
+      "Aadhaar / KYC",
+      "PAN Card where applicable",
       "Address Proof",
       "Business / Activity Details",
       "Bank Account Details",
-      "KYC Documents",
     ],
 
     implementingAgency: [
@@ -459,6 +907,7 @@ export const schemes = [
       "Small Finance Banks",
       "NBFCs",
       "MFIs",
+      "NBFC-MFIs",
     ],
 
     officialSource:
@@ -468,8 +917,9 @@ export const schemes = [
       "https://financialservices.gov.in/pradhan-mantri-mudra-yojana-pmmy",
   },
 
+
   // ==========================================================
-  // 3. PM VISHWAKARMA
+  // 8. PM VISHWAKARMA
   // ==========================================================
 
   {
@@ -479,18 +929,22 @@ export const schemes = [
       "PM Vishwakarma",
 
     description:
-      "End-to-end support for eligible traditional artisans and craftspeople working with hands and tools.",
+      "End-to-end support for traditional artisans and craftspeople working with hands and tools.",
 
     category: "artisan",
 
-    purposes: ["artisan"],
+    purposes: [
+      "artisan",
+    ],
 
     projectTypes: [
       "manufacturing",
       "service",
     ],
 
-    occupations: ["artisan"],
+    occupations: [
+      "artisan",
+    ],
 
     states: "all",
 
@@ -499,45 +953,38 @@ export const schemes = [
       max: Infinity,
     },
 
-    benefits: [
-      "Recognition through PM Vishwakarma Certificate and ID Card.",
-      "Skill training support.",
-      "Toolkit incentive.",
-      "Collateral-free credit support.",
-      "5% concessional interest rate under the scheme.",
-      "Digital transaction incentive.",
-      "Marketing support.",
-    ],
+    eligibleTrades:
+      VISHWAKARMA_TRADES,
 
     loanAmount:
-      "Credit support in two stages under scheme provisions",
+      "Up to ₹3 lakh in two tranches: ₹1 lakh + ₹2 lakh",
 
     interest:
-      "5% concessional rate",
+      "5% p.a. concessional beneficiary rate",
 
-    emi:
-      "As per loan tranche",
+    repayment:
+      "First tranche: 18 months; Second tranche: 30 months",
 
-    calculator: {
-      enabled: true,
-      defaultLoan: 100000,
-      defaultInterest: 5,
-      defaultTenure: 2,
-      minTenure: 1,
-      maxTenure: 3,
-    },
+    benefits: [
+      "PM Vishwakarma Certificate and ID Card.",
+      "Basic and advanced skill training.",
+      "₹500 per day training stipend.",
+      "Toolkit incentive up to ₹15,000.",
+      "Collateral-free enterprise development loans up to ₹3 lakh.",
+      "Digital transaction and marketing support.",
+    ],
 
     documents: [
       "Aadhaar Card",
       "Mobile Number",
       "Bank Account Details",
-      "Trade Verification",
+      "Trade / Beneficiary Verification",
       "PM Vishwakarma Registration",
     ],
 
     implementingAgency: [
-      "Ministry of Micro, Small & Medium Enterprises",
-      "Common Service Centres (CSC)",
+      "Ministry of MSME",
+      "Common Service Centres (CSCs)",
       "Banks / Lending Institutions",
       "State / District Authorities",
     ],
@@ -549,8 +996,9 @@ export const schemes = [
       "https://pmvishwakarma.gov.in/",
   },
 
+
   // ==========================================================
-  // 4. PM SVANIDHI
+  // 9. PM SVANIDHI
   // ==========================================================
 
   {
@@ -560,11 +1008,13 @@ export const schemes = [
       "PM Street Vendor's AtmaNirbhar Nidhi (PM SVANidhi)",
 
     description:
-      "Progressive working-capital credit support for eligible street vendors.",
+      "Collateral-free working-capital credit support for eligible street vendors.",
 
     category: "street-vendor",
 
-    purposes: ["street-vending"],
+    purposes: [
+      "street-vending",
+    ],
 
     projectTypes: [
       "trading",
@@ -582,32 +1032,29 @@ export const schemes = [
       max: Infinity,
     },
 
-    benefits: [
-      "First tranche: up to ₹15,000.",
-      "Second tranche: up to ₹25,000 after eligible repayment.",
-      "Third tranche: up to ₹50,000 after eligible repayment.",
-      "Interest subsidy for eligible timely repayment.",
-      "Digital transaction incentives.",
-      "UPI-linked RuPay credit card up to ₹30,000 for eligible vendors after timely second-tranche repayment.",
+    loanCategories: [
+      "First tranche: up to ₹15,000",
+      "Second tranche: up to ₹25,000",
+      "Third tranche: up to ₹50,000",
     ],
 
     loanAmount:
-      "₹15,000 / ₹25,000 / ₹50,000 progressive tranches",
+      "Up to ₹50,000 through progressive tranches",
 
     interest:
-      "Lender's rate with applicable scheme interest subsidy",
+      "Lender rate applicable; eligible timely repayment receives 7% interest subsidy",
 
-    emi:
-      "As per lender and loan cycle",
+    repayment:
+      "12 months / 18 months / 36 months for first / second / third tranche respectively",
 
-    calculator: {
-      enabled: true,
-      defaultLoan: 15000,
-      defaultInterest: null,
-      defaultTenure: 1,
-      minTenure: 1,
-      maxTenure: 3,
-    },
+    benefits: [
+      "Collateral-free working-capital loans.",
+      "Progressive loan tranches of ₹15,000, ₹25,000 and ₹50,000.",
+      "7% interest subsidy for eligible timely repayment.",
+      "Digital transaction incentives.",
+      "UPI-linked RuPay Credit Card up to ₹30,000 for eligible vendors.",
+      "Scheme lending period extended to March 2030.",
+    ],
 
     documents: [
       "Certificate of Vending / ID Card where applicable",
@@ -626,14 +1073,15 @@ export const schemes = [
     ],
 
     officialSource:
-      "Ministry of Housing and Urban Affairs",
+      "Ministry of Housing and Urban Affairs / Government of India",
 
     officialUrl:
       "https://pmsvanidhi.mohua.gov.in/",
   },
 
+
   // ==========================================================
-  // 5. PM-KUSUM
+  // 10. PM-KUSUM
   // ==========================================================
 
   {
@@ -643,7 +1091,7 @@ export const schemes = [
       "Pradhan Mantri Kisan Urja Suraksha evam Utthaan Mahabhiyan (PM-KUSUM)",
 
     description:
-      "Supports specified solar-energy applications in agriculture through separate components.",
+      "Solar-energy support for specified agricultural and renewable-energy applications.",
 
     category: "solar",
 
@@ -657,7 +1105,9 @@ export const schemes = [
       "agriculture",
     ],
 
-    occupations: ["farmer"],
+    occupations: [
+      "farmer",
+    ],
 
     states: "all",
 
@@ -666,32 +1116,31 @@ export const schemes = [
       max: Infinity,
     },
 
-    benefits: [
-      "Component A: grid-connected renewable-energy plants from 500 kW to 2 MW under applicable conditions.",
-      "Component B: standalone solar agricultural pumps.",
-      "Component C (IPS): solarisation of existing grid-connected agricultural pumps.",
-      "Financial assistance depends on component and state implementation.",
+    components: [
+      "Component A – decentralized grid-connected renewable energy plants",
+      "Component B – standalone solar agricultural pumps",
+      "Component C – solarisation of grid-connected agricultural pumps including feeder-level solarisation",
     ],
 
     loanAmount:
-      "Component-specific financing",
+      "Component- and state-specific financing arrangement",
 
     interest:
-      "As applicable to financing arrangement",
+      "As applicable to the financing arrangement",
 
-    emi:
-      "As applicable",
-
-    calculator: {
-      enabled: false,
-    },
+    benefits: [
+      "Central Financial Assistance and state support vary by component and geography.",
+      "Component B and Component C can involve bank finance for eligible beneficiary contribution.",
+      "Higher CFA rates apply in specified North-Eastern, hilly and Island regions under scheme guidelines.",
+      "PM-KUSUM 1.0 has been extended to 31 March 2027.",
+    ],
 
     documents: [
-      "Aadhaar Card",
-      "Land / Agricultural Documents",
+      "Aadhaar / KYC",
+      "Land / Agricultural Documents where applicable",
       "Bank Account Details",
       "Farmer Identity Documents",
-      "Pump / Electricity Details where applicable",
+      "Electricity / Pump Details where applicable",
     ],
 
     implementingAgency: [
@@ -705,18 +1154,19 @@ export const schemes = [
       "Ministry of New and Renewable Energy",
 
     officialUrl:
-      "https://pmkusum.mnre.gov.in/",
+      "https://mnre.gov.in/en/pradhan-mantri-kisan-urja-suraksha-evam-utthaan-mahabhiyaan-pm-kusum/",
   },
 
+
   // ==========================================================
-  // 6. NLM-EDP
+  // 11. NATIONAL LIVESTOCK MISSION
   // ==========================================================
 
   {
     id: "nlm-edp",
 
     name:
-      "National Livestock Mission - Entrepreneurship Development Programme",
+      "National Livestock Mission (NLM) – Entrepreneurship Development Programme",
 
     description:
       "Entrepreneurship support for specified livestock, poultry and feed/fodder activities.",
@@ -744,29 +1194,35 @@ export const schemes = [
       max: Infinity,
     },
 
-    benefits: [
-      "Capital subsidy support of up to 50% for eligible project cost.",
-      "Subsidy can be up to ₹50 lakh depending on eligible activity and applicable ceiling.",
-      "Supports specified poultry, sheep, goat, piggery and livestock activities.",
-      "Supports specified feed and fodder entrepreneurship activities.",
+    eligibleActivities: [
+      "Poultry",
+      "Sheep",
+      "Goat",
+      "Pig",
+      "Horse",
+      "Camel",
+      "Donkey",
+      "Feed and fodder units",
     ],
 
+    maxSubsidy:
+      5000000,
+
     loanAmount:
-      "Project-specific financing",
+      "Project financing through eligible bank / financial institution arrangements",
 
     interest:
-      "As applicable",
+      "As applicable by lending institution",
 
-    emi:
-      "As applicable",
-
-    calculator: {
-      enabled: false,
-    },
+    benefits: [
+      "50% capital subsidy for eligible NLM-EDP projects.",
+      "Subsidy can be up to ₹50 lakh for eligible activities under applicable scheme provisions.",
+      "Covers specified livestock breeding and feed/fodder entrepreneurship activities.",
+    ],
 
     documents: [
-      "Aadhaar Card",
-      "PAN Card",
+      "Aadhaar / KYC",
+      "PAN Card where applicable",
       "Bank Account Details",
       "Detailed Project Report",
       "Land / Lease Documents where required",
@@ -776,7 +1232,7 @@ export const schemes = [
     implementingAgency: [
       "Department of Animal Husbandry & Dairying",
       "State Animal Husbandry Departments",
-      "Banks / Lending Institutions",
+      "Eligible Banks / Financial Institutions",
     ],
 
     officialSource:
@@ -786,8 +1242,9 @@ export const schemes = [
       "https://dahd.gov.in/en/schemes/programmes/national_livestock_mission",
   },
 
+
   // ==========================================================
-  // 7. KCC
+  // 12. KISAN CREDIT CARD
   // ==========================================================
 
   {
@@ -797,7 +1254,7 @@ export const schemes = [
       "Kisan Credit Card (KCC)",
 
     description:
-      "Institutional credit for eligible farmers and specified agricultural/allied activities.",
+      "Timely institutional credit for eligible farmers and specified agricultural and allied activities.",
 
     category: "agriculture",
 
@@ -811,7 +1268,9 @@ export const schemes = [
       "livestock",
     ],
 
-    occupations: ["farmer"],
+    occupations: [
+      "farmer",
+    ],
 
     states: "all",
 
@@ -820,30 +1279,18 @@ export const schemes = [
       max: Infinity,
     },
 
-    benefits: [
-      "Credit support for crop cultivation.",
-      "Post-harvest and produce-marketing needs.",
-      "Working capital for farm assets.",
-      "Support for specified allied activities including dairy, fisheries, poultry and others.",
-    ],
-
     loanAmount:
-      "Credit limit determined according to crop, area, scale of finance and applicable norms",
+      "Up to ₹5 lakh under the applicable MISS ceiling, subject to scheme and lender norms",
 
     interest:
-      "As applicable under prevailing government and banking provisions",
+      "7% p.a. subsidized rate; effective 4% for eligible prompt repayment after applicable 3% incentive",
 
-    emi:
-      "As per bank terms and crop cycle",
-
-    calculator: {
-      enabled: true,
-      defaultLoan: null,
-      defaultInterest: null,
-      defaultTenure: 1,
-      minTenure: 1,
-      maxTenure: 5,
-    },
+    benefits: [
+      "Credit for crop cultivation and eligible agricultural working-capital needs.",
+      "Coverage of specified allied agricultural activities.",
+      "Modified Interest Subvention Scheme provides concessional short-term agricultural credit.",
+      "Collateral-free agricultural loan limit has been raised to ₹2 lakh under RBI directions.",
+    ],
 
     documents: [
       "Aadhaar / KYC",
@@ -861,23 +1308,114 @@ export const schemes = [
     ],
 
     officialSource:
-      "Government agricultural credit / Kisan Rin Portal",
+      "Government of India / Department of Financial Services / Agriculture Ministry",
 
     officialUrl:
-      "https://fasalrin.gov.in/eligibility",
+      "https://financialservices.gov.in/beta/sites/default/files/2025-02/budget.pdf",
   },
 ];
 
+
 // ============================================================
-// MATCHING ENGINE
+// SCHEME OPTIONS FOR UI
+//
+// These expose the ACTUAL VERIFIED SCHEME NAMES to the UI.
+// Use these when showing scheme choices after purpose/project
+// selection.
 // ============================================================
 
-function purposeMatches(
-  scheme,
-  purpose
-) {
-  return (
-    Boolean(purpose) &&
+export const SCHEME_OPTIONS_BY_PURPOSE = {
+  business: schemes
+    .filter((scheme) =>
+      scheme.purposes.includes("business")
+    )
+    .map((scheme) => ({
+      value: scheme.id,
+      label: scheme.name,
+    })),
+
+  "street-vending": schemes
+    .filter((scheme) =>
+      scheme.purposes.includes("street-vending")
+    )
+    .map((scheme) => ({
+      value: scheme.id,
+      label: scheme.name,
+    })),
+
+  artisan: schemes
+    .filter((scheme) =>
+      scheme.purposes.includes("artisan")
+    )
+    .map((scheme) => ({
+      value: scheme.id,
+      label: scheme.name,
+    })),
+
+  agriculture: schemes
+    .filter((scheme) =>
+      scheme.purposes.includes("agriculture")
+    )
+    .map((scheme) => ({
+      value: scheme.id,
+      label: scheme.name,
+    })),
+
+  solar: schemes
+    .filter((scheme) =>
+      scheme.purposes.includes("solar")
+    )
+    .map((scheme) => ({
+      value: scheme.id,
+      label: scheme.name,
+    })),
+
+  livestock: schemes
+    .filter((scheme) =>
+      scheme.purposes.includes("livestock")
+    )
+    .map((scheme) => ({
+      value: scheme.id,
+      label: scheme.name,
+    })),
+
+  education: schemes
+    .filter((scheme) =>
+      scheme.purposes.includes("education")
+    )
+    .map((scheme) => ({
+      value: scheme.id,
+      label: scheme.name,
+    })),
+};
+
+
+// ============================================================
+// BASIC MATCH HELPERS
+// ============================================================
+
+function stateMatches(scheme, state) {
+  if (!state) return null;
+
+  if (scheme.states === "all") {
+    return true;
+  }
+
+  if (!Array.isArray(scheme.states)) {
+    return false;
+  }
+
+  return scheme.states.some(
+    (item) =>
+      normalize(item) ===
+      normalize(state)
+  );
+}
+
+function purposeMatches(scheme, purpose) {
+  if (!purpose) return false;
+
+  return Boolean(
     scheme.purposes?.some(
       (item) =>
         normalize(item) ===
@@ -894,12 +1432,14 @@ function projectTypeMatches(
     return null;
   }
 
-  return (
-    scheme.projectTypes?.some(
-      (item) =>
-        normalize(item) ===
-        normalize(projectType)
-    ) ?? false
+  if (!scheme.projectTypes) {
+    return null;
+  }
+
+  return scheme.projectTypes.some(
+    (item) =>
+      normalize(item) ===
+      normalize(projectType)
   );
 }
 
@@ -911,38 +1451,31 @@ function occupationMatches(
     return null;
   }
 
-  return (
-    scheme.occupations?.some(
-      (item) =>
-        normalize(item) ===
-        normalize(occupation)
-    ) ?? false
-  );
-}
-
-function stateMatches(
-  scheme,
-  state
-) {
-  if (!state) {
-    return false;
+  if (!scheme.occupations) {
+    return null;
   }
 
-  return (
-    scheme.states === "all" ||
-    (
-      Array.isArray(scheme.states) &&
-      scheme.states.some(
-        (item) =>
-          normalize(item) ===
-          normalize(state)
-      )
-    )
+  return scheme.occupations.some(
+    (item) =>
+      normalize(item) ===
+      normalize(occupation)
   );
 }
 
+function educationRank(value) {
+  const option =
+    EDUCATION_LEVELS.find(
+      (item) =>
+        item.value ===
+        value
+    );
+
+  return option?.rank ?? 0;
+}
+
+
 // ============================================================
-// EVALUATE SCHEME
+// GENERIC SCHEME EVALUATION
 // ============================================================
 
 function evaluateScheme(
@@ -950,99 +1483,54 @@ function evaluateScheme(
   formData
 ) {
   const purpose =
-    normalize(formData.purpose);
+    normalize(
+      formData.purpose
+    );
 
   const category =
-    normalize(formData.category);
+    normalize(
+      formData.category
+    );
 
   const projectType =
-    normalize(formData.projectType);
+    normalize(
+      formData.projectType
+    );
 
   const occupation =
-    normalize(formData.occupation);
+    normalize(
+      formData.occupation
+    );
+
+  const education =
+    normalize(
+      formData.education
+    );
 
   const state =
-    normalize(formData.state);
+    normalize(
+      formData.state
+    );
 
   const age =
-    numberValue(formData.age);
+    numberValue(
+      formData.age
+    );
+
+  const income =
+    numberValue(
+      formData.income
+    );
 
   const projectCost =
     numberValue(
       formData.projectCost
     );
 
-  const education =
-    normalize(formData.education);
-
-  const isNewEnterprise =
-    normalize(
-      formData.isNewEnterprise
-    );
-
-  const previousGovernmentSubsidy =
-    normalize(
-      formData.previousGovernmentSubsidy
-    );
-
-  const artisanTrade =
-    normalize(
-      formData.artisanTrade
-    );
-
-  const streetVendorProof =
-    normalize(
-      formData.streetVendorProof
-    );
-
-  const streetVendingBefore2020 =
-    normalize(
-      formData.streetVendingBefore2020
-    );
-
-  const farmerStatus =
-    normalize(
-      formData.farmerStatus
-    );
-
-  const existingAgriculturalPump =
-    normalize(
-      formData.existingAgriculturalPump
-    );
-
-  const kusumComponent =
-    normalize(
-      formData.kusumComponent
-    );
-
-  const gridAvailability =
-    normalize(
-      formData.gridAvailability
-    );
-
-  const beneficiaryType =
-    normalize(
-      formData.beneficiaryType
-    );
-
-  const governmentEmployee =
-    normalize(
-      formData.governmentEmployee
-    );
-
-  const previousGovernmentLoanStatus =
-    normalize(
-      formData.previousGovernmentLoanStatus
-    );
-
-  const gender =
-    normalize(formData.gender);
-
-  const isAdult =
-    age >= 18;
-
   const checks = [];
+  const factors = [];
   const reasons = [];
+  const warnings = [];
 
   const addCheck = ({
     key,
@@ -1050,7 +1538,10 @@ function evaluateScheme(
     hi,
     ok,
     hard = false,
+    include = true,
   }) => {
+    if (!include) return;
+
     checks.push({
       key,
       label: {
@@ -1062,133 +1553,260 @@ function evaluateScheme(
     });
   };
 
-  const addReason = (
-    en,
-    hi
-  ) => {
-    reasons.push({
-      en,
-      hi,
-    });
-  };
-
   // ----------------------------------------------------------
-  // APPLICABILITY
+  // PURPOSE
   // ----------------------------------------------------------
 
-  if (
-    !purposeMatches(
+  const purposeOK =
+    purposeMatches(
       scheme,
       purpose
-    )
-  ) {
+    );
+
+  if (!purposeOK) {
     return {
       ...scheme,
       applicable: false,
+      eligible: false,
       match: 0,
       matchScore: 0,
-      eligible: false,
+      matchLevel: "Not applicable",
       checks: [],
       reasons: [],
       warnings: [
         {
-          en:
-            "Your selected purpose does not match this scheme's intended use.",
-          hi:
-            "आपका चुना हुआ उद्देश्य इस योजना के उपयोग से मेल नहीं खाता।",
+          en: "The selected purpose does not match this scheme.",
+          hi: "चुना गया उद्देश्य इस योजना से मेल नहीं खाता।",
         },
       ],
     };
   }
 
+  factors.push({
+    points: 40,
+    matched: true,
+    reason: {
+      en: "Your selected purpose matches the scheme.",
+      hi: "आपका चुना हुआ उद्देश्य इस योजना से मेल खाता है।",
+    },
+  });
+
   // ----------------------------------------------------------
-  // MATCH SCORE
+  // AGE — HARD ELIGIBILITY
   // ----------------------------------------------------------
 
-  let possiblePoints = 0;
-  let earnedPoints = 0;
+  if (scheme.age) {
+    const ageProvided =
+      age > 0;
 
-  const addFactor = (
-    points,
-    matched,
-    en,
-    hi
-  ) => {
-    possiblePoints += points;
+    const ageOK =
+      ageProvided &&
+      age >= scheme.age.min &&
+      age <= scheme.age.max;
 
-    if (matched) {
-      earnedPoints += points;
+    addCheck({
+      key: "age",
+      en: `Age must be ${
+        scheme.age.min
+      }${
+        Number.isFinite(
+          scheme.age.max
+        )
+          ? `–${scheme.age.max}`
+          : "+"
+      } years.`,
+      hi: `आयु ${
+        scheme.age.min
+      }${
+        Number.isFinite(
+          scheme.age.max
+        )
+          ? ` से ${scheme.age.max} वर्ष`
+          : " वर्ष या अधिक"
+      } होनी चाहिए।`,
+      ok: ageOK,
+      hard: true,
+      include: ageProvided,
+    });
+  }
 
-      addReason(
-        en,
-        hi
-      );
-    }
-  };
+  // ----------------------------------------------------------
+  // INCOME — HARD ELIGIBILITY WHERE APPLICABLE
+  // ----------------------------------------------------------
 
-  // Purpose
-  addFactor(
-    40,
-    true,
-    "Your selected purpose matches the scheme.",
-    "आपका चुना हुआ उद्देश्य इस योजना से मेल खाता है।"
-  );
+  if (
+    typeof scheme.incomeLimit ===
+      "number"
+  ) {
+    const incomeProvided =
+      income >= 0 &&
+      String(
+        formData.income ?? ""
+      ).trim() !== "";
 
-  // Project type
-  const projectMatch =
+    const incomeOK =
+      incomeProvided &&
+      income <=
+        scheme.incomeLimit;
+
+    addCheck({
+      key: "income",
+      en: `Annual family income must not exceed ₹${scheme.incomeLimit.toLocaleString(
+        "en-IN"
+      )}.`,
+      hi: `वार्षिक पारिवारिक आय ₹${scheme.incomeLimit.toLocaleString(
+        "en-IN"
+      )} से अधिक नहीं होनी चाहिए।`,
+      ok: incomeOK,
+      hard: true,
+      include: incomeProvided,
+    });
+  }
+
+  // ----------------------------------------------------------
+  // CATEGORY — NSFDC SC ONLY
+  // ----------------------------------------------------------
+
+  if (
+    scheme.beneficiaryCategory
+  ) {
+    addCheck({
+      key: "category",
+      en: "Applicant must belong to the Scheduled Caste (SC) category.",
+      hi: "आवेदक अनुसूचित जाति (SC) वर्ग से होना चाहिए।",
+      ok:
+        category ===
+        "sc",
+      hard: true,
+    });
+  }
+
+  // ----------------------------------------------------------
+  // STATE
+  // ----------------------------------------------------------
+
+  const locationOK =
+    stateMatches(
+      scheme,
+      state
+    );
+
+  addCheck({
+    key: "location",
+    en: "The selected location is covered.",
+    hi: "चुना गया स्थान योजना के अंतर्गत आता है।",
+    ok: locationOK,
+    hard: true,
+    include: Boolean(state),
+  });
+
+  factors.push({
+    points: 10,
+    matched:
+      locationOK === true,
+    reason: {
+      en: "Your selected location is covered.",
+      hi: "आपका चुना हुआ स्थान योजना के अंतर्गत आता है।",
+    },
+  });
+
+  // ----------------------------------------------------------
+  // PROJECT TYPE
+  // ----------------------------------------------------------
+
+  const projectTypeResult =
     projectTypeMatches(
       scheme,
       projectType
     );
 
   if (
-    projectMatch !== null
+    projectTypeResult !==
+    null
   ) {
-    addFactor(
-      20,
-      projectMatch,
-      "Your project type is supported.",
-      "आपका परियोजना प्रकार समर्थित है।"
-    );
+    addCheck({
+      key: "project-type",
+      en: "The selected project type is supported by this scheme.",
+      hi: "चुना गया परियोजना प्रकार इस योजना में समर्थित है।",
+      ok:
+        projectTypeResult,
+      hard: true,
+    });
+
+    factors.push({
+      points: 20,
+      matched:
+        projectTypeResult,
+      reason: {
+        en: "Your project type is supported.",
+        hi: "आपका परियोजना प्रकार समर्थित है।",
+      },
+    });
   }
 
-  // Occupation only for adults
-  if (
-    isAdult &&
-    occupation
-  ) {
-    const occupationMatch =
-      occupationMatches(
-        scheme,
-        occupation
-      );
+  // ----------------------------------------------------------
+  // OCCUPATION
+  // ----------------------------------------------------------
 
-    if (
-      occupationMatch !==
-      null
-    ) {
-      addFactor(
-        20,
-        occupationMatch,
-        "Your occupation matches the beneficiary/activity profile.",
-        "आपका व्यवसाय लाभार्थी/गतिविधि प्रोफ़ाइल से मेल खाता है।"
-      );
-    }
-  }
-
-  // Location
-  addFactor(
-    10,
-    stateMatches(
+  const occupationResult =
+    occupationMatches(
       scheme,
-      state
-    ),
-    "Your selected location is covered.",
-    "आपका चुना हुआ स्थान योजना के अंतर्गत आता है।"
-  );
+      occupation
+    );
 
-  // Project cost relevance
-  let costCheck = null;
+  if (
+    occupationResult !==
+    null
+  ) {
+    addCheck({
+      key: "occupation",
+      en: "Your occupation matches the scheme's beneficiary/activity profile.",
+      hi: "आपका व्यवसाय योजना की लाभार्थी/गतिविधि प्रोफ़ाइल से मेल खाता है।",
+      ok:
+        occupationResult,
+      hard: true,
+    });
+
+    factors.push({
+      points: 15,
+      matched:
+        occupationResult,
+      reason: {
+        en: "Your occupation matches the beneficiary/activity profile.",
+        hi: "आपका व्यवसाय लाभार्थी/गतिविधि प्रोफ़ाइल से मेल खाता है।",
+      },
+    });
+  }
+
+  // ----------------------------------------------------------
+  // GENERIC PROJECT COST CHECK
+  // ----------------------------------------------------------
+
+  let costRelevant = false;
+  let costOK = true;
+
+  if (
+    scheme.maxProjectCost
+  ) {
+    costRelevant = true;
+
+    costOK =
+      projectCost > 0 &&
+      projectCost <=
+        scheme.maxProjectCost;
+  }
+
+  if (
+    scheme.projectRange
+  ) {
+    costRelevant = true;
+
+    costOK =
+      projectCost >=
+        scheme.projectRange.min &&
+      projectCost <=
+        scheme.projectRange.max;
+  }
 
   if (
     scheme.projectLimits &&
@@ -1200,172 +1818,76 @@ function evaluateScheme(
       ];
 
     if (
-      typeof limit === "number"
+      typeof limit ===
+      "number"
     ) {
-      costCheck =
-        projectCost <= limit;
+      costRelevant = true;
+
+      costOK =
+        projectCost > 0 &&
+        projectCost <=
+          limit;
     }
   }
 
-  if (
-    costCheck === null &&
-    scheme.maxProjectCost
-  ) {
-    costCheck =
-      projectCost <=
-      scheme.maxProjectCost;
-  }
-
-  if (
-    costCheck !== null
-  ) {
-    addFactor(
-      10,
-      costCheck,
-      "Your project cost fits the applicable project limit.",
-      "आपकी परियोजना लागत लागू परियोजना सीमा में है।"
-    );
-  }
-
-  const match =
-    possiblePoints > 0
-      ? Math.round(
-          (
-            earnedPoints /
-            possiblePoints
-          ) * 100
-        )
-      : 0;
-
-  // ----------------------------------------------------------
-  // COMMON ELIGIBILITY
-  // ----------------------------------------------------------
-
-  addCheck({
-    key: "location",
-    en: "Your selected location is covered.",
-    hi: "आपका चुना हुआ स्थान योजना के अंतर्गत आता है।",
-    ok: stateMatches(
-      scheme,
-      state
-    ),
-    hard: true,
-  });
-
-  if (
-    scheme.age &&
-    age > 0
-  ) {
-    const ageOK =
-      age >= scheme.age.min &&
-      age <= scheme.age.max;
-
+  if (costRelevant) {
     addCheck({
-      key: "age",
-      en: Number.isFinite(scheme.age.max)
-        ? `Applicant must be ${scheme.age.min}–${scheme.age.max} years old.`
-        : `Applicant must be at least ${scheme.age.min} years old.`,
-      hi: Number.isFinite(scheme.age.max)
-        ? `आवेदक की आयु ${scheme.age.min}–${scheme.age.max} वर्ष होनी चाहिए।`
-        : `आवेदक की आयु कम से कम ${scheme.age.min} वर्ष होनी चाहिए।`,
-      ok: ageOK,
+      key: "project-cost",
+      en: "Project cost is within the applicable scheme limit/range.",
+      hi: "परियोजना लागत योजना की लागू सीमा में है।",
+      ok: costOK,
       hard: true,
+    });
+
+    factors.push({
+      points: 15,
+      matched:
+        costOK,
+      reason: {
+        en: "Your project cost fits the applicable scheme range.",
+        hi: "आपकी परियोजना लागत योजना की लागू सीमा में है।",
+      },
     });
   }
 
   // ----------------------------------------------------------
-  // PMEGP
+  // EDUCATIONAL LOAN
   // ----------------------------------------------------------
 
   if (
     scheme.id ===
-    "pmegp"
+    "nsfdc-els"
   ) {
-    addCheck({
-      key: "new-enterprise",
-      en: "The project is a new enterprise.",
-      hi: "परियोजना एक नया उद्यम है।",
-      ok:
-        isNewEnterprise ===
-        "yes",
-      hard: true,
-    });
-
-    addCheck({
-      key: "previous-subsidy",
-      en: "The unit has not already received government subsidy.",
-      hi: "इस इकाई को पहले सरकारी सब्सिडी नहीं मिली है।",
-      ok:
-        previousGovernmentSubsidy !==
-        "yes",
-      hard: true,
-    });
-
-    // PMEGP Class 8 rule for higher-cost projects.
-    const higherCost =
-      (
-        projectType ===
-        "manufacturing" &&
-        projectCost >
-          1000000
-      ) ||
-      (
-        projectType !==
-          "manufacturing" &&
-        projectCost >
-          500000
+    const rank =
+      educationRank(
+        education
       );
 
-    if (
-      higherCost
-    ) {
-      const educationRank =
-        EDUCATION_LEVELS.find(
-          (item) =>
-            item.value ===
-            education
-        )?.rank ?? 0;
+    const educationOK =
+      rank >=
+      scheme.minimumEducationRank;
 
-      addCheck({
-        key: "education",
-        en:
-          "Class 8 pass or above is required for the applicable higher project-cost condition.",
-        hi:
-          "लागू उच्च परियोजना लागत की स्थिति में कक्षा 8 या उससे अधिक आवश्यक है।",
-        ok:
-          educationRank >= 1,
-        hard: true,
-      });
-    }
-  }
+    addCheck({
+      key: "education",
+      en: "Student should have completed Class 12 or meet the applicable course-entry requirement.",
+      hi: "छात्र को कक्षा 12 या लागू पाठ्यक्रम प्रवेश आवश्यकता पूरी करनी चाहिए।",
+      ok:
+        educationOK,
+      hard: true,
+      include: Boolean(
+        education
+      ),
+    });
 
-  // ----------------------------------------------------------
-  // MUDRA
-  // ----------------------------------------------------------
-
-  if (
-    scheme.id ===
-    "mudra"
-  ) {
-    if (
-      projectCost >
-      1000000
-    ) {
-      const tarunPlusOK =
-        formData.previousTarunLoanRepaid !==
-        "no";
-
-      addCheck({
-        key: "tarun-plus",
-        en:
-          "For amounts above ₹10 lakh, Tarun Plus eligibility requires successful repayment of a previous Tarun loan.",
-        hi:
-          "₹10 लाख से अधिक राशि के लिए Tarun Plus हेतु पिछले Tarun ऋण का सफल पुनर्भुगतान आवश्यक है।",
-        ok:
-          tarunPlusOK,
-        hard: true,
-      });
-    }
+    factors.push({
+      points: 15,
+      matched:
+        educationOK,
+      reason: {
+        en: "Your education profile is suitable for the course requirement.",
+        hi: "आपकी शिक्षा प्रोफ़ाइल पाठ्यक्रम की आवश्यकता के अनुकूल है।",
+      },
+    });
   }
 
   // ----------------------------------------------------------
@@ -1378,58 +1900,51 @@ function evaluateScheme(
   ) {
     addCheck({
       key: "artisan",
-      en: "Applicant is an artisan/craftsperson.",
-      hi: "आवेदक शिल्पकार है।",
+      en: "Applicant is an eligible traditional artisan/craftsperson.",
+      hi: "आवेदक पात्र पारंपरिक शिल्पकार होना चाहिए।",
       ok:
         occupation ===
         "artisan",
       hard: true,
     });
 
-    const tradeOK =
-      VISHWAKARMA_TRADES.some(
-        (trade) =>
-          normalize(
-            trade
-          ) ===
-          artisanTrade
+    factors.push({
+      points: 20,
+      matched:
+        occupation ===
+        "artisan",
+      reason: {
+        en: "Your occupation matches the artisan profile.",
+        hi: "आपका व्यवसाय शिल्पकार प्रोफ़ाइल से मेल खाता है।",
+      },
+    });
+
+    const selectedTrade =
+      normalize(
+        formData.artisanTrade
       );
 
-    addCheck({
-      key: "trade",
-      en: "The selected trade is one of the covered traditional trades.",
-      hi: "चुना गया ट्रेड शामिल पारंपरिक ट्रेडों में से एक है।",
-      ok: tradeOK,
-      hard: true,
-    });
+    if (
+      selectedTrade
+    ) {
+      const tradeOK =
+        scheme.eligibleTrades.some(
+          (trade) =>
+            normalize(
+              trade
+            ) ===
+            selectedTrade
+        );
 
-    const previousLoanOK =
-      previousGovernmentLoanStatus ===
-        "no" ||
-      previousGovernmentLoanStatus ===
-        "mudra-repaid" ||
-      previousGovernmentLoanStatus ===
-        "svanidhi-repaid" ||
-      previousGovernmentLoanStatus ===
-        "";
-
-    addCheck({
-      key: "previous-loan",
-      en: "Previous government-loan condition is satisfied.",
-      hi: "पिछले सरकारी ऋण संबंधी शर्त पूरी होती है।",
-      ok: previousLoanOK,
-      hard: true,
-    });
-
-    addCheck({
-      key: "government-service",
-      en: "Applicant is not a government employee.",
-      hi: "आवेदक सरकारी कर्मचारी नहीं है।",
-      ok:
-        governmentEmployee !==
-        "yes",
-      hard: true,
-    });
+      addCheck({
+        key: "trade",
+        en: "Selected trade is one of the covered PM Vishwakarma trades.",
+        hi: "चुना गया ट्रेड PM Vishwakarma के शामिल ट्रेडों में से है।",
+        ok:
+          tradeOK,
+        hard: true,
+      });
+    }
   }
 
   // ----------------------------------------------------------
@@ -1440,41 +1955,40 @@ function evaluateScheme(
     scheme.id ===
     "pm-svanidhi"
   ) {
+    const vendorOK =
+      occupation ===
+      "street-vendor";
+
     addCheck({
       key: "vendor",
-      en: "Applicant is a street vendor.",
-      hi: "आवेदक स्ट्रीट वेंडर है।",
-      ok:
-        occupation ===
-        "street-vendor",
+      en: "Applicant is an eligible street vendor.",
+      hi: "आवेदक पात्र स्ट्रीट वेंडर होना चाहिए।",
+      ok: vendorOK,
       hard: true,
     });
 
-    if (
-      streetVendorProof
-    ) {
+    factors.push({
+      points: 25,
+      matched:
+        vendorOK,
+      reason: {
+        en: "Your occupation matches the street-vendor profile.",
+        hi: "आपका व्यवसाय स्ट्रीट वेंडर प्रोफ़ाइल से मेल खाता है।",
+      },
+    });
+
+    const proof =
+      normalize(
+        formData.streetVendorProof
+      );
+
+    if (proof) {
       addCheck({
         key: "vendor-proof",
         en: "Applicable street-vendor identification/proof is available.",
         hi: "लागू स्ट्रीट वेंडर पहचान/प्रमाण उपलब्ध है।",
         ok:
-          streetVendorProof ===
-          "yes",
-        hard: true,
-      });
-    }
-
-    // Keep the historical eligibility question in the MVP,
-    // but only apply it when the user actually answers it.
-    if (
-      streetVendingBefore2020
-    ) {
-      addCheck({
-        key: "vending-history",
-        en: "The applicable vending-history condition is satisfied.",
-        hi: "लागू वेंडिंग-इतिहास की शर्त पूरी होती है।",
-        ok:
-          streetVendingBefore2020 ===
+          proof ===
           "yes",
         hard: true,
       });
@@ -1489,162 +2003,67 @@ function evaluateScheme(
     scheme.id ===
     "pm-kusum"
   ) {
-    // Must first choose a component.
+    const farmerOK =
+      occupation ===
+        "farmer" ||
+      normalize(
+        formData.farmerStatus
+      ) === "yes";
+
     addCheck({
-      key: "kusum-component",
-      en: "A PM-KUSUM component has been selected.",
-      hi: "PM-KUSUM का एक घटक चुना गया है।",
-      ok: Boolean(
-        kusumComponent
-      ),
+      key: "farmer",
+      en: "Applicant has an eligible agricultural beneficiary profile.",
+      hi: "आवेदक पात्र कृषि लाभार्थी प्रोफ़ाइल में होना चाहिए।",
+      ok: farmerOK,
       hard: true,
     });
 
-    if (
-      kusumComponent ===
-      "component-a"
-    ) {
-      addCheck({
-        key: "beneficiary",
-        en: "Applicant fits an eligible Component A beneficiary category.",
-        hi: "आवेदक घटक A की पात्र लाभार्थी श्रेणी में आता है।",
-        ok:
-          occupation ===
-            "farmer" ||
-          [
-            "farmer-group",
-            "cooperative",
-            "panchayat",
-            "fpo",
-            "wua",
-          ].includes(
-            beneficiaryType
-          ),
-        hard: true,
-      });
-
-      addCheck({
-        key: "land",
-        en: "Suitable land is available for the proposed renewable-energy plant.",
-        hi: "प्रस्तावित नवीकरणीय ऊर्जा संयंत्र के लिए उपयुक्त भूमि उपलब्ध है।",
-        ok:
-          formData.landAvailable ===
-          "yes",
-        hard: true,
-      });
-
-      if (
-        formData.kusumCapacity
-      ) {
-        const capacity =
-          Number(
-            formData.kusumCapacity
-          );
-
-        addCheck({
-          key: "capacity",
-          en:
-            "Project capacity is within the applicable 500 kW–2 MW range.",
-          hi:
-            "परियोजना क्षमता लागू 500 kW–2 MW सीमा में है।",
-          ok:
-            capacity >=
-              500 &&
-            capacity <=
-              2000,
-          hard: true,
-        });
-      }
-    }
-
-    if (
-      kusumComponent ===
-      "component-b"
-    ) {
-      addCheck({
-        key: "farmer",
-        en: "Applicant is an eligible farmer beneficiary.",
-        hi: "आवेदक पात्र किसान लाभार्थी है।",
-        ok:
-          occupation ===
-            "farmer" ||
-          farmerStatus ===
-            "yes",
-        hard: true,
-      });
-
-      addCheck({
-        key: "off-grid",
-        en: "The proposed pump location is off-grid.",
-        hi: "प्रस्तावित पंप स्थान ऑफ-ग्रिड है।",
-        ok:
-          gridAvailability ===
-            "no" ||
-          gridAvailability ===
-            "off-grid",
-        hard: true,
-      });
-    }
-
-    if (
-      kusumComponent ===
-      "component-c-ips"
-    ) {
-      addCheck({
-        key: "farmer",
-        en: "Applicant is an eligible farmer beneficiary.",
-        hi: "आवेदक पात्र किसान लाभार्थी है।",
-        ok:
-          occupation ===
-            "farmer" ||
-          farmerStatus ===
-            "yes",
-        hard: true,
-      });
-
-      addCheck({
-        key: "grid-pump",
-        en: "Applicant has an existing grid-connected agricultural pump.",
-        hi: "आवेदक के पास मौजूदा ग्रिड-कनेक्टेड कृषि पंप है।",
-        ok:
-          existingAgriculturalPump ===
-          "yes",
-        hard: true,
-      });
-    }
+    factors.push({
+      points: 20,
+      matched:
+        farmerOK,
+      reason: {
+        en: "Your profile matches the agricultural beneficiary requirement.",
+        hi: "आपकी प्रोफ़ाइल कृषि लाभार्थी आवश्यकता से मेल खाती है।",
+      },
+    });
   }
 
   // ----------------------------------------------------------
-  // NLM-EDP
+  // NLM
   // ----------------------------------------------------------
 
   if (
     scheme.id ===
     "nlm-edp"
   ) {
+    const livestockOK =
+      purpose ===
+        "livestock" &&
+      [
+        "farmer",
+        "business",
+        "self-employed",
+      ].includes(
+        occupation
+      );
+
     addCheck({
-      key: "livestock-activity",
-      en: "The proposed activity is livestock/poultry/fodder related.",
-      hi: "प्रस्तावित गतिविधि पशुधन/पोल्ट्री/चारा से संबंधित है।",
-      ok:
-        purpose ===
-        "livestock",
+      key: "livestock",
+      en: "Applicant profile and proposed activity fit an eligible livestock entrepreneurship category.",
+      hi: "आवेदक प्रोफ़ाइल और गतिविधि पात्र पशुधन उद्यमिता श्रेणी से मेल खाती है।",
+      ok: livestockOK,
       hard: true,
     });
 
-    addCheck({
-      key: "eligible-profile",
-      en: "Applicant profile fits the eligible entrepreneurship profile.",
-      hi: "आवेदक प्रोफ़ाइल पात्र उद्यमी प्रोफ़ाइल से मेल खाती है।",
-      ok:
-        [
-          "farmer",
-          "business",
-          "self-employed",
-        ].includes(
-          occupation
-        ),
-      hard: true,
+    factors.push({
+      points: 25,
+      matched:
+        livestockOK,
+      reason: {
+        en: "Your profile matches the livestock entrepreneurship purpose.",
+        hi: "आपकी प्रोफ़ाइल पशुधन उद्यमिता उद्देश्य से मेल खाती है।",
+      },
     });
   }
 
@@ -1656,21 +2075,66 @@ function evaluateScheme(
     scheme.id ===
     "kcc"
   ) {
+    const farmerOK =
+      occupation ===
+        "farmer" ||
+      normalize(
+        formData.farmerStatus
+      ) === "yes";
+
     addCheck({
       key: "farmer",
-      en: "Applicant is a farmer or eligible agricultural borrower.",
-      hi: "आवेदक किसान या पात्र कृषि उधारकर्ता है।",
-      ok:
-        occupation ===
-          "farmer" ||
-        farmerStatus ===
-          "yes",
+      en: "Applicant is a farmer / eligible agricultural borrower.",
+      hi: "आवेदक किसान / पात्र कृषि उधारकर्ता होना चाहिए।",
+      ok: farmerOK,
       hard: true,
+    });
+
+    factors.push({
+      points: 25,
+      matched:
+        farmerOK,
+      reason: {
+        en: "Your profile matches the agricultural credit requirement.",
+        hi: "आपकी प्रोफ़ाइल कृषि ऋण आवश्यकता से मेल खाती है।",
+      },
     });
   }
 
   // ----------------------------------------------------------
-  // FINAL ELIGIBILITY
+  // SCORE
+  // ----------------------------------------------------------
+
+  const totalPoints =
+    factors.reduce(
+      (sum, factor) =>
+        sum + factor.points,
+      0
+    );
+
+  const matchedPoints =
+    factors.reduce(
+      (sum, factor) =>
+        sum +
+        (factor.matched
+          ? factor.points
+          : 0),
+      0
+    );
+
+  const match =
+    totalPoints > 0
+      ? Math.round(
+          (
+            matchedPoints /
+            totalPoints
+          ) *
+            100
+        )
+      : 0;
+
+  // ----------------------------------------------------------
+  // HARD ELIGIBILITY
   // ----------------------------------------------------------
 
   const hardFailures =
@@ -1681,18 +2145,43 @@ function evaluateScheme(
     );
 
   const eligible =
-    hardFailures.length === 0;
+    hardFailures.length ===
+    0;
 
-  const warnings =
-    hardFailures.map(
+  checks
+    .filter(
       (check) =>
-        check.label
+        !check.ok
+    )
+    .forEach(
+      (check) =>
+        warnings.push(
+          check.label
+        )
     );
 
-  let matchLevel =
-    "Weak Match";
+  checks
+    .filter(
+      (check) =>
+        check.ok
+    )
+    .forEach(
+      (check) =>
+        reasons.push(
+          check.label
+        )
+    );
 
-  if (
+  // ----------------------------------------------------------
+  // MATCH LEVEL
+  // ----------------------------------------------------------
+
+  let matchLevel;
+
+  if (!eligible) {
+    matchLevel =
+      "Not Eligible";
+  } else if (
     match >= 80
   ) {
     matchLevel =
@@ -1707,6 +2196,9 @@ function evaluateScheme(
   ) {
     matchLevel =
       "Possible Match";
+  } else {
+    matchLevel =
+      "Weak Match";
   }
 
   return {
@@ -1714,46 +2206,60 @@ function evaluateScheme(
 
     applicable: true,
 
-    match,
-    matchScore: match,
-
     eligible,
+
+    match,
+
+    matchScore:
+      match,
+
+    matchLevel,
 
     checks,
 
     reasons,
 
     warnings,
-
-    matchLevel,
   };
 }
 
+
 // ============================================================
-// PUBLIC
+// PUBLIC MATCHING FUNCTION
 // ============================================================
 
 export function getMatchedSchemes(
   formData = {}
 ) {
-  return schemes
-    .map(
+  const evaluated =
+    schemes.map(
       (scheme) =>
         evaluateScheme(
           scheme,
           formData
         )
-    )
-    .filter(
-      (scheme) =>
-        scheme.applicable
-    )
-    .sort(
-      (a, b) =>
-        b.match -
-        a.match
     );
+
+  const eligible =
+    evaluated.filter(
+      (scheme) =>
+        scheme.applicable &&
+        scheme.eligible
+    );
+
+  // CRITICAL:
+  // Never return an ineligible scheme as the final recommendation.
+  return eligible.sort(
+    (a, b) =>
+      b.match -
+      a.match
+  );
 }
+
+
+// ============================================================
+// GET ONE SCHEME
+// ============================================================
 
 export function getSchemeById(
   id
@@ -1763,5 +2269,10 @@ export function getSchemeById(
       scheme.id === id
   );
 }
+
+
+// ============================================================
+// DEFAULT EXPORT
+// ============================================================
 
 export default schemes;
