@@ -1,4 +1,6 @@
 // districts.js
+// District data keyed by state name. States not listed here fall back
+// to a free-text district input in the form (see App.jsx).
 export const districts = {
   "Uttar Pradesh": [
     "Agra",

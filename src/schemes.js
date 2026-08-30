@@ -3,6 +3,7 @@
 // schemes.js
 //
 // Verified / government-source-aligned scheme data
+// + eligibility + relevance matching engine.
 //
 // IMPORTANT:
 // Match score = relevance of the user's need.
