@@ -992,29 +992,71 @@ button {
 }
 
 /* =========================================================
-   LOGIN MODAL
+   LOGIN / SIGNUP MODAL
+   Scrollable on smaller screens
 ========================================================= */
 
 .login-overlay {
   position: fixed;
   inset: 0;
   z-index: 1000;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   padding: 20px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
   background: rgba(7, 26, 38, 0.74);
+
+  -webkit-overflow-scrolling: touch;
 }
 
 .login-modal {
   position: relative;
+
   width: 100%;
   max-width: 470px;
+
+  /* Keeps the modal inside the visible screen */
+  max-height: calc(100dvh - 40px);
+
+  /* Allows the signup form to scroll when it is taller */
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  flex-shrink: 0;
+
+  margin: auto;
+
   padding: 34px;
+
   border: 1px solid #ddd3bf;
   border-radius: 20px;
+
   background: var(--cream-light);
+
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Scrollbar for Chrome / Edge / Safari */
+.login-modal::-webkit-scrollbar {
+  width: 7px;
+}
+
+.login-modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.login-modal::-webkit-scrollbar-thumb {
+  background: #c8bda9;
+  border-radius: 10px;
 }
 
 .modal-close {
@@ -1274,8 +1316,17 @@ button {
     grid-column: auto;
   }
 
+  .login-overlay {
+    align-items: flex-start;
+    padding: 10px;
+  }
+
   .login-modal {
+    width: 100%;
+    max-height: calc(100dvh - 20px);
+    margin: 0 auto;
     padding: 27px 20px;
+    border-radius: 18px;
   }
 
   .login-modal h2 {
