@@ -2055,53 +2055,221 @@ function evaluateScheme(
   // CALCULATE MATCH SCORE
   // ==========================================================
 
-  const totalPoints =
-    factors.reduce(
-      (total, factor) =>
-        total +
-        factor.points,
-      0
-    );
+  // ==========================================================
+// CALCULATE MATCH SCORE
+// ==========================================================
+
+// Base score starts at 0
+let earnedPoints = 0;
+let totalPoints = 0;
 
 
-  const earnedPoints =
-    factors.reduce(
-      (total, factor) =>
+// Calculate weighted score
+factors.forEach((factor) => {
 
-        factor.matched
+  totalPoints += factor.points;
 
-          ? total +
-            factor.points
+  if (factor.matched) {
+    earnedPoints += factor.points;
+  }
 
-          : total,
-
-      0
-    );
+});
 
 
-  let match =
-
-    totalPoints > 0
-
-      ? Math.round(
-          (
-            earnedPoints /
-            totalPoints
-          ) * 100
-        )
-
-      : 50;
+// Raw percentage based on matched factors
+let rawMatch =
+  totalPoints > 0
+    ? (earnedPoints / totalPoints) * 100
+    : 0;
 
 
-  // Keep score in valid range
+// ==========================================================
+// SCHEME SPECIFICITY
+//
+// Broad schemes should not automatically receive 100%.
+//
+// A scheme supporting many purposes, occupations or project
+// types is less specific than a scheme designed for a very
+// specific beneficiary.
+// ==========================================================
+
+let specificityBonus = 0;
+
+
+// Specific beneficiary category
+if (
+  scheme.beneficiaryCategory &&
+  scheme.beneficiaryCategory !== "all"
+) {
+
+  if (
+    Array.isArray(scheme.beneficiaryCategory)
+  ) {
+
+    if (
+      scheme.beneficiaryCategory.length === 1
+    ) {
+
+      specificityBonus += 4;
+
+    }
+
+  } else {
+
+    specificityBonus += 4;
+
+  }
+
+}
+
+
+// Specific purpose
+if (
+  Array.isArray(scheme.purposes)
+) {
+
+  if (
+    scheme.purposes.length === 1
+  ) {
+
+    specificityBonus += 4;
+
+  }
+
+}
+
+
+// Specific occupation
+if (
+  Array.isArray(scheme.occupations)
+) {
+
+  if (
+    scheme.occupations.length === 1
+  ) {
+
+    specificityBonus += 4;
+
+  }
+
+}
+
+
+// Specific project type
+if (
+  Array.isArray(scheme.projectTypes)
+) {
+
+  if (
+    scheme.projectTypes.length === 1
+  ) {
+
+    specificityBonus += 3;
+
+  }
+
+}
+
+
+// Specific trade requirement
+if (
+  scheme.requiredTrade
+) {
+
+  specificityBonus += 5;
+
+}
+
+
+// ==========================================================
+// HARD ELIGIBILITY PENALTY
+// ==========================================================
+
+const failedHardChecks =
+  checks.filter(
+    (check) =>
+      check.hard &&
+      !check.ok
+  ).length;
+
+
+let hardPenalty =
+  failedHardChecks * 20;
+
+
+// ==========================================================
+// FLEXIBLE CONDITIONS PENALTY
+// ==========================================================
+
+const failedFlexibleChecks =
+  checks.filter(
+    (check) =>
+      !check.hard &&
+      !check.ok
+  ).length;
+
+
+let flexiblePenalty =
+  failedFlexibleChecks * 5;
+
+
+// ==========================================================
+// FINAL SCORE
+// ==========================================================
+
+let match =
+  rawMatch +
+  specificityBonus -
+  hardPenalty -
+  flexiblePenalty;
+
+
+// ==========================================================
+// PREVENT UNREALISTIC 100%
+//
+// 100% should only be shown when:
+// - User is fully eligible
+// - Every check matches
+// - Scheme is highly specific
+// ==========================================================
+
+const allChecksPassed =
+  checks.length > 0 &&
+  checks.every(
+    (check) => check.ok
+  );
+
+
+if (
+  !(
+    eligible &&
+    allChecksPassed &&
+    specificityBonus >= 8
+  )
+) {
+
+  // Normal schemes should not automatically show 100%
   match =
-    Math.max(
-      0,
-      Math.min(
-        100,
-        match
-      )
+    Math.min(
+      match,
+      95
     );
+
+}
+
+
+// ==========================================================
+// MINIMUM SCORE
+// ==========================================================
+
+match =
+  Math.max(
+    0,
+    Math.min(
+      100,
+      Math.round(match)
+    )
+  );
 
 
   // ==========================================================
