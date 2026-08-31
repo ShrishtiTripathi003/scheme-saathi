@@ -998,7 +998,7 @@ export const schemes = [
 
 
   // ==========================================================
-  // 9. PM SVANIDHI
+    // 9. PM SVANIDHI
   // ==========================================================
 
   {
@@ -1318,13 +1318,10 @@ export const schemes = [
 
 // ============================================================
 // SCHEME OPTIONS FOR UI
-//
-// These expose the ACTUAL VERIFIED SCHEME NAMES to the UI.
-// Use these when showing scheme choices after purpose/project
-// selection.
 // ============================================================
 
 export const SCHEME_OPTIONS_BY_PURPOSE = {
+
   business: schemes
     .filter((scheme) =>
       scheme.purposes.includes("business")
@@ -1395,7 +1392,10 @@ export const SCHEME_OPTIONS_BY_PURPOSE = {
 // ============================================================
 
 function stateMatches(scheme, state) {
-  if (!state) return null;
+
+  if (!state) {
+    return null;
+  }
 
   if (scheme.states === "all") {
     return true;
@@ -1412,8 +1412,12 @@ function stateMatches(scheme, state) {
   );
 }
 
+
 function purposeMatches(scheme, purpose) {
-  if (!purpose) return false;
+
+  if (!purpose) {
+    return false;
+  }
 
   return Boolean(
     scheme.purposes?.some(
@@ -1424,10 +1428,12 @@ function purposeMatches(scheme, purpose) {
   );
 }
 
+
 function projectTypeMatches(
   scheme,
   projectType
 ) {
+
   if (!projectType) {
     return null;
   }
@@ -1443,10 +1449,12 @@ function projectTypeMatches(
   );
 }
 
+
 function occupationMatches(
   scheme,
   occupation
 ) {
+
   if (!occupation) {
     return null;
   }
@@ -1462,12 +1470,13 @@ function occupationMatches(
   );
 }
 
+
 function educationRank(value) {
+
   const option =
     EDUCATION_LEVELS.find(
       (item) =>
-        item.value ===
-        value
+        item.value === value
     );
 
   return option?.rank ?? 0;
@@ -1482,6 +1491,7 @@ function evaluateScheme(
   scheme,
   formData
 ) {
+
   const purpose =
     normalize(
       formData.purpose
@@ -1540,18 +1550,23 @@ function evaluateScheme(
     hard = false,
     include = true,
   }) => {
+
     if (!include) return;
 
     checks.push({
       key,
+
       label: {
         en,
         hi,
       },
+
       ok: Boolean(ok),
+
       hard,
     });
   };
+
 
   // ----------------------------------------------------------
   // PURPOSE
@@ -1564,15 +1579,24 @@ function evaluateScheme(
     );
 
   if (!purposeOK) {
+
     return {
       ...scheme,
+
       applicable: false,
+
       eligible: false,
+
       match: 0,
+
       matchScore: 0,
+
       matchLevel: "Not applicable",
+
       checks: [],
+
       reasons: [],
+
       warnings: [
         {
           en: "The selected purpose does not match this scheme.",
@@ -1582,20 +1606,27 @@ function evaluateScheme(
     };
   }
 
+
   factors.push({
+
     points: 40,
+
     matched: true,
+
     reason: {
       en: "Your selected purpose matches the scheme.",
-      hi: "आपका चुना हुआ उद्देश्य इस योजना से मेल खाता है।",
+      hi: "आपका चुना हुआ उद्देश्य इस योजना से मेल खाता है。",
     },
+
   });
+
 
   // ----------------------------------------------------------
   // AGE — HARD ELIGIBILITY
   // ----------------------------------------------------------
 
   if (scheme.age) {
+
     const ageProvided =
       age > 0;
 
@@ -1605,7 +1636,9 @@ function evaluateScheme(
       age <= scheme.age.max;
 
     addCheck({
+
       key: "age",
+
       en: `Age must be ${
         scheme.age.min
       }${
@@ -1615,6 +1648,7 @@ function evaluateScheme(
           ? `–${scheme.age.max}`
           : "+"
       } years.`,
+
       hi: `आयु ${
         scheme.age.min
       }${
@@ -1624,44 +1658,81 @@ function evaluateScheme(
           ? ` से ${scheme.age.max} वर्ष`
           : " वर्ष या अधिक"
       } होनी चाहिए।`,
+
       ok: ageOK,
+
       hard: true,
+
       include: ageProvided,
+
     });
   }
 
+
   // ----------------------------------------------------------
-  // INCOME — HARD ELIGIBILITY WHERE APPLICABLE
+  // INCOME — FLEXIBLE RECOMMENDATION FACTOR
+  //
+  // IMPORTANT:
+  // Income above a scheme limit will NOT reject the user.
+  // It will only generate a warning.
   // ----------------------------------------------------------
 
   if (
-    typeof scheme.incomeLimit ===
-      "number"
+    typeof scheme.incomeLimit === "number"
   ) {
+
     const incomeProvided =
-      income >= 0 &&
       String(
         formData.income ?? ""
       ).trim() !== "";
 
     const incomeOK =
       incomeProvided &&
-      income <=
-        scheme.incomeLimit;
+      income <= scheme.incomeLimit;
 
     addCheck({
+
       key: "income",
-      en: `Annual family income must not exceed ₹${scheme.incomeLimit.toLocaleString(
-        "en-IN"
-      )}.`,
-      hi: `वार्षिक पारिवारिक आय ₹${scheme.incomeLimit.toLocaleString(
-        "en-IN"
-      )} से अधिक नहीं होनी चाहिए।`,
+
+      en: incomeOK
+        ? `Your annual family income is within the scheme's reference limit of ₹${scheme.incomeLimit.toLocaleString(
+            "en-IN"
+          )}.`
+        : `Your annual family income is above the scheme's listed reference limit of ₹${scheme.incomeLimit.toLocaleString(
+            "en-IN"
+          )}. You can still explore this scheme and verify final eligibility with the implementing agency.`,
+
+      hi: incomeOK
+        ? `आपकी वार्षिक पारिवारिक आय योजना की संदर्भ सीमा के भीतर है।`
+        : `आपकी वार्षिक पारिवारिक आय योजना की सूचीबद्ध संदर्भ सीमा से अधिक है। फिर भी आप इस योजना को देख सकते हैं और अंतिम पात्रता संबंधित एजेंसी से सत्यापित कर सकते हैं।`,
+
       ok: incomeOK,
-      hard: true,
+
+      // Income is NOT a hard rejection.
+      hard: false,
+
       include: incomeProvided,
+
     });
+
+
+    if (
+      incomeProvided &&
+      !incomeOK
+    ) {
+
+      warnings.push({
+
+        en: `Your income is above the scheme's listed reference limit of ₹${scheme.incomeLimit.toLocaleString(
+          "en-IN"
+        )}. The scheme will still be shown as a recommendation, but final eligibility should be verified with the implementing agency.`,
+
+        hi: `आपकी आय योजना की सूचीबद्ध संदर्भ सीमा से अधिक है। योजना फिर भी सिफारिश में दिखाई जाएगी, लेकिन अंतिम पात्रता संबंधित एजेंसी से सत्यापित करनी चाहिए।`,
+
+      });
+    }
   }
+
 
   // ----------------------------------------------------------
   // CATEGORY — NSFDC SC ONLY
@@ -1670,16 +1741,23 @@ function evaluateScheme(
   if (
     scheme.beneficiaryCategory
   ) {
+
     addCheck({
+
       key: "category",
+
       en: "Applicant must belong to the Scheduled Caste (SC) category.",
+
       hi: "आवेदक अनुसूचित जाति (SC) वर्ग से होना चाहिए।",
+
       ok:
-        category ===
-        "sc",
+        category === "sc",
+
       hard: true,
+
     });
   }
+
 
   // ----------------------------------------------------------
   // STATE
@@ -1692,23 +1770,36 @@ function evaluateScheme(
     );
 
   addCheck({
+
     key: "location",
+
     en: "The selected location is covered.",
+
     hi: "चुना गया स्थान योजना के अंतर्गत आता है।",
+
     ok: locationOK,
+
     hard: true,
+
     include: Boolean(state),
+
   });
 
+
   factors.push({
+
     points: 10,
+
     matched:
       locationOK === true,
+
     reason: {
       en: "Your selected location is covered.",
       hi: "आपका चुना हुआ स्थान योजना के अंतर्गत आता है।",
     },
+
   });
+
 
   // ----------------------------------------------------------
   // PROJECT TYPE
@@ -1721,28 +1812,40 @@ function evaluateScheme(
     );
 
   if (
-    projectTypeResult !==
-    null
+    projectTypeResult !== null
   ) {
+
     addCheck({
+
       key: "project-type",
+
       en: "The selected project type is supported by this scheme.",
+
       hi: "चुना गया परियोजना प्रकार इस योजना में समर्थित है।",
+
       ok:
         projectTypeResult,
+
       hard: true,
+
     });
 
+
     factors.push({
+
       points: 20,
+
       matched:
         projectTypeResult,
+
       reason: {
         en: "Your project type is supported.",
         hi: "आपका परियोजना प्रकार समर्थित है।",
       },
+
     });
   }
+
 
   // ----------------------------------------------------------
   // OCCUPATION
@@ -1755,39 +1858,54 @@ function evaluateScheme(
     );
 
   if (
-    occupationResult !==
-    null
+    occupationResult !== null
   ) {
+
     addCheck({
+
       key: "occupation",
+
       en: "Your occupation matches the scheme's beneficiary/activity profile.",
+
       hi: "आपका व्यवसाय योजना की लाभार्थी/गतिविधि प्रोफ़ाइल से मेल खाता है।",
+
       ok:
         occupationResult,
+
       hard: true,
+
     });
 
+
     factors.push({
+
       points: 15,
+
       matched:
         occupationResult,
+
       reason: {
         en: "Your occupation matches the beneficiary/activity profile.",
         hi: "आपका व्यवसाय लाभार्थी/गतिविधि प्रोफ़ाइल से मेल खाता है।",
       },
+
     });
   }
+
 
   // ----------------------------------------------------------
   // GENERIC PROJECT COST CHECK
   // ----------------------------------------------------------
 
   let costRelevant = false;
+
   let costOK = true;
+
 
   if (
     scheme.maxProjectCost
   ) {
+
     costRelevant = true;
 
     costOK =
@@ -1796,9 +1914,11 @@ function evaluateScheme(
         scheme.maxProjectCost;
   }
 
+
   if (
     scheme.projectRange
   ) {
+
     costRelevant = true;
 
     costOK =
@@ -1808,10 +1928,12 @@ function evaluateScheme(
         scheme.projectRange.max;
   }
 
+
   if (
     scheme.projectLimits &&
     projectType
   ) {
+
     const limit =
       scheme.projectLimits[
         projectType
@@ -1821,34 +1943,48 @@ function evaluateScheme(
       typeof limit ===
       "number"
     ) {
+
       costRelevant = true;
 
       costOK =
         projectCost > 0 &&
-        projectCost <=
-          limit;
+        projectCost <= limit;
     }
   }
 
+
   if (costRelevant) {
+
     addCheck({
+
       key: "project-cost",
+
       en: "Project cost is within the applicable scheme limit/range.",
+
       hi: "परियोजना लागत योजना की लागू सीमा में है।",
+
       ok: costOK,
+
       hard: true,
+
     });
 
+
     factors.push({
+
       points: 15,
+
       matched:
         costOK,
+
       reason: {
         en: "Your project cost fits the applicable scheme range.",
         hi: "आपकी परियोजना लागत योजना की लागू सीमा में है।",
       },
+
     });
   }
+
 
   // ----------------------------------------------------------
   // EDUCATIONAL LOAN
@@ -1858,6 +1994,7 @@ function evaluateScheme(
     scheme.id ===
     "nsfdc-els"
   ) {
+
     const rank =
       educationRank(
         education
@@ -1868,27 +2005,41 @@ function evaluateScheme(
       scheme.minimumEducationRank;
 
     addCheck({
+
       key: "education",
+
       en: "Student should have completed Class 12 or meet the applicable course-entry requirement.",
+
       hi: "छात्र को कक्षा 12 या लागू पाठ्यक्रम प्रवेश आवश्यकता पूरी करनी चाहिए।",
+
       ok:
         educationOK,
+
       hard: true,
-      include: Boolean(
-        education
-      ),
+
+      include:
+        Boolean(
+          education
+        ),
+
     });
 
+
     factors.push({
+
       points: 15,
+
       matched:
         educationOK,
+
       reason: {
         en: "Your education profile is suitable for the course requirement.",
         hi: "आपकी शिक्षा प्रोफ़ाइल पाठ्यक्रम की आवश्यकता के अनुकूल है।",
       },
+
     });
   }
+
 
   // ----------------------------------------------------------
   // PM VISHWAKARMA
@@ -1897,36 +2048,50 @@ function evaluateScheme(
   if (
     scheme.id ===
     "pm-vishwakarma"
-  ) {
-    addCheck({
+  ) {    addCheck({
       key: "artisan",
+
       en: "Applicant is an eligible traditional artisan/craftsperson.",
+
       hi: "आवेदक पात्र पारंपरिक शिल्पकार होना चाहिए।",
+
       ok:
         occupation ===
         "artisan",
+
       hard: true,
     });
 
+
     factors.push({
+
       points: 20,
+
       matched:
         occupation ===
         "artisan",
+
       reason: {
+
         en: "Your occupation matches the artisan profile.",
+
         hi: "आपका व्यवसाय शिल्पकार प्रोफ़ाइल से मेल खाता है।",
+
       },
+
     });
+
 
     const selectedTrade =
       normalize(
         formData.artisanTrade
       );
 
+
     if (
       selectedTrade
     ) {
+
       const tradeOK =
         scheme.eligibleTrades.some(
           (trade) =>
@@ -1936,16 +2101,24 @@ function evaluateScheme(
             selectedTrade
         );
 
+
       addCheck({
+
         key: "trade",
+
         en: "Selected trade is one of the covered PM Vishwakarma trades.",
+
         hi: "चुना गया ट्रेड PM Vishwakarma के शामिल ट्रेडों में से है।",
+
         ok:
           tradeOK,
+
         hard: true,
+
       });
     }
   }
+
 
   // ----------------------------------------------------------
   // PM SVANIDHI
@@ -1955,45 +2128,71 @@ function evaluateScheme(
     scheme.id ===
     "pm-svanidhi"
   ) {
+
     const vendorOK =
       occupation ===
       "street-vendor";
 
+
     addCheck({
+
       key: "vendor",
+
       en: "Applicant is an eligible street vendor.",
+
       hi: "आवेदक पात्र स्ट्रीट वेंडर होना चाहिए।",
+
       ok: vendorOK,
+
       hard: true,
+
     });
 
+
     factors.push({
+
       points: 25,
+
       matched:
         vendorOK,
+
       reason: {
+
         en: "Your occupation matches the street-vendor profile.",
+
         hi: "आपका व्यवसाय स्ट्रीट वेंडर प्रोफ़ाइल से मेल खाता है।",
+
       },
+
     });
+
 
     const proof =
       normalize(
         formData.streetVendorProof
       );
 
+
     if (proof) {
+
       addCheck({
+
         key: "vendor-proof",
+
         en: "Applicable street-vendor identification/proof is available.",
+
         hi: "लागू स्ट्रीट वेंडर पहचान/प्रमाण उपलब्ध है।",
+
         ok:
           proof ===
           "yes",
+
         hard: true,
+
       });
     }
   }
+
 
   // ----------------------------------------------------------
   // PM-KUSUM
@@ -2003,6 +2202,7 @@ function evaluateScheme(
     scheme.id ===
     "pm-kusum"
   ) {
+
     const farmerOK =
       occupation ===
         "farmer" ||
@@ -2010,24 +2210,40 @@ function evaluateScheme(
         formData.farmerStatus
       ) === "yes";
 
+
     addCheck({
+
       key: "farmer",
+
       en: "Applicant has an eligible agricultural beneficiary profile.",
+
       hi: "आवेदक पात्र कृषि लाभार्थी प्रोफ़ाइल में होना चाहिए।",
+
       ok: farmerOK,
+
       hard: true,
+
     });
 
+
     factors.push({
+
       points: 20,
+
       matched:
         farmerOK,
+
       reason: {
+
         en: "Your profile matches the agricultural beneficiary requirement.",
+
         hi: "आपकी प्रोफ़ाइल कृषि लाभार्थी आवश्यकता से मेल खाती है।",
+
       },
+
     });
   }
+
 
   // ----------------------------------------------------------
   // NLM
@@ -2037,6 +2253,7 @@ function evaluateScheme(
     scheme.id ===
     "nlm-edp"
   ) {
+
     const livestockOK =
       purpose ===
         "livestock" &&
@@ -2048,24 +2265,40 @@ function evaluateScheme(
         occupation
       );
 
+
     addCheck({
+
       key: "livestock",
+
       en: "Applicant profile and proposed activity fit an eligible livestock entrepreneurship category.",
+
       hi: "आवेदक प्रोफ़ाइल और गतिविधि पात्र पशुधन उद्यमिता श्रेणी से मेल खाती है।",
+
       ok: livestockOK,
+
       hard: true,
+
     });
 
+
     factors.push({
+
       points: 25,
+
       matched:
         livestockOK,
+
       reason: {
+
         en: "Your profile matches the livestock entrepreneurship purpose.",
+
         hi: "आपकी प्रोफ़ाइल पशुधन उद्यमिता उद्देश्य से मेल खाती है।",
+
       },
+
     });
   }
+
 
   // ----------------------------------------------------------
   // KCC
@@ -2075,6 +2308,7 @@ function evaluateScheme(
     scheme.id ===
     "kcc"
   ) {
+
     const farmerOK =
       occupation ===
         "farmer" ||
@@ -2082,27 +2316,43 @@ function evaluateScheme(
         formData.farmerStatus
       ) === "yes";
 
+
     addCheck({
+
       key: "farmer",
+
       en: "Applicant is a farmer / eligible agricultural borrower.",
+
       hi: "आवेदक किसान / पात्र कृषि उधारकर्ता होना चाहिए।",
+
       ok: farmerOK,
+
       hard: true,
+
     });
 
+
     factors.push({
+
       points: 25,
+
       matched:
         farmerOK,
+
       reason: {
+
         en: "Your profile matches the agricultural credit requirement.",
+
         hi: "आपकी प्रोफ़ाइल कृषि ऋण आवश्यकता से मेल खाती है।",
+
       },
+
     });
   }
 
+
   // ----------------------------------------------------------
-  // SCORE
+  // SCORE CALCULATION
   // ----------------------------------------------------------
 
   const totalPoints =
@@ -2112,15 +2362,19 @@ function evaluateScheme(
       0
     );
 
+
   const matchedPoints =
     factors.reduce(
       (sum, factor) =>
         sum +
-        (factor.matched
-          ? factor.points
-          : 0),
+        (
+          factor.matched
+            ? factor.points
+            : 0
+        ),
       0
     );
+
 
   const match =
     totalPoints > 0
@@ -2133,8 +2387,9 @@ function evaluateScheme(
         )
       : 0;
 
+
   // ----------------------------------------------------------
-  // HARD ELIGIBILITY
+  // HARD ELIGIBILITY CHECK
   // ----------------------------------------------------------
 
   const hardFailures =
@@ -2144,9 +2399,13 @@ function evaluateScheme(
         !check.ok
     );
 
+
   const eligible =
     hardFailures.length ===
     0;
+
+
+  // Add failed checks as warnings
 
   checks
     .filter(
@@ -2160,6 +2419,9 @@ function evaluateScheme(
         )
     );
 
+
+  // Add successful checks as reasons
+
   checks
     .filter(
       (check) =>
@@ -2172,36 +2434,49 @@ function evaluateScheme(
         )
     );
 
+
   // ----------------------------------------------------------
   // MATCH LEVEL
   // ----------------------------------------------------------
 
   let matchLevel;
 
+
   if (!eligible) {
+
     matchLevel =
       "Not Eligible";
+
   } else if (
     match >= 80
   ) {
+
     matchLevel =
       "Strong Match";
+
   } else if (
     match >= 60
   ) {
+
     matchLevel =
       "Good Match";
+
   } else if (
     match >= 40
   ) {
+
     matchLevel =
       "Possible Match";
+
   } else {
+
     matchLevel =
       "Weak Match";
   }
 
+
   return {
+
     ...scheme,
 
     applicable: true,
@@ -2220,6 +2495,7 @@ function evaluateScheme(
     reasons,
 
     warnings,
+
   };
 }
 
@@ -2231,6 +2507,7 @@ function evaluateScheme(
 export function getMatchedSchemes(
   formData = {}
 ) {
+
   const evaluated =
     schemes.map(
       (scheme) =>
@@ -2240,6 +2517,7 @@ export function getMatchedSchemes(
         )
     );
 
+
   const eligible =
     evaluated.filter(
       (scheme) =>
@@ -2247,8 +2525,21 @@ export function getMatchedSchemes(
         scheme.eligible
     );
 
-  // CRITICAL:
-  // Never return an ineligible scheme as the final recommendation.
+
+  // ----------------------------------------------------------
+  // IMPORTANT:
+  //
+  // Income is NOT used here as a rejection condition.
+  //
+  // A scheme with income above its reference limit can still
+  // appear because income was marked as:
+  //
+  // hard: false
+  //
+  // Other genuinely mandatory conditions such as age,
+  // occupation, beneficiary type, etc. remain active.
+  // ----------------------------------------------------------
+
   return eligible.sort(
     (a, b) =>
       b.match -
@@ -2258,12 +2549,13 @@ export function getMatchedSchemes(
 
 
 // ============================================================
-// GET ONE SCHEME
+// GET ONE SCHEME BY ID
 // ============================================================
 
 export function getSchemeById(
   id
 ) {
+
   return schemes.find(
     (scheme) =>
       scheme.id === id
