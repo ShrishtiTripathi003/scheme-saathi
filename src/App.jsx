@@ -2225,38 +2225,28 @@ function App() {
               </h3>
 
               <div className="eligibility-list">
-                {checks.length >
-                0 ? (
-                  checks.map(
-                    (check) => (
-                      <div
-                        key={
-                          check.key
-                        }
-                        className={
-                          check.ok
-                            ? "check-pass"
-                            : "check-fail"
-                        }
-                      >
-                        {check.ok
-                          ? "✓"
-                          : "✗"}{" "}
-                        {
-                          check.label
-                            .en
-                        }
-                      </div>
-                    )
-                  )
-                ) : (
-                  <div className="check-pass">
-                    ✓ Scheme
-                    eligibility
-                    requirements
-                    satisfied.
-                  </div>
-                )}
+                {checks.length > 0 ? (
+  checks.map((check) => (
+    <div
+      key={check.key}
+      className={
+        check.ok
+          ? "check-pass"
+          : "check-fail"
+      }
+    >
+      {check.ok ? "✓" : "✗"}{" "}
+
+      {language === "Hindi"
+        ? check.hi || check.en || "Eligibility check"
+        : check.en || check.hi || "Eligibility check"}
+    </div>
+  ))
+) : (
+  <div className="check-pass">
+    ✓ Scheme eligibility requirements satisfied.
+  </div>
+)}
               </div>
             </div>
 
