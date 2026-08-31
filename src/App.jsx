@@ -449,11 +449,18 @@ function App() {
   const [email, setEmail] =
     useState("");
 
-  const [otp, setOtp] =
+  const [password, setPassword] =
     useState("");
 
-  const [otpSent, setOtpSent] =
-    useState(false);
+  const [
+    confirmPassword,
+    setConfirmPassword,
+  ] = useState("");
+
+  const [
+    authMode,
+    setAuthMode,
+  ] = useState("signup");
 
   const [loggedIn, setLoggedIn] =
     useState(false);
@@ -577,48 +584,168 @@ function App() {
     );
 
   // ==========================================================
-  // LOGIN
+  // AUTHENTICATION
   // ==========================================================
 
-  function handleSendOtp(e) {
+  function getSavedUsers() {
+    try {
+      return JSON.parse(
+        localStorage.getItem(
+          "schemeSaathiUsers"
+        ) || "[]"
+      );
+    } catch {
+      return [];
+    }
+  }
+
+  function saveUsers(users) {
+    localStorage.setItem(
+      "schemeSaathiUsers",
+      JSON.stringify(users)
+    );
+  }
+
+  function handleSignup(e) {
     e.preventDefault();
 
     if (!name.trim()) {
-      alert(
-        "Please enter your name."
-      );
+      alert("Please enter your full name.");
       return;
     }
 
-    if (
-      !/^[6-9]\d{9}$/.test(
-        phone
-      )
-    ) {
+    if (!/^[6-9]\d{9}$/.test(phone)) {
       alert(
         "Please enter a valid 10-digit Indian mobile number."
       );
       return;
     }
 
-    setOtpSent(true);
+    if (password.length < 6) {
+      alert(
+        "Password must contain at least 6 characters."
+      );
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
+
+    const users = getSavedUsers();
+
+    const alreadyExists = users.some(
+      (user) => user.phone === phone
+    );
+
+    if (alreadyExists) {
+      alert(
+        "An account with this mobile number already exists. Please login."
+      );
+
+      setAuthMode("login");
+      setPassword("");
+      setConfirmPassword("");
+      return;
+    }
+
+    const newUser = {
+      id: Date.now(),
+      name: name.trim(),
+      phone,
+      email: email.trim(),
+      password,
+    };
+
+    saveUsers([
+      ...users,
+      newUser,
+    ]);
+
+    setLoggedIn(true);
+    setShowLogin(false);
+    setPassword("");
+    setConfirmPassword("");
+    setPage("form");
+
+    alert(
+      "Account created successfully!"
+    );
   }
 
-  function handleVerifyOtp(e) {
+  function handleLogin(e) {
     e.preventDefault();
 
-    if (otp !== "123456") {
+    const users = getSavedUsers();
+
+    if (!users.length) {
       alert(
-        "Invalid OTP. Use 123456 for this demo."
+        "No account found. Please create an account first."
+      );
+
+      setAuthMode("signup");
+      return;
+    }
+
+    const user = users.find(
+      (item) =>
+        item.phone === phone
+    );
+
+    if (!user) {
+      alert(
+        "No account found with this mobile number."
+      );
+      return;
+    }
+
+    if (
+      user.name.trim().toLowerCase() !==
+      name.trim().toLowerCase()
+    ) {
+      alert(
+        "Name does not match our records."
+      );
+      return;
+    }
+
+    // Email is optional during login.
+    // If entered, it must match the saved email.
+    if (
+      email.trim() &&
+      user.email &&
+      user.email.toLowerCase() !==
+        email.trim().toLowerCase()
+    ) {
+      alert(
+        "Email does not match our records."
+      );
+      return;
+    }
+
+    if (user.password !== password) {
+      alert(
+        "Incorrect password."
       );
       return;
     }
 
     setLoggedIn(true);
     setShowLogin(false);
-    setOtpSent(false);
-    setOtp("");
+    setPassword("");
+    setConfirmPassword("");
     setPage("form");
+
+    alert(
+      "Login successful!"
+    );
+  }
+
+  function handleChangeMobile() {
+    setPhone("");
+    setPassword("");
+    setConfirmPassword("");
   }
 
   function logout() {
@@ -626,8 +753,8 @@ function App() {
     setName("");
     setPhone("");
     setEmail("");
-    setOtp("");
-    setOtpSent(false);
+    setPassword("");
+    setConfirmPassword("");
     setRecommendedScheme(null);
     setPage("home");
   }
@@ -636,6 +763,7 @@ function App() {
     if (loggedIn) {
       setPage("form");
     } else {
+      setAuthMode("signup");
       setShowLogin(true);
     }
   }
@@ -766,7 +894,7 @@ function App() {
   }
 
   // ==========================================================
-  // LOGIN MODAL
+  // LOGIN / SIGNUP MODAL
   // ==========================================================
 
   const loginModal =
@@ -793,46 +921,44 @@ function App() {
           </button>
 
           <div className="login-modal-badge">
-            {t.login_modal_badge}
+            🔐 Secure User Account
           </div>
 
           <h2>
-            {t.login_modal_title}
+            {authMode === "signup"
+              ? "Welcome to Scheme Saathi"
+              : "Welcome Back"}
           </h2>
 
           <p className="login-subtitle">
-            {t.login_modal_subtitle}
+            {authMode === "signup"
+              ? "Create your account to save applications and track your requests."
+              : "Login to continue to Scheme Saathi."}
           </p>
 
-          {!otpSent ? (
+          {authMode === "signup" ? (
             <form
-              onSubmit={
-                handleSendOtp
-              }
+              onSubmit={handleSignup}
             >
               <div className="login-field">
                 <label>
-                  {t.name_label}
+                  Full Name *
                 </label>
 
                 <input
                   type="text"
                   value={name}
                   onChange={(e) =>
-                    setName(
-                      e.target.value
-                    )
+                    setName(e.target.value)
                   }
-                  placeholder={
-                    t.name_placeholder
-                  }
+                  placeholder="Enter your full name"
                   required
                 />
               </div>
 
               <div className="login-field">
                 <label>
-                  {t.mobile_label}
+                  Mobile Number *
                 </label>
 
                 <input
@@ -846,9 +972,7 @@ function App() {
                       )
                     )
                   }
-                  placeholder={
-                    t.mobile_placeholder
-                  }
+                  placeholder="Enter 10-digit mobile number"
                   maxLength={10}
                   required
                 />
@@ -856,9 +980,9 @@ function App() {
 
               <div className="login-field">
                 <label>
-                  {t.email_label}{" "}
+                  Email{" "}
                   <span className="optional-text">
-                    {t.optional}
+                    (Optional)
                   </span>
                 </label>
 
@@ -866,55 +990,44 @@ function App() {
                   type="email"
                   value={email}
                   onChange={(e) =>
-                    setEmail(
-                      e.target.value
-                    )
+                    setEmail(e.target.value)
                   }
-                  placeholder={
-                    t.email_placeholder
-                  }
+                  placeholder="Enter your email"
                 />
-              </div>
-
-              <button
-                className="login-submit"
-                type="submit"
-              >
-                {t.send_otp}
-              </button>
-            </form>
-          ) : (
-            <form
-              onSubmit={
-                handleVerifyOtp
-              }
-            >
-              <div className="otp-sent-box">
-                {t.otp_sent_prefix}{" "}
-                {phone}
               </div>
 
               <div className="login-field">
                 <label>
-                  {t.enter_otp_label}
+                  Create Password *
                 </label>
 
                 <input
-                  type="text"
-                  inputMode="numeric"
-                  value={otp}
+                  type="password"
+                  value={password}
                   onChange={(e) =>
-                    setOtp(
-                      e.target.value.replace(
-                        /\D/g,
-                        ""
-                      )
+                    setPassword(e.target.value)
+                  }
+                  placeholder="Create a password"
+                  minLength={6}
+                  required
+                />
+              </div>
+
+              <div className="login-field">
+                <label>
+                  Confirm Password *
+                </label>
+
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) =>
+                    setConfirmPassword(
+                      e.target.value
                     )
                   }
-                  placeholder={
-                    t.otp_placeholder
-                  }
-                  maxLength={6}
+                  placeholder="Confirm your password"
+                  minLength={6}
                   required
                 />
               </div>
@@ -923,28 +1036,123 @@ function App() {
                 className="login-submit"
                 type="submit"
               >
-                {t.verify_continue}
+                Create Account →
               </button>
 
               <button
                 type="button"
                 className="resend-btn"
                 onClick={() => {
-                  setOtp("");
-                  setOtpSent(
-                    false
-                  );
+                  setAuthMode("login");
+                  setPassword("");
+                  setConfirmPassword("");
                 }}
               >
-                {t.change_mobile}
+                Already have an account? Login
+              </button>
+            </form>
+          ) : (
+            <form
+              onSubmit={handleLogin}
+            >
+              <div className="login-field">
+                <label>
+                  Full Name *
+                </label>
+
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) =>
+                    setName(e.target.value)
+                  }
+                  placeholder="Enter your full name"
+                  required
+                />
+              </div>
+
+              <div className="login-field">
+                <label>
+                  Mobile Number *
+                </label>
+
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) =>
+                    setPhone(
+                      e.target.value.replace(
+                        /\D/g,
+                        ""
+                      )
+                    )
+                  }
+                  placeholder="Enter 10-digit mobile number"
+                  maxLength={10}
+                  required
+                />
+              </div>
+
+              <div className="login-field">
+                <label>
+                  Email{" "}
+                  <span className="optional-text">
+                    (Optional)
+                  </span>
+                </label>
+
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) =>
+                    setEmail(e.target.value)
+                  }
+                  placeholder="Enter your email"
+                />
+              </div>
+
+              <div className="login-field">
+                <label>
+                  Password *
+                </label>
+
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) =>
+                    setPassword(e.target.value)
+                  }
+                  placeholder="Enter your password"
+                  required
+                />
+              </div>
+
+              <button
+                className="login-submit"
+                type="submit"
+              >
+                Login →
               </button>
 
-              <p className="demo-otp">
-                {t.demo_otp_label}{" "}
-                <strong>
-                  123456
-                </strong>
-              </p>
+              <button
+                type="button"
+                className="resend-btn"
+                onClick={handleChangeMobile}
+              >
+                Change mobile number
+              </button>
+
+              <button
+                type="button"
+                className="resend-btn"
+                onClick={() => {
+                  setAuthMode("signup");
+                  setPassword("");
+                  setConfirmPassword("");
+                }}
+              >
+                Don't have an account? Create Account
+              </button>
             </form>
           )}
         </div>
@@ -1008,11 +1216,12 @@ function App() {
               ) : (
                 <button
                   className="login-btn"
-                  onClick={() =>
-                    setShowLogin(
-                      true
-                    )
-                  }
+                  onClick={() => {
+                    setAuthMode("signup");
+                    setPassword("");
+                    setConfirmPassword("");
+                    setShowLogin(true);
+                  }}
                 >
                   {t.login}
                 </button>
