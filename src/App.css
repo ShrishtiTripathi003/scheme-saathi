@@ -703,6 +703,17 @@ button {
   color: #273740;
 }
 
+.partner-demo-notice {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid #e3b08a;
+  border-radius: 10px;
+  background: #fbeadd;
+  color: #8b4a2f;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .eligibility-list {
   display: grid;
   grid-template-columns: 1fr 1fr;

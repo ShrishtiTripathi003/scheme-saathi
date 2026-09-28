@@ -2451,6 +2451,10 @@ function App() {
                 }
               </p>
 
+              <div className="partner-demo-notice" role="note">
+                {t.partner_demo_notice}
+              </div>
+
               {nearestPartner ? (
                 <>
                   <div className="partner-card">

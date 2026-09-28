@@ -137,6 +137,8 @@ export const translations = {
     partner_title: "📍 Nearby Channel Partner",
     partner_desc_prefix: "Finding the nearest eligible channel partner for",
     partner_desc_suffix: "based on your selected state.",
+    partner_demo_notice:
+      "Demo information only: partner names, availability, distance, fund utilization and status are illustrative. Confirm details with the official agency before applying.",
     map_title: "🗺️ Location Map",
     map_unavailable: "Map unavailable for this location.",
     no_partner_title: "No eligible channel partners found.",
@@ -282,6 +284,8 @@ export const translations = {
     partner_title: "📍 निकटतम चैनल भागीदार",
     partner_desc_prefix: "के लिए निकटतम पात्र चैनल भागीदार खोजा जा रहा है",
     partner_desc_suffix: "आपके चयनित राज्य के आधार पर।",
+    partner_demo_notice:
+      "यह केवल डेमो जानकारी है: भागीदारों के नाम, उपलब्धता, दूरी, निधि उपयोग और स्थिति उदाहरण के लिए हैं। आवेदन से पहले आधिकारिक एजेंसी से जानकारी की पुष्टि करें।",
     map_title: "🗺️ स्थान मानचित्र",
     map_unavailable: "इस स्थान के लिए मानचित्र उपलब्ध नहीं है।",
     no_partner_title: "कोई पात्र चैनल भागीदार नहीं मिला।",
